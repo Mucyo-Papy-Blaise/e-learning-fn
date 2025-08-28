@@ -1,4 +1,4 @@
-import { Course } from "@/lib/types/course";
+import { Course, Module, Lesson } from "@/lib/types/course";
 import { User } from "@/lib/types/auth";
 import { CourseProgress } from "@/lib/types/progress";
 import { IAssignment } from "@/types/assignment";
@@ -80,6 +80,10 @@ export const rubrics: Record<string, RubricCriterion[]> = {
 export const announcements: Announcement[] = [];
 export const officeHours: OfficeHourSlot[] = [];
 export const notifications: Notification[] = [];
+export const modules: Module[] = [];
+export const lessons: Lesson[] = [];
+export const courseMeta: Record<string, any> = {};
+export const assignmentAttachments: Record<string, Array<{ id: string; name: string; size: number; type: string }>> = {};
 
 export function getCourseStudentsWithProgress(courseId: string) {
   const studentEnrollments = enrollments.filter(e => e.course_id === courseId);

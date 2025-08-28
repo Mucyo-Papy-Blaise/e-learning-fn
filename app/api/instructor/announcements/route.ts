@@ -2,8 +2,21 @@ import { NextResponse } from 'next/server'
 import { announcements, Announcement, users, enrollments, pushNotification } from '@/lib/instructorData'
 
 export async function POST(req: Request) {
-  const body = await req.json()
-  const { courseId, title, message } = body as { courseId: string; title: string; message: string }
+  const contentType = req.headers.get('content-type') || ''
+  let courseId = ''
+  let title = ''
+  let message = ''
+  if (contentType.includes('multipart/form-data')) {
+    const form = await req.formData()
+    courseId = String(form.get('course_id') || '')
+    title = String(form.get('title') || '')
+    message = String(form.get('message') || '')
+  } else {
+    const body = await req.json().catch(() => ({}))
+    courseId = String(body.courseId || body.course_id || '')
+    title = String(body.title || '')
+    message = String(body.message || '')
+  }
   if (!courseId || !title || !message) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
   }
