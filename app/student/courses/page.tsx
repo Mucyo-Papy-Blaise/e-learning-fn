@@ -1,18 +1,97 @@
 "use client"
 
-import { coursesList } from "@/lib/data"
-import { X, BookOpen, Calendar, Users, Search } from "lucide-react"
+import { useState, useEffect } from "react"
+import { X, BookOpen, Calendar, Users, Search, Plus } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { fetchEnrolledCourses } from "@/lib/api/courses"
+import { useAuth } from "@/lib/hooks/use-auth"
+
+interface Course {
+  _id: string
+  title: string
+  description: string
+  price: number
+  difficulty_level: string
+  duration_weeks: number
+  thumbnail?: string
+  instructor_id?: string
+}
+
+interface Enrollment {
+  _id: string
+  course_id: Course
+  user_id: string
+  enrolled_at: string
+  status: string
+}
 
 export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([])
+  const [loading, setLoading] = useState(true)
+  const { user, isAuthenticated } = useAuth()
   
-  const filteredCourses = coursesList.filter(course =>
-    course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.cohort.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.term.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      loadEnrolledCourses()
+    }
+  }, [isAuthenticated, user])
+
+  const loadEnrolledCourses = async () => {
+    try {
+      setLoading(true)
+      const enrolledCourses = await fetchEnrolledCourses()
+      setEnrollments(enrolledCourses)
+    } catch (error) {
+      console.error("Failed to load enrolled courses:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  // Extract courses from enrollments for filtering
+  const courses = enrollments.map(enrollment => enrollment.course_id)
+  
+  const filteredCourses = courses.filter(course =>
+    course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course.description.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  // Show loading state while checking authentication
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="flex flex-1 flex-col bg-gray-50 min-h-screen">
+        <div className="max-w-4xl mx-auto w-full p-6">
+          <div className="text-center">
+            <p>Please log in to view your courses.</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-1 flex-col bg-gray-50 min-h-screen">
+        <div className="max-w-4xl mx-auto w-full p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="grid gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-1 flex-col bg-gray-50 min-h-screen">
       <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-white px-6 shadow-sm">
@@ -39,13 +118,22 @@ export default function CoursesPage() {
               <p className="text-gray-600 mb-4">
                 Access all your enrolled courses and continue your learning progress.
               </p>
-              <Link 
-                href="/student/courses" 
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
-              >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Browse All Courses
-              </Link>
+              <div className="flex gap-3">
+                <Link 
+                  href="/student/courses/catalog" 
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Browse All Courses
+                </Link>
+                <Link 
+                  href="/student/courses/catalog" 
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Course Catalog
+                </Link>
+              </div>
             </div>
           </div>
 
@@ -81,22 +169,22 @@ export default function CoursesPage() {
             
             <div className="grid gap-4">
               {filteredCourses.map((course) => (
-                <Link key={course.id} href={`/student/courses/${course.id}/home`} className="block group">
+                <Link key={course._id} href={`/student/courses/${course._id}/home`} className="block group">
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-blue-200 transition-all duration-200">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="text-lg font-semibold text-blue-600 group-hover:text-blue-700 mb-2 line-clamp-2">
-                          {course.name}
+                          {course.title}
                         </h4>
                         
                         <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                           <div className="flex items-center gap-1">
                             <Users className="h-4 w-4" />
-                            <span>{course.cohort}</span>
+                            <span>{course.difficulty_level}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4" />
-                            <span>{course.term}</span>
+                            <span>{course.duration_weeks} weeks</span>
                           </div>
                         </div>
                         
@@ -118,7 +206,7 @@ export default function CoursesPage() {
           </div>
 
           {/* Empty State (if no courses) */}
-          {coursesList.length === 0 && (
+          {courses.length === 0 && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookOpen className="h-8 w-8 text-gray-400" />
@@ -126,7 +214,7 @@ export default function CoursesPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No courses yet</h3>
               <p className="text-gray-600 mb-4">Start your learning journey by exploring available courses.</p>
               <Link 
-                href="/student/courses" 
+                href="/student/courses/catalog" 
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
               >
                 Browse Courses
@@ -145,7 +233,7 @@ export default function CoursesPage() {
               <div>
                 <p className="text-sm font-medium text-blue-900 mb-1">Customize Your Course List</p>
                 <p className="text-sm text-blue-700">
-                  Visit the Browse All Courses section to star your favorite courses and customize this display.
+                  Visit the Course Catalog to discover new courses and expand your learning journey.
                 </p>
               </div>
             </div>

@@ -17,13 +17,20 @@ const showToast = (message: string, type: "success" | "error") => {
 
 export async function fetchCourses(id: string): Promise<Course[]> {
   try {
-    const response = await axios.get(`${API_URL}/api/institutions/${id}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      }
-    );
+    let url: string
+    if (id === "all") {
+      // Get all available courses (public endpoint)
+      url = `${API_URL}/api/courses/student/all`
+    } else {
+      // Get courses by institution ID
+      url = `${API_URL}/api/institutions/${id}`
+    }
+    
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
     return response.data;
   } catch (error) {
     showToast('Failed to fetch courses', 'error');
@@ -146,6 +153,37 @@ export async function createLesson(module_id: string, title: string, content: st
     return response.data;
   } catch (error) {
     showToast('Failed to create lesson', 'error');
+    throw error;
+  }
+}
+
+export async function fetchEnrolledCourses() {
+  try {
+    const response = await axios.get(`${API_URL}/api/enrollement`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    showToast('Failed to fetch enrolled courses', 'error');
+    throw error;
+  }
+}
+
+export async function enrollInCourse(courseId: string) {
+  try {
+    const response = await axios.post(`${API_URL}/api/courses/${courseId}/enroll`, {
+      
+    }, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    showToast('Enrolled successfully', 'success');
+    return response.data;
+  } catch (error) {
+    showToast('Failed to enroll', 'error');
     throw error;
   }
 }

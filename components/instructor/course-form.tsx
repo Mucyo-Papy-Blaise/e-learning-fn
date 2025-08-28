@@ -71,12 +71,13 @@ export const CourseForm = () => {
         const fd = new FormData()
         fd.append('title', values.title)
         fd.append('description', values.description)
-        fd.append('category', 'General')
+        fd.append('price', values.price)
+        fd.append('difficulty_level', values.difficulty_level)
+        fd.append('duration_weeks', values.duration_weeks)
+        fd.append('is_certified', String(values.is_certified))
         if (values.thumbnail && values.thumbnail[0]) fd.append('thumbnail', values.thumbnail[0])
-        const res = await fetch('/api/courses', { method: 'POST', body: fd })
-        if (!res.ok) throw new Error('Failed to create course')
-        const data = await res.json()
-        const id = data.id || data._id
+        const created = await (await import('@/lib/api/courses')).createCourse(fd)
+        const id = created.id || created._id
         setCreatedCourseId(id)
         setStep(2)
       } catch (e) {
@@ -93,14 +94,8 @@ export const CourseForm = () => {
     if (!createdCourseId) { setStep(1); return }
     setIsBusy(true)
     try {
-      const fd = new FormData()
-      fd.append('course_id', createdCourseId)
-      fd.append('title', moduleTitle)
-      fd.append('description', moduleDescription)
-      fd.append('order', String(moduleOrder || 0))
-      const res = await fetch('/api/courses/module', { method: 'POST', body: fd })
-      if (!res.ok) throw new Error('Failed to add module')
-      const { module } = await res.json()
+      const api = await import('@/lib/api/courses')
+      const module = await api.createModule(createdCourseId, moduleTitle, moduleDescription, moduleOrder || 0)
       setModulesAdded((prev) => [...prev, { _id: module._id, title: module.title }])
       setLessonModuleId((id) => id || module._id)
       setModuleTitle(""); setModuleDescription(""); setModuleOrder(0)
@@ -111,15 +106,9 @@ export const CourseForm = () => {
     if (!lessonModuleId) return
     setIsBusy(true)
     try {
-      const fd = new FormData()
-      fd.append('module_id', lessonModuleId)
-      fd.append('title', lessonTitle)
-      fd.append('content', lessonContent)
-      fd.append('order', String(lessonOrder || 0))
-      if (lessonVideo) fd.append('video', lessonVideo)
-      const res = await fetch('/api/courses/lesson', { method: 'POST', body: fd })
-      if (!res.ok) throw new Error('Failed to add lesson')
-      const { lesson } = await res.json()
+      const api = await import('@/lib/api/courses')
+      const lessonResp = await api.createLesson(lessonModuleId, lessonTitle, lessonContent, 'text', 0, lessonVideo)
+      const lesson = lessonResp.lesson || lessonResp
       setLessonsAdded((prev) => [...prev, { _id: lesson._id, title: lesson.title, module_id: lesson.module_id }])
       setLessonTitle(""); setLessonContent(""); setLessonOrder(0); setLessonVideo(null)
     } catch (e) { console.error(e) } finally { setIsBusy(false) }

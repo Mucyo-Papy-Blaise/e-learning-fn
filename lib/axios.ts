@@ -27,7 +27,7 @@ const axiosInstance: AxiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
       //@ts-expect-error error
     (config: AxiosRequestConfig) => {
-        const token = localStorage.getItem('ffa-admin');
+        const token = localStorage.getItem('token');
         if (token) {
             config.headers = {
                 ...config.headers,
