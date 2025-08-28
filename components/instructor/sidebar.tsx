@@ -41,7 +41,7 @@ const navigation = [
   },
   { name: "Assignments", href: "/instructor/assignments", icon: UserCheck, badge: null },
   { name: "Analytics", href: "/instructor/analytics", icon: BarChart3, badge: null },
-  { name: "Announcements", href: "/instructor/courses/[courseId]/announcements", icon: Bell, badge: null },
+  { name: "Announcements", href: "/instructor/announcements", icon: Bell, badge: null },
 ]
 
 export const Sidebar = () => {
