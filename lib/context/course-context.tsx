@@ -166,6 +166,7 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
       });
     }
   };
+
   const createCourse = async (formData: FormData) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
@@ -214,6 +215,7 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
       });
     }
   };
+  
   const createLesson = async (moduleId: string, title: string, content: string, content_type: string, duration_minutes: number, video: File | null) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
