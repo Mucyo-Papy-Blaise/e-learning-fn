@@ -59,7 +59,6 @@ const assignmentData = {
     isLate: false,
     isGraded: true,
     grade: "16/20",
-    isGraded: true,
     purpose: "Create your first podcast episode focusing on a topic related to effective communication. This assignment will help you develop your voice and storytelling skills.",
     importantNote: "Make sure your audio quality is clear and your content is engaging. The podcast should be between 5-10 minutes in length.",
     questions: [
@@ -225,9 +224,9 @@ export default function AssignmentDetailPage({
               )}
 
               {/* Grade Display */}
-              {assignment.isGraded && assignment.grade && (
+              {'grade' in assignment && assignment.isGraded && (assignment as any).grade && (
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium text-gray-900">Grade: {assignment.grade}</p>
+                  <p className="text-sm font-medium text-gray-900">Grade: {(assignment as any).grade}</p>
                 </div>
               )}
 

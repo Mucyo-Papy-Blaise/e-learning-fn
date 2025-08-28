@@ -10,7 +10,7 @@ import { useEducation } from "@/context/educationContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-export function DashboardOverview() {
+function DashboardOverview() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [dashboard, setDashboard] = useState<IEnrollment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

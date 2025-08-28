@@ -83,9 +83,7 @@ export default function CourseLayout() {
         ) }
         {selectedCourse && activeTab === "modules" && (
           <div className="text-lg font-semibold">
-            <CourseModule course={{
-              title: `${selectedCourse.title}`
-            }} />
+            <CourseModule chapters={[]} onSelectPage={() => {}} />
           </div>
         ) }
       </motion.div>

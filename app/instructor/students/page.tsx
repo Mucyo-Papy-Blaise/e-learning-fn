@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   User,
@@ -125,11 +126,8 @@ const initialStudents: Student[] = [
 
 const statusFilters = ["Active", "Completed", "Paused"];
 
-interface StudentsProps {
-  onBack: () => void;
-}
-
-const Students: React.FC<StudentsProps> = ({ onBack }) => {
+const Students: React.FC = () => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("Active");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -192,7 +190,7 @@ const Students: React.FC<StudentsProps> = ({ onBack }) => {
           <div className="flex flex-col sm:flex-row items-center justify-between py-4 space-y-4 sm:space-y-0">
             <div className="flex items-center space-x-3">
               <button
-                onClick={onBack}
+                onClick={() => router.back()}
                 className="p-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-all duration-200"
               >
                 <GraduationCap className="h-6 w-6 lg:h-8 lg:w-8 text-white" />
