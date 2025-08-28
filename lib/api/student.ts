@@ -54,6 +54,35 @@ export async function fetchCourseAnnouncements(courseId: string) {
   return response.data;
 }
 
+// Student area helpers for learning journey
+export async function fetchStudentEnrolledCourses() {
+  const response = await axios.get(`${API_URL}/api/enrollement`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+}
+
+export async function fetchStudentGrades(courseId: string) {
+  const response = await axios.get(`${API_URL}/api/student/grades/${courseId}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+}
+
+export async function fetchStudentSubmissions(courseId?: string) {
+  const url = courseId ? `${API_URL}/api/assignments/${courseId}/submissions/me` : `${API_URL}/api/assignments/submissions/me`;
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  return response.data;
+}
+
 // POST /api/student/lessons/:lessonId/complete (use FormData)
 export async function markLessonComplete(lessonId: string, payload?: Record<string, any>) {
   const formData = new FormData();

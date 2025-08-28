@@ -79,6 +79,14 @@ Notes
 - Student Flows (selection)
   - Pages under `app/student/...` render data largely from libs/hooks; many still rely on mocks. Enrollment endpoint used in UI not found in this lib; course enrollment exists on backend: POST `/api/courses/:courseId/enroll`.
 
+Updated Student Subpages Wiring
+- app/student/courses/[courseId]/assignments/page.tsx → GET `/api/assignments/:courseId` (list) [auth]
+- app/student/courses/[courseId]/grades/page.tsx → GET `/api/student/grades/:courseId` [auth]
+- app/student/courses/[courseId]/modules/page.tsx → GET `/api/courses/:courseId/modules` [auth]
+- app/student/courses/[courseId]/pages/page.tsx → From modules lessons/items, filtered by type=page
+- app/student/courses/[courseId]/pages/[pageId]/page.tsx → Resolves from modules’ items/lessons
+- app/student/courses/[courseId]/syllabus/page.tsx → GET `/api/courses/:courseId` and render core metadata
+
 ### Gaps, Mismatches, Proposed Fixes
 
 - Frontend calls local Next API routes instead of backend for instructor creation

@@ -1,6 +1,6 @@
 "use client"
 
-import { courseModules, courseToDoItems, recentFeedback } from "@/lib/data"
+import { courseToDoItems, recentFeedback } from "@/lib/data"
 import {
   Bell,
   CalendarDays,
@@ -16,11 +16,25 @@ import {
 import Link from "next/link"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { fetchModulesByCourseId } from "@/lib/api/courses"
 
 export default function CourseModulesPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({})
+  const [courseModules, setCourseModules] = useState<any[]>([])
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const mods = await fetchModulesByCourseId(courseId)
+        setCourseModules(mods || [])
+      } catch {
+        setCourseModules([])
+      }
+    }
+    load()
+  }, [courseId])
 
   const toggleModule = (moduleId: string) => {
     setOpenModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }))
@@ -86,7 +100,7 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
               {openModules[module.id] && (
                 <div className="border-t border-gray-200 bg-gray-50 p-4">
                   <div className="space-y-2">
-                    {module.items.map((item, itemIndex) => (
+                    {(module.items || module.lessons || []).map((item: any, itemIndex: number) => (
                       <div 
                         key={itemIndex} 
                         className="flex items-center gap-3 p-2 rounded-md hover:bg-blue-50"
@@ -94,7 +108,7 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
                         {item.type === "page" && <FileText className="h-4 w-4 text-gray-500" />}
                         {item.type === "assignment" && <ClipboardList className="h-4 w-4 text-gray-500" />}
                         <Link
-                          href={`/student/courses/${courseId}/pages/${item.url}`}
+                          href={`/student/courses/${courseId}/pages/${item.url || item._id}`}
                           className="text-sm text-blue-600 hover:underline flex-1"
                         >
                           {item.title}

@@ -1,19 +1,32 @@
 "use client"
 
-import { courseModules, pageContentData } from "@/lib/data"
+import { pageContentData } from "@/lib/data"
 import { FileText, Clock, CheckCircle, Circle } from "lucide-react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { fetchModulesByCourseId } from "@/lib/api/courses"
 
 export default function CoursePagesPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
+  const [allPages, setAllPages] = useState<any[]>([])
 
-  // Flatten all pages from all modules
-  const allPages = courseModules.flatMap(module => 
-    module.items.filter(item => item.type === "page").map(item => ({
-      ...item,
-      moduleTitle: module.title
-    }))
-  )
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const modules = await fetchModulesByCourseId(courseId)
+        const pages = (modules || []).flatMap((module: any) =>
+          (module.items || module.lessons || []).filter((item: any) => item.type === 'page').map((item: any) => ({
+            ...item,
+            moduleTitle: module.title
+          }))
+        )
+        setAllPages(pages)
+      } catch {
+        setAllPages([])
+      }
+    }
+    load()
+  }, [courseId])
 
   return (
     <div className="flex flex-1 flex-col">
