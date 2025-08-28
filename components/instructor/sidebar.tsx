@@ -28,58 +28,20 @@ import {useEducation} from '@/context/educationContext'
 import { useAuth } from '@/lib/hooks/use-auth';
 
 const navigation = [
+  { name: "Dashboard", href: "/instructor", icon: LayoutDashboard, badge: null },
   {
-    name: "Dashboard",
-    href: "/instructor",
-    icon: LayoutDashboard,
-    badge: null,
-  },
-  {
-    name: "Course Management",
+    name: "My Courses",
     href: "/instructor/courses",
     icon: BookOpen,
-    badge: "12",
+    badge: null,
     subItems: [
       { name: "All Courses", href: "/instructor/courses" },
-      { name: "Add Course", href: "/instructor/courses/new" },
+      { name: "Create Course", href: "/instructor/courses/new" },
     ],
   },
-  {
-    name: "Student Management",
-    href: "/instructor/students",
-    icon: Users,
-    badge: "1.2k",
-  },
-  {
-    name: "Instructors",
-    href: "/instructor/instructors",
-    icon: UserCheck,
-    badge: null,
-  },
-  {
-    name: "Analytics & Reports",
-    href: "/instructor/analytics",
-    icon: BarChart3,
-    badge: null,
-  },
-  {
-    name: "Certifications",
-    href: "/instructor/certifications",
-    icon: Award,
-    badge: "89",
-  },
-  {
-    name: "Schedule",
-    href: "/instructor/schedule",
-    icon: Calendar,
-    badge: null,
-  },
-  {
-    name: "Settings",
-    href: "/instructor/settings",
-    icon: Settings,
-    badge: null,
-  },
+  { name: "Assignments", href: "/instructor/assignments", icon: UserCheck, badge: null },
+  { name: "Analytics", href: "/instructor/analytics", icon: BarChart3, badge: null },
+  { name: "Announcements", href: "/instructor/courses/[courseId]/announcements", icon: Bell, badge: null },
 ]
 
 export const Sidebar = () => {

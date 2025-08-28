@@ -29,6 +29,7 @@ const formSchema = z.object({
 });
 
 export const CourseForm = () => {
+  const [step, setStep] = useState<number>(1)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -70,205 +71,79 @@ export const CourseForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2 md:p-4">
-      <div className="max-w-4xl mx-auto space-y-4">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center mb-6"></div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Create New Course
-          </h1>
-          <p className="text-base text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Fill in the details below to create an engaging and comprehensive
-            course for your students.
-          </p>
+    <div className="min-h-screen bg-[color:var(--brand-light)] p-4 md:p-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-2xl font-semibold text-[color:var(--brand-navy)]">Create a Course</h1>
+          <p className="text-sm text-gray-600">Step {step} of 4</p>
         </div>
+        <Card className="bg-white border border-gray-200">
+          <div className="p-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {step === 1 && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Course title</label>
+                    <input {...form.register("title")} className="w-full h-11 px-3 border border-gray-300 rounded-md" placeholder="e.g. Fullstack Development" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Description</label>
+                    <Controller control={form.control} name="description" render={({ field }) => (
+                      <TiptapEditor name={field.name} content={field.value} onChange={field.onChange} placeholder="What will learners achieve?" className="bg-white border border-gray-300 rounded-md" />
+                    )} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Price</label>
+                      <input type="number" {...form.register("price")} className="w-full h-11 px-3 border border-gray-300 rounded-md" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Difficulty</label>
+                      <select {...form.register("difficulty_level")} className="w-full h-11 px-3 border border-gray-300 rounded-md bg-white">
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700">Duration (weeks)</label>
+                      <input type="number" {...form.register("duration_weeks")} className="w-full h-11 px-3 border border-gray-300 rounded-md" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Thumbnail</label>
+                    <input type="file" accept="image/*" {...form.register("thumbnail")} className="w-full" />
+                  </div>
+                </div>
+              )}
 
-        {/* Form Card */}
-        <Card className="bg-slate-200 shadow-xl border-0 rounded-2xl overflow-hidden">
-          <div className="p-8 md:p-12">
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Course Title */}
-              <div className="space-y-3">
-                <label
-                  htmlFor="title"
-                  className="flex items-center text-base font-semibold text-gray-800"
-                >
-                  <FileText className="h-4 w-4 mr-2 text-blue-600" />
-                  Course Title
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  placeholder="Enter an engaging course title"
-                  {...form.register("title")}
-                  className="w-full h-12 px-4 border-2 border-gray-200 rounded-lg text-base focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 placeholder-gray-400"
-                />
-                {form.formState.errors.title && (
-                  <p className="text-red-500 text-sm font-medium">
-                    {form.formState.errors.title.message}
-                  </p>
+              {step === 2 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Next you will add modules to structure your course.</p>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Then add lessons for each module.</p>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Finally, create assignments to assess learners.</p>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-2">
+                <button type="button" disabled={step === 1} onClick={() => setStep((s) => Math.max(1, s - 1))} className="px-4 h-10 border border-gray-300 rounded-md text-sm disabled:opacity-50">Back</button>
+                {step < 4 ? (
+                  <button type="button" onClick={() => setStep((s) => Math.min(4, s + 1))} className="px-4 h-10 rounded-md text-sm text-white" style={{ backgroundColor: 'var(--brand-blue)' }}>Continue</button>
+                ) : (
+                  <button type="submit" className={`px-4 h-10 rounded-md text-sm text-white ${create ? 'opacity-70' : ''}`} style={{ backgroundColor: 'var(--brand-blue)' }}>
+                    {create ? 'Creating…' : 'Create Course'}
+                  </button>
                 )}
-              </div>
-
-              {/* Description */}
-              <div className="space-y-3">
-                <label
-                  htmlFor="description"
-                  className="flex items-center text-base font-semibold text-gray-800"
-                >
-                  <FileText className="h-4 w-4 mr-2 text-blue-600" />
-                  Course Description
-                </label>
-
-                <Controller
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <TiptapEditor
-                      name={field.name}
-                      content={field.value}
-                      onChange={field.onChange}
-                      placeholder="Describe what students will learn in this course..."
-                      className="bg-white border border-gray-300 rounded-lg"
-                    />
-                  )}
-                />
-
-                {form.formState.errors.description && (
-                  <p className="text-red-500 text-sm font-medium">
-                    {form.formState.errors.description.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Price and Difficulty Grid */}
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-3">
-                  <label
-                    htmlFor="price"
-                    className="flex items-center text-base font-semibold text-gray-800"
-                  >
-                    Price (RWF)
-                  </label>
-                  <input
-                    type="number"
-                    id="price"
-                    placeholder="10000"
-                    {...form.register("price")}
-                    className="w-full h-12 px-4 border-2 border-gray-200 rounded-lg text-base focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 placeholder-gray-400"
-                  />
-                  {form.formState.errors.price && (
-                    <p className="text-red-500 text-sm font-medium">
-                      {form.formState.errors.price.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-3">
-                  <label
-                    htmlFor="difficulty_level"
-                    className="flex items-center text-base font-semibold text-gray-800"
-                  >
-                    Difficulty Level
-                  </label>
-                  <select
-                    id="difficulty_level"
-                    {...form.register("difficulty_level")}
-                    className="w-full h-14 px-4 border-2 border-gray-200 rounded-lg text-base focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 bg-white"
-                  >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                  </select>
-                  {form.formState.errors.difficulty_level && (
-                    <p className="text-red-500 text-sm font-medium">
-                      {form.formState.errors.difficulty_level.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Duration */}
-              <div className="space-y-3">
-                <label
-                  htmlFor="duration_weeks"
-                  className="flex items-center text-base font-semibold text-gray-800"
-                >
-                  Duration (in weeks)
-                </label>
-                <input
-                  type="number"
-                  id="duration_weeks"
-                  placeholder="Enter duration in weeks"
-                  {...form.register("duration_weeks")}
-                  style={{ appearance: 'textfield', MozAppearance: 'textfield' }}
-                  className="no-spinner w-full h-14 px-4 border-2 border-gray-200 rounded-lg text-base focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 placeholder-gray-400"
-                />
-                {form.formState.errors.duration_weeks && (
-                  <p className="text-red-500 text-sm font-medium">
-                    {form.formState.errors.duration_weeks.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Certification Checkbox */}
-              {/* <div className="bg-blue-50 rounded-lg p-6">
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="checkbox"
-                    id="is_certified"
-                    {...form.register("is_certified")}
-                    className="w-5 h-5 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                  />
-                  <label
-                    htmlFor="is_certified"
-                    className="flex items-center text-lg font-medium text-gray-800"
-                  >
-                    <Award className="h-5 w-5 mr-2 text-blue-600" />
-                    This course provides certification upon completion
-                  </label>
-                </div>
-              </div> */}
-
-              {/* Thumbnail Upload */}
-              <div className="space-y-3">
-                <label
-                  htmlFor="thumbnail"
-                  className="flex items-center text-base font-semibold text-gray-800"
-                >
-                  <Upload className="h-4 w-4 mr-2 text-indigo-600" />
-                  Course Thumbnail
-                </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-5 text-center hover:border-blue-400 transition-colors duration-200">
-                  <Upload className="h-10 w-10 text-gray-400 mx-auto mb-4" />
-                  <input
-                    type="file"
-                    id="thumbnail"
-                    accept="image/*"
-                    {...form.register("thumbnail")}
-                    className="w-full text-lg file:mr-4 file:py-3 file:px-6 file:rounded-lg file:border-0 file:bg-blue-600 file:text-white file:font-semibold hover:file:bg-blue-700 file:cursor-pointer cursor-pointer"
-                  />
-                  <p className="text-gray-500 mt-2">
-                    Upload a high-quality image for your course
-                  </p>
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <div className="pt-6">
-                <button
-                  type="submit"
-                  className={`w-full flex  text-center h-16 hover:bg-blue-700 text-white text-xl font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] ${
-                    create ? "bg-blue-400" : "bg-blue-600"
-                  }`}
-                >
-                  {create ? (
-                    <Loader className="animate-spin" />
-                  ) : (
-                    "Create Course"
-                  )}
-                </button>
               </div>
             </form>
           </div>
