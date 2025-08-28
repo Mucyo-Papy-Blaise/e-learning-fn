@@ -100,7 +100,7 @@ export const EducationProvider = ({ children }: { children: React.ReactNode }) =
   );
 };
 
-// ✅ Custom hook
+// Custom hook
 export const useEducation = () => {
   const context = useContext(EducationContext);
   if (context === undefined) {
