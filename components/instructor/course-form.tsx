@@ -43,31 +43,86 @@ export const CourseForm = () => {
     },
   });
 
+  const [createdCourseId, setCreatedCourseId] = useState<string | null>(null)
+  const [modulesAdded, setModulesAdded] = useState<Array<{ _id: string; title: string }>>([])
+  const [lessonsAdded, setLessonsAdded] = useState<Array<{ _id: string; title: string; module_id: string }>>([])
+  const [isBusy, setIsBusy] = useState<boolean>(false)
+
+  // Step 2 - Module local form state
+  const [moduleTitle, setModuleTitle] = useState<string>("")
+  const [moduleDescription, setModuleDescription] = useState<string>("")
+  const [moduleOrder, setModuleOrder] = useState<number>(0)
+
+  // Step 3 - Lesson local form state
+  const [lessonModuleId, setLessonModuleId] = useState<string>("")
+  const [lessonTitle, setLessonTitle] = useState<string>("")
+  const [lessonContent, setLessonContent] = useState<string>("")
+  const [lessonOrder, setLessonOrder] = useState<number>(0)
+  const [lessonVideo, setLessonVideo] = useState<File | null>(null)
+
   const { createCourse } = useCourses();
   const [create, setIsCreating] = useState(false);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsCreating(true);
-    try {
-      const formData = new FormData();
-
-      formData.append("title", values.title);
-      formData.append("description", values.description);
-      formData.append("price", values.price);
-      formData.append("difficulty_level", values.difficulty_level);
-      formData.append("duration_weeks", values.duration_weeks);
-      formData.append("is_certified", String(values.is_certified));
-
-      if (values.thumbnail && values.thumbnail[0]) {
-        formData.append("thumbnail", values.thumbnail[0]);
+  async function handleContinue() {
+    if (step === 1) {
+      const values = form.getValues()
+      setIsBusy(true)
+      try {
+        const fd = new FormData()
+        fd.append('title', values.title)
+        fd.append('description', values.description)
+        fd.append('category', 'General')
+        if (values.thumbnail && values.thumbnail[0]) fd.append('thumbnail', values.thumbnail[0])
+        const res = await fetch('/api/courses', { method: 'POST', body: fd })
+        if (!res.ok) throw new Error('Failed to create course')
+        const data = await res.json()
+        const id = data.id || data._id
+        setCreatedCourseId(id)
+        setStep(2)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setIsBusy(false)
       }
-
-      await createCourse(formData);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsCreating(false);
+      return
     }
+    setStep((s) => Math.min(4, s + 1))
+  }
+
+  async function addModule() {
+    if (!createdCourseId) { setStep(1); return }
+    setIsBusy(true)
+    try {
+      const fd = new FormData()
+      fd.append('course_id', createdCourseId)
+      fd.append('title', moduleTitle)
+      fd.append('description', moduleDescription)
+      fd.append('order', String(moduleOrder || 0))
+      const res = await fetch('/api/courses/module', { method: 'POST', body: fd })
+      if (!res.ok) throw new Error('Failed to add module')
+      const { module } = await res.json()
+      setModulesAdded((prev) => [...prev, { _id: module._id, title: module.title }])
+      setLessonModuleId((id) => id || module._id)
+      setModuleTitle(""); setModuleDescription(""); setModuleOrder(0)
+    } catch (e) { console.error(e) } finally { setIsBusy(false) }
+  }
+
+  async function addLesson() {
+    if (!lessonModuleId) return
+    setIsBusy(true)
+    try {
+      const fd = new FormData()
+      fd.append('module_id', lessonModuleId)
+      fd.append('title', lessonTitle)
+      fd.append('content', lessonContent)
+      fd.append('order', String(lessonOrder || 0))
+      if (lessonVideo) fd.append('video', lessonVideo)
+      const res = await fetch('/api/courses/lesson', { method: 'POST', body: fd })
+      if (!res.ok) throw new Error('Failed to add lesson')
+      const { lesson } = await res.json()
+      setLessonsAdded((prev) => [...prev, { _id: lesson._id, title: lesson.title, module_id: lesson.module_id }])
+      setLessonTitle(""); setLessonContent(""); setLessonOrder(0); setLessonVideo(null)
+    } catch (e) { console.error(e) } finally { setIsBusy(false) }
   }
 
   return (
@@ -79,7 +134,7 @@ export const CourseForm = () => {
         </div>
         <Card className="bg-white border border-gray-200">
           <div className="p-6">
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
               {step === 1 && (
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -118,14 +173,52 @@ export const CourseForm = () => {
               )}
 
               {step === 2 && (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Next you will add modules to structure your course.</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-base font-medium text-gray-900">Add Modules</h2>
+                    <button type="button" onClick={() => setStep(3)} className="text-sm text-gray-600 underline">Skip for now</button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <input value={moduleTitle} onChange={(e) => setModuleTitle(e.target.value)} placeholder="Title" className="h-11 px-3 border border-gray-300 rounded-md" />
+                    <input value={moduleDescription} onChange={(e) => setModuleDescription(e.target.value)} placeholder="Description" className="h-11 px-3 border border-gray-300 rounded-md" />
+                    <input type="number" value={moduleOrder} onChange={(e) => setModuleOrder(Number(e.target.value))} placeholder="Order" className="h-11 px-3 border border-gray-300 rounded-md" />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button type="button" disabled={!createdCourseId || isBusy || !moduleTitle} onClick={addModule} className="px-4 h-10 rounded-md text-sm text-white disabled:opacity-50" style={{ backgroundColor: 'var(--brand-blue)' }}>Add module</button>
+                    <span className="text-xs text-gray-500">{modulesAdded.length} module(s) added</span>
+                  </div>
+                  {modulesAdded.length > 0 && (
+                    <ul className="list-disc list-inside text-sm text-gray-700">
+                      {modulesAdded.map(m => (<li key={m._id}>{m.title}</li>))}
+                    </ul>
+                  )}
                 </div>
               )}
 
               {step === 3 && (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Then add lessons for each module.</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-base font-medium text-gray-900">Add Lessons</h2>
+                    <button type="button" onClick={() => setStep(4)} className="text-sm text-gray-600 underline">Skip for now</button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <select value={lessonModuleId} onChange={(e) => setLessonModuleId(e.target.value)} className="h-11 px-3 border border-gray-300 rounded-md bg-white">
+                      <option value="">Select module</option>
+                      {modulesAdded.map(m => (
+                        <option key={m._id} value={m._id}>{m.title}</option>
+                      ))}
+                    </select>
+                    <input value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} placeholder="Lesson title" className="h-11 px-3 border border-gray-300 rounded-md" />
+                    <input value={lessonContent} onChange={(e) => setLessonContent(e.target.value)} placeholder="Content" className="h-11 px-3 border border-gray-300 rounded-md md:col-span-2" />
+                    <div className="grid grid-cols-2 gap-3 md:col-span-2">
+                      <input type="number" value={lessonOrder} onChange={(e) => setLessonOrder(Number(e.target.value))} placeholder="Order" className="h-11 px-3 border border-gray-300 rounded-md" />
+                      <input type="file" accept="video/*" onChange={(e) => setLessonVideo(e.target.files?.[0] || null)} className="h-11" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button type="button" disabled={!lessonModuleId || !lessonTitle || isBusy} onClick={addLesson} className="px-4 h-10 rounded-md text-sm text-white disabled:opacity-50" style={{ backgroundColor: 'var(--brand-blue)' }}>Add lesson</button>
+                    <span className="text-xs text-gray-500">{lessonsAdded.length} lesson(s) added</span>
+                  </div>
                 </div>
               )}
 
@@ -138,10 +231,10 @@ export const CourseForm = () => {
               <div className="flex items-center justify-between pt-2">
                 <button type="button" disabled={step === 1} onClick={() => setStep((s) => Math.max(1, s - 1))} className="px-4 h-10 border border-gray-300 rounded-md text-sm disabled:opacity-50">Back</button>
                 {step < 4 ? (
-                  <button type="button" onClick={() => setStep((s) => Math.min(4, s + 1))} className="px-4 h-10 rounded-md text-sm text-white" style={{ backgroundColor: 'var(--brand-blue)' }}>Continue</button>
+                  <button type="button" onClick={handleContinue} className="px-4 h-10 rounded-md text-sm text-white disabled:opacity-50" disabled={isBusy} style={{ backgroundColor: 'var(--brand-blue)' }}>{step === 1 ? (isBusy ? 'Creating…' : 'Create course') : 'Continue'}</button>
                 ) : (
-                  <button type="submit" className={`px-4 h-10 rounded-md text-sm text-white ${create ? 'opacity-70' : ''}`} style={{ backgroundColor: 'var(--brand-blue)' }}>
-                    {create ? 'Creating…' : 'Create Course'}
+                  <button type="button" onClick={() => setStep(1)} className="px-4 h-10 rounded-md text-sm text-white" style={{ backgroundColor: 'var(--brand-blue)' }}>
+                    Finish
                   </button>
                 )}
               </div>
