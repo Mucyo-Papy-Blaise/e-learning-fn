@@ -229,30 +229,31 @@ export const Sidebar = () => {
       <div
         className={cn(
           "hidden md:flex h-screen flex-col bg-white border-r border-gray-200 shadow-sm transition-all duration-300",
-          isDesktopCollapsed ? "w-24" : "w-80"
+          isDesktopCollapsed ? "w-20" : "w-72"
         )}
       >
         {/* Header with collapse toggle */}
         <div
           className={cn(
-            "flex h-16 items-center gap-3 px-6 border-b bg-gradient-to-r from-blue-500 to-blue-600",
-            isDesktopCollapsed && "justify-between px-3"
+            "flex h-14 items-center gap-3 px-4 border-b",
+            isDesktopCollapsed && "justify-between px-2"
           )}
+          style={{ backgroundColor: 'var(--brand-navy)' }}
         >
           <div className="p-2 bg-white/20 rounded-lg flex-shrink-0">
-            <Building2 className="h-5 w-5 text-white" />
+            <Building2 className="h-4 w-4 text-white" />
           </div>
 
           {!isDesktopCollapsed && (
             <div className="flex items-center justify-between w-full">
               <div>
-                <span className="text-lg font-semibold text-white">{user?.institution?.name || 'Institution'}</span>
-                <p className="text-xs text-blue-100">{user?.email}</p>
+                <span className="text-sm font-medium text-white">{user?.institution?.name || 'Institution'}</span>
+                <p className="text-[11px] text-blue-100">{user?.email}</p>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white hover:bg-blue-600"
+                className="text-white hover:bg-transparent"
                 onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
               >
                 <X className="h-4 w-4" />
@@ -264,7 +265,7 @@ export const Sidebar = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-blue-600 ml-auto"
+              className="text-white hover:bg-transparent ml-auto"
               onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
             >
               <Menu className="h-4 w-4" />
@@ -273,16 +274,15 @@ export const Sidebar = () => {
         </div>
 
         {!isDesktopCollapsed && (
-          <div className="px-4 py-3 bg-amber-50 border-b border-amber-100">
-            <div className="flex items-center gap-2 text-amber-800">
-              <Bell className="h-4 w-4" />
-              <span className="text-sm font-medium">3 pending approvals</span>
-              <Badge variant="secondary" className="ml-auto bg-amber-100 text-amber-800">New</Badge>
+          <div className="px-3 py-2 bg-[color:var(--brand-light)] border-b">
+            <div className="flex items-center gap-2 text-[color:var(--brand-navy)]">
+              <Bell className="h-3.5 w-3.5" />
+              <span className="text-xs">3 pending approvals</span>
             </div>
           </div>
         )}
 
-        <nav className="flex-1 px-4 py-6 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 overflow-y-auto">
           <NavItems />
         </nav>
 
