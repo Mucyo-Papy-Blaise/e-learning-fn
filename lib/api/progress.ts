@@ -3,10 +3,9 @@ import { UserProgress, CourseProgress } from '../types/progress';
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function fetchUserProgress(userId: string): Promise<UserProgress[]> {
-  const response = await fetch(`${API_URL}/api/progress`,{
+  const response = await fetch(`${API_URL}/api/student/dashboard`,{
     headers: {
-      'Content-Type': 'application/json',
-      "Authorization": `Bearer ${localStorage.getItem("token")}`, // Add token here
+      "Authorization": `Bearer ${localStorage.getItem("token")}`,
     },
   });
   if (!response.ok) throw new Error('Failed to fetch user progress');
@@ -14,10 +13,9 @@ export async function fetchUserProgress(userId: string): Promise<UserProgress[]>
 }
 
 export async function fetchCourseProgress(courseId: string): Promise<CourseProgress> {
-  const response = await fetch(`${API_URL}/api/enrollement/${courseId}`,{
+  const response = await fetch(`${API_URL}/api/student/courses/${courseId}/progress`,{
     headers: {
-      'Content-Type': 'application/json',
-      "Authorization": `Bearer ${localStorage.getItem("token")}`, // Add token here
+      "Authorization": `Bearer ${localStorage.getItem("token")}`,
     },
   });
   if (!response.ok) throw new Error('Failed to fetch course progress');
@@ -29,13 +27,17 @@ export async function updateLessonProgress(
   lessonId: string,
   data: Partial<UserProgress>
 ): Promise<UserProgress> {
-  const response = await fetch(`${API_URL}/api/progress/lessons/${lessonId}`, {
-    method: 'PUT',
+  const formData = new FormData();
+  formData.append('completed', String((data as any).completed ?? data.is_completed ?? true));
+  if ((data as any).progress_percentage !== undefined) {
+    formData.append('progress_percentage', String((data as any).progress_percentage));
+  }
+  const response = await fetch(`${API_URL}/api/student/lessons/${lessonId}/complete`, {
+    method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      "Authorization": `Bearer ${localStorage.getItem("token")}`, // Add token here
+      "Authorization": `Bearer ${localStorage.getItem("token")}`,
     },
-    body: JSON.stringify(data),
+    body: formData,
   });
   if (!response.ok) throw new Error('Failed to update lesson progress');
   return response.json();

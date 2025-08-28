@@ -46,10 +46,11 @@ export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: Submiss
         formData.append("file", data.file);
       }
 
-      const response = await fetch(`${API_URL}/api/submissions/${assignmentId}`, {
+      // Use documented endpoint: POST /api/assignments/:assignmentId/submit
+      const response = await fetch(`${API_URL}/api/assignments/${assignmentId}/submit`, {
         method: "POST",
         headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`, // Add token here
+        "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
         body: formData,
       });

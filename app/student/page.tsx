@@ -9,6 +9,7 @@ import { IEnrollment } from "@/types/education";
 import { useEducation } from "@/context/educationContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { fetchStudentDashboard, fetchStudentNotifications, fetchStudentCalendar } from "@/lib/api/student";
 
 function DashboardOverview() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -20,94 +21,40 @@ function DashboardOverview() {
     useEducation();
   const router = useRouter();
 
-  // Mock data for new features
-  const mockAnnouncements = [
-    {
-      id: 1,
-      type: "message",
-      title: "New Message from Dr. Smith",
-      content: "Your midterm exam results are now available. Great job!",
-      time: "2 hours ago",
-      priority: "high",
-      read: false
-    },
-    {
-      id: 2,
-      type: "update",
-      title: "Platform Update Available",
-      content: "New features added: Interactive whiteboards and live collaboration tools.",
-      time: "1 day ago",
-      priority: "medium",
-      read: false
-    },
-    {
-      id: 3,
-      type: "announcement",
-      title: "Course Material Update",
-      content: "Advanced JavaScript course has new video lectures available.",
-      time: "3 days ago",
-      priority: "low",
-      read: true
-    }
-  ];
-
-  const mockDeadlines = [
-    {
-      id: 1,
-      type: "quiz",
-      title: "React Fundamentals Quiz",
-      course: "Web Development Bootcamp",
-      dueDate: "2025-07-25",
-      dueTime: "11:59 PM",
-      priority: "urgent",
-      status: "pending"
-    },
-    {
-      id: 2,
-      type: "assignment",
-      title: "Database Design Project",
-      course: "Full Stack Development",
-      dueDate: "2025-07-28",
-      dueTime: "5:00 PM",
-      priority: "high",
-      status: "started"
-    },
-    {
-      id: 3,
-      type: "task",
-      title: "Complete Chapter 5 Reading",
-      course: "Data Structures & Algorithms",
-      dueDate: "2025-07-30",
-      dueTime: "End of day",
-      priority: "medium",
-      status: "pending"
-    }
-  ];
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [calendarItems, setCalendarItems] = useState<any[]>([]);
 
   const fetchDashboard = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/progress/dashboard`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (response.data && Array.isArray(response.data)) {
-        setDashboard(response.data);
+      const data = await fetchStudentDashboard();
+      if (data && Array.isArray(data)) {
+        setDashboard(data);
+      } else if (data?.enrollments && Array.isArray(data.enrollments)) {
+        setDashboard(data.enrollments);
       } else {
-        console.log(response.data);
         throw new Error("Invalid response data");
       }
     } catch (error) {
-      console.log(error);
       setError("Error fetching dashboard data");
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchAuxiliaryData = async () => {
+    try {
+      const [notif, cal] = await Promise.all([
+        fetchStudentNotifications().catch(() => []),
+        fetchStudentCalendar().catch(() => []),
+      ]);
+      setNotifications(Array.isArray(notif) ? notif : []);
+      setCalendarItems(Array.isArray(cal) ? cal : []);
+    } catch {}
+  };
+
   useEffect(() => {
     fetchDashboard();
+    fetchAuxiliaryData();
   }, []);
 
   useEffect(() => {
@@ -301,13 +248,13 @@ function DashboardOverview() {
                       </CardTitle>
                     </div>
                     <span className="text-sm text-gray-500">
-                      {mockAnnouncements.filter(a => !a.read).length} new
+                      {notifications.filter(a => !a.read).length} new
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockAnnouncements.map((announcement) => (
+                    {notifications.map((announcement: any) => (
                       <div
                         key={announcement.id}
                         className={`p-4 rounded-lg border transition-colors duration-200 hover:bg-gray-50 ${
@@ -330,7 +277,7 @@ function DashboardOverview() {
                               </span>
                             </div>
                             <p className="text-gray-600 text-sm mb-2">{announcement.content}</p>
-                            <span className="text-xs text-gray-500">{announcement.time}</span>
+                            <span className="text-xs text-gray-500">{announcement.time || ''}</span>
                           </div>
                         </div>
                       </div>
@@ -460,8 +407,8 @@ function DashboardOverview() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockDeadlines.map((deadline) => {
-                      const daysLeft = getDaysUntilDeadline(deadline.dueDate);
+                    {calendarItems.map((deadline: any) => {
+                      const daysLeft = getDaysUntilDeadline(deadline.dueDate || deadline.due_date);
                       return (
                         <div
                           key={deadline.id}
@@ -485,10 +432,10 @@ function DashboardOverview() {
                             </span>
                           </div>
                           <h4 className="font-semibold text-gray-900 mb-1">{deadline.title}</h4>
-                          <p className="text-sm text-gray-600 mb-2">{deadline.course}</p>
+                          <p className="text-sm text-gray-600 mb-2">{deadline.course || ''}</p>
                           <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                            <span>Due: {new Date(deadline.dueDate).toLocaleDateString()}</span>
-                            <span>{deadline.dueTime}</span>
+                            <span>Due: {new Date(deadline.dueDate || deadline.due_date).toLocaleDateString()}</span>
+                            <span>{deadline.dueTime || ''}</span>
                           </div>
                           <button className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
                             {deadline.type === 'quiz' ? 'Start Quiz' : 
