@@ -69,6 +69,17 @@ GET /notifications - Get user notifications
 GET /certificates - Get user certificates
 ```
 
+#### Student Routes (`/api/student`)
+```
+GET /dashboard - Comprehensive student dashboard
+GET /courses/:courseId/progress - Detailed course progress
+GET /calendar - Deadlines calendar
+POST /lessons/:lessonId/complete - Mark lesson as complete (FormData)
+GET /grades/:courseId - Grades for a specific course
+GET /courses - Enrolled courses (alias of /api/enrollement)
+GET /submissions - Authenticated student's submissions
+```
+
 #### Other Routes
 ```
 GET /api/institutions - Get institutions

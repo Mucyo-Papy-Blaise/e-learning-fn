@@ -3,73 +3,44 @@
 import { GraduationCap, Eye, Download } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { fetchStudentGrades } from "@/lib/api/student"
 
-// Mock grades data
-const gradesData = [
-  {
-    id: "term-paper-summative",
-    title: "Term Paper_Module Summative",
-    score: "18/20",
-    percentage: "90%",
-    status: "Graded",
-    dueDate: "Jul 31",
-    submittedDate: "Jul 30",
-  },
-  {
-    id: "create-your-first-podcast",
-    title: "Create Your First Podcast_Formative Assignment",
-    score: "16/20",
-    percentage: "80%",
-    status: "Graded",
-    dueDate: "Jun 29",
-    submittedDate: "Jun 28",
-  },
-  {
-    id: "essay-outline",
-    title: "Essay Outline_Formative Assignment",
-    score: "Incomplete",
-    percentage: "0%",
-    status: "Not Submitted",
-    dueDate: "Jun 18",
-    submittedDate: "-",
-  },
-  {
-    id: "persuasive-mission-presentation",
-    title: "Persuasive Mission Presentation_Formative Assignment",
-    score: "Pending",
-    percentage: "Pending",
-    status: "Submitted",
-    dueDate: "Jul 11",
-    submittedDate: "Jul 10",
-  },
-  {
-    id: "reflection-activity",
-    title: "Reflection Activity",
-    score: "15/15",
-    percentage: "100%",
-    status: "Graded",
-    dueDate: "Jul 8",
-    submittedDate: "Jul 7",
-  },
-]
+interface GradeRow {
+  _id: string
+  title?: string
+  score?: number
+  max_points?: number
+  status?: string
+  due_date?: string
+  submitted_at?: string
+}
 
 export default function CourseGradesPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
+  const [gradesData, setGradesData] = useState<GradeRow[]>([])
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchStudentGrades(courseId)
+        setGradesData(Array.isArray(data) ? data : [])
+      } catch {
+        setGradesData([])
+      }
+    }
+    load()
+  }, [courseId])
 
   const calculateOverallGrade = () => {
-    const gradedAssignments = gradesData.filter(grade => grade.status === "Graded" && grade.score !== "Incomplete")
+    const gradedAssignments = gradesData.filter(grade => grade.status === "Graded" && typeof grade.score === 'number' && typeof grade.max_points === 'number')
     if (gradedAssignments.length === 0) return "N/A"
-    
     const totalPoints = gradedAssignments.reduce((sum, grade) => {
-      const [score] = grade.score.split('/')
-      return sum + parseInt(score)
+      return sum + (grade.score as number)
     }, 0)
-    
     const maxPoints = gradedAssignments.reduce((sum, grade) => {
-      const [, max] = grade.score.split('/')
-      return sum + parseInt(max)
+      return sum + (grade.max_points as number)
     }, 0)
-    
     return `${totalPoints}/${maxPoints} (${Math.round((totalPoints / maxPoints) * 100)}%)`
   }
 
@@ -153,24 +124,18 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {gradesData.map((grade) => (
-                  <tr key={grade.id} className="hover:bg-gray-50">
+                  <tr key={grade._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{grade.title}</div>
+                      <div className="text-sm font-medium text-gray-900">{grade.title || ''}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-sm font-medium ${
-                        grade.score === "Incomplete" ? "text-red-600" : 
-                        grade.score === "Pending" ? "text-yellow-600" : "text-green-600"
-                      }`}>
-                        {grade.score}
+                      <span className="text-sm font-medium text-green-600">
+                        {typeof grade.score === 'number' && typeof grade.max_points === 'number' ? `${grade.score}/${grade.max_points}` : ''}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`text-sm ${
-                        grade.percentage === "0%" ? "text-red-600" : 
-                        grade.percentage === "Pending" ? "text-yellow-600" : "text-green-600"
-                      }`}>
-                        {grade.percentage}
+                      <span className="text-sm text-green-600">
+                        {typeof grade.score === 'number' && typeof grade.max_points === 'number' ? `${Math.round((grade.score / grade.max_points) * 100)}%` : ''}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -183,10 +148,10 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {grade.dueDate}
+                      {grade.due_date ? new Date(grade.due_date).toLocaleDateString() : ''}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {grade.submittedDate}
+                      {grade.submitted_at ? new Date(grade.submitted_at).toLocaleDateString() : ''}
                     </td>
                   </tr>
                 ))}

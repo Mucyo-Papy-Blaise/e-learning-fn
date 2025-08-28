@@ -3,6 +3,8 @@ import { ArrowLeft, ArrowRight, BookMarked, Share2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { fetchModulesByCourseId } from "@/lib/api/courses"
 
 export default function CoursePageContent({
   params,
@@ -10,7 +12,22 @@ export default function CoursePageContent({
   params: { courseId: string; pageId: string }
 }) {
   const { courseId, pageId } = params
-  const page = pageContentData[pageId as keyof typeof pageContentData]
+  const [page, setPage] = useState<any | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const modules = await fetchModulesByCourseId(courseId)
+        const allItems = (modules || []).flatMap((m: any) => (m.items || m.lessons || []))
+        const found = allItems.find((it: any) => (it.url || it._id) === pageId)
+        if (found) setPage(found)
+        else setPage(pageContentData[pageId as keyof typeof pageContentData] || null)
+      } catch {
+        setPage(pageContentData[pageId as keyof typeof pageContentData] || null)
+      }
+    }
+    load()
+  }, [courseId, pageId])
 
   if (!page) {
     return (

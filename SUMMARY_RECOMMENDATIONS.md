@@ -48,6 +48,7 @@ Your e-learning platform has a **solid foundation** with modern architecture and
 2. **Fix Assignment Interface** - Align with corrected backend model
 3. **Add Error Handling** - Implement proper error boundaries
 4. **Complete File Upload** - Assignment submission interface
+5. **Wire Student Subpages** - Assignments, Grades, Modules, Pages, Syllabus to live APIs
 
 ## 📋 Missing Features Priority List
 

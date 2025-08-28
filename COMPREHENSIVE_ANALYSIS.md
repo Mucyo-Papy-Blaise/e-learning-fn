@@ -78,6 +78,8 @@ GET /api/student/announcements/{courseId}
 POST /api/student/lessons/{lessonId}/complete
 GET /api/student/notifications
 GET /api/student/calendar
+GET /api/student/courses
+GET /api/student/submissions
 ```
 
 **Instructor Endpoints (10 missing)**

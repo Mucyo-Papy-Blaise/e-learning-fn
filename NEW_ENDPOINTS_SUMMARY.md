@@ -156,6 +156,9 @@ GET    /api/student/dashboard
 GET    /api/student/courses/:courseId/progress
 GET    /api/student/calendar
 POST   /api/student/lessons/:lessonId/complete
+GET    /api/student/grades/:courseId
+GET    /api/student/courses                 # enrolled courses for the student (alias of /api/enrollement)
+GET    /api/student/submissions             # authenticated student's submissions (assignments/quizzes)
 ```
 
 ### Instructor Endpoints
@@ -205,6 +208,8 @@ GET    /api/courses/catalog
 GET    /api/courses/search
 GET    /api/courses/:courseId/analytics
 POST   /api/courses/:courseId/enroll
+GET    /api/courses/:courseId/modules       # modules for a course
+GET    /api/courses/modules/:moduleId/lessons
 ```
 
 ## 🔒 Security Features

@@ -3,88 +3,52 @@
 import { Book, Calendar, Clock, Users, FileText, Download } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { fetchCourseById } from "@/lib/api/courses"
 
-// Mock syllabus data
-const syllabusData = {
+interface SyllabusData {
   courseInfo: {
-    title: "Communicating for Impact",
-    code: "COM101",
-    credits: "3 Credits",
-    term: "2025 May Term",
-    instructor: "Dr. Sarah Johnson",
-    email: "sarah.johnson@cdy.edu",
-    officeHours: "Mon/Wed 2:00-4:00 PM",
-    officeLocation: "Building A, Room 205",
-  },
-  description: "This course explores the fundamentals of effective communication in various contexts. Students will learn to craft compelling messages, understand audience dynamics, and deliver impactful presentations. Through practical assignments and real-world applications, students will develop essential communication skills for academic and professional success.",
-  objectives: [
-    "Develop clear and persuasive written communication skills",
-    "Master public speaking and presentation techniques",
-    "Understand audience analysis and message adaptation",
-    "Learn effective listening and feedback strategies",
-    "Apply communication principles to real-world scenarios"
-  ],
-  schedule: [
-    {
-      week: "Week 1",
-      topic: "Introduction to Communication Theory",
-      readings: "Chapter 1: Communication Fundamentals",
-      assignments: "Discussion Post: Communication in Daily Life"
-    },
-    {
-      week: "Week 2",
-      topic: "Academic Writing Basics",
-      readings: "Chapter 2: Writing for Academic Audiences",
-      assignments: "Essay Outline Assignment"
-    },
-    {
-      week: "Week 3",
-      topic: "Argumentative Writing",
-      readings: "Chapter 3: Building Strong Arguments",
-      assignments: "Argumentative Essay Draft"
-    },
-    {
-      week: "Week 4",
-      topic: "Voice and Audience",
-      readings: "Chapter 4: Adapting Your Voice",
-      assignments: "Podcast Creation Assignment"
-    },
-    {
-      week: "Week 5",
-      topic: "Storytelling and Narrative",
-      readings: "Chapter 5: The Art of Storytelling",
-      assignments: "Story Mapping Exercise"
-    },
-    {
-      week: "Week 6",
-      topic: "Public Speaking",
-      readings: "Chapter 6: Speech Preparation and Delivery",
-      assignments: "Persuasive Speech Presentation"
-    },
-    {
-      week: "Week 7",
-      topic: "Course Review and Final Project",
-      readings: "Review all course materials",
-      assignments: "Term Paper Submission"
-    }
-  ],
-  grading: {
-    participation: { percentage: 15, description: "Class participation and discussions" },
-    assignments: { percentage: 40, description: "Weekly assignments and projects" },
-    presentations: { percentage: 25, description: "Oral presentations and speeches" },
-    finalProject: { percentage: 20, description: "Comprehensive term paper" }
-  },
-  policies: [
-    "Late assignments will be accepted up to 24 hours after the due date with a 10% penalty",
-    "Attendance is required for all class sessions",
-    "All written work must be submitted through the course platform",
-    "Plagiarism will result in immediate course failure",
-    "Students must participate in at least 80% of class discussions"
-  ]
+    title: string
+    code?: string
+    credits?: string
+    term?: string
+    instructor?: string
+    email?: string
+    officeHours?: string
+    officeLocation?: string
+  }
+  description?: string
+  objectives?: string[]
+  schedule?: { week: string; topic: string; readings?: string; assignments?: string }[]
+  grading?: Record<string, { percentage: number; description: string }>
+  policies?: string[]
+}
+
+const defaultSyllabus: SyllabusData = {
+  courseInfo: { title: "" },
 }
 
 export default function CourseSyllabusPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
+  const [syllabusData, setSyllabusData] = useState<SyllabusData>(defaultSyllabus)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const course = await fetchCourseById(courseId)
+        setSyllabusData({
+          courseInfo: {
+            title: course?.title || '',
+            instructor: course?.instructor?.full_name || '',
+          },
+          description: course?.description || '',
+        })
+      } catch {
+        setSyllabusData(defaultSyllabus)
+      }
+    }
+    load()
+  }, [courseId])
 
   return (
     <div className="flex flex-1 flex-col">
