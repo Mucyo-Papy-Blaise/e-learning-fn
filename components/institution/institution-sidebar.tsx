@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   BookOpen,
   LayoutDashboard,
@@ -16,18 +16,14 @@ import {
   ChevronDown,
   Building2,
   LogOut,
-  Youtube,
   ChevronRight,
 } from "lucide-react"
+import { useAuth } from "@/lib/hooks/use-auth"
+import { usePathname } from "next/navigation"
+import axios from "axios"
+import { API_URL } from "@/lib/api/courses"
 
-// Mock data - replace with your actual hooks
-const mockUser = {
-  name: "Will Lens",
-  email: "willens@gmail.com",
-  institution: { name: "EduTube" }
-}
-
-const mockPathname = "/instructor/courses"
+// Removed mocks; using real auth and pathname
 
 const navigation = [
   { name: "Dashboard", href: "/instructor", icon: LayoutDashboard, badge: null },
@@ -42,12 +38,7 @@ const navigation = [
       { name: "Course Analytics", href: "/instructor/analytics" },
     ],
   },
-  { 
-    name: "Instructor", 
-    href: "/instructor/instructor", 
-    icon: UserCheck, 
-    badge: null,
-  },
+  { name: "Instructors", href: "/institution/instructors", icon: UserCheck, badge: null },
   { 
     name: "Communication", 
     href: "/instructor/announcements", 
@@ -74,11 +65,30 @@ const navigation = [
 const cn = (...classes: (string | boolean | undefined)[]): string => classes.filter(Boolean).join(' ')
 
 export default function InstitutionSidebar() {
-  const pathname = mockPathname // Replace with usePathname()
+  const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
-  const user = mockUser // Replace with useAuth()
+  const { user } = useAuth()
+  const [instructors, setInstructors] = useState<Array<{ full_name: string; email: string; institution?: { id?: string } }>>([])
+
+  useEffect(() => {
+    const fetchInstructors = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return
+        const res = await axios.get(`${API_URL}/api/institutions/instructors/all`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const data = Array.isArray(res.data) ? res.data : res.data?.instructors || []
+        const filtered = user?.institution?.id ? data.filter((i: any) => i?.institution?.id === user.institution.id) : data
+        setInstructors(filtered)
+      } catch (_e) {
+        setInstructors([])
+      }
+    }
+    fetchInstructors()
+  }, [user])
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems((prev) =>
@@ -188,17 +198,17 @@ export default function InstitutionSidebar() {
           !isMobile && isDesktopCollapsed && "justify-center"
         )}
       >
-        <div className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-          {user?.name?.substring(0, 2).toUpperCase() || 'WL'}
+        <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+          {user?.full_name?.substring(0, 2).toUpperCase() || 'NA'}
         </div>
         {(!isDesktopCollapsed || isMobile) && (
           <>
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-medium truncate">
-                {user?.name || 'Will Lens'}
+                {user?.full_name || 'User'}
               </p>
               <p className="text-gray-400 text-xs truncate">
-                {user?.email || 'willens@gmail.com'}
+                {user?.email || ''}
               </p>
             </div>
             <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -241,10 +251,7 @@ export default function InstitutionSidebar() {
               <X className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="bg-red-600 p-1.5 rounded">
-                <Youtube size={18} className="text-white" />
-              </div>
-              <span className="text-white font-semibold text-lg">EduTube</span>
+              <span className="text-white font-semibold text-lg">{user?.institution?.name || 'Institution'}</span>
             </div>
           </div>
 
@@ -270,10 +277,7 @@ export default function InstitutionSidebar() {
           </button>
           {!isDesktopCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="bg-red-600 p-1.5 rounded">
-                <Youtube size={18} className="text-white" />
-              </div>
-              <span className="text-white font-semibold text-lg">EduTube</span>
+              <span className="text-white font-semibold text-lg">{user?.institution?.name || 'Institution'}</span>
             </div>
           )}
         </div>
@@ -281,6 +285,20 @@ export default function InstitutionSidebar() {
         {/* Navigation */}
         <nav className="flex-1 px-2 py-4 overflow-y-auto">
           <NavItems />
+          <div className="mt-4 border-t border-gray-700 pt-4">
+            <h3 className="text-gray-400 text-xs font-medium uppercase tracking-wider px-2 mb-2">Instructors</h3>
+            <div className="space-y-2">
+              {instructors.map((ins, idx) => (
+                <div key={idx} className="px-3 py-2 rounded-lg hover:bg-gray-700">
+                  <p className="text-sm text-white truncate">{ins.full_name}</p>
+                  <p className="text-xs text-gray-400 truncate">{ins.email}</p>
+                </div>
+              ))}
+              {instructors.length === 0 && (
+                <p className="text-xs text-gray-500 px-3">No instructors found</p>
+              )}
+            </div>
+          </div>
         </nav>
 
         <UserProfile />

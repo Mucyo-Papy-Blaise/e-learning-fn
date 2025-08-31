@@ -16,18 +16,12 @@ import {
   ChevronDown,
   Building2,
   LogOut,
-  Youtube,
   ChevronRight,
 } from "lucide-react"
+import { useAuth } from "@/lib/hooks/use-auth"
+import { usePathname } from "next/navigation"
 
-// Mock data - replace with your actual hooks
-const mockUser = {
-  name: "Will Lens",
-  email: "willens@gmail.com",
-  institution: { name: "EduTube" }
-}
-
-const mockPathname = "/instructor/courses"
+// Removed mocks; using real auth data and current pathname
 
 const navigation = [
   { name: "Dashboard", href: "/instructor", icon: LayoutDashboard, badge: null },
@@ -80,11 +74,11 @@ const navigation = [
 const cn = (...classes: (string | boolean | undefined)[]): string => classes.filter(Boolean).join(' ')
 
 export default function InstructorSidebar() {
-  const pathname = mockPathname // Replace with usePathname()
+  const pathname = usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
-  const user = mockUser // Replace with useAuth()
+  const { user } = useAuth()
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems((prev) =>
@@ -180,7 +174,8 @@ export default function InstructorSidebar() {
   )
 
   const UserProfile = ({ isMobile = false }: { isMobile?: boolean }) => (
-    <div className={cn("border-t border-gray-700 pt-4 mt-4", !isMobile && isDesktopCollapsed ? "px-2" : "px-2")}>
+    <div className={cn("border-t border-gray-700 pt-4 mt-4", !isMobile && isDesktopCollapsed ? "px-2" : "px-2")}
+    >
       {(!isDesktopCollapsed || isMobile) && (
         <div className="px-2 mb-3">
           <h3 className="text-gray-400 text-xs font-medium uppercase tracking-wider">
@@ -195,16 +190,16 @@ export default function InstructorSidebar() {
         )}
       >
         <div className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-          {user?.name?.substring(0, 2).toUpperCase() || 'WL'}
+          {user?.full_name?.substring(0, 2).toUpperCase() || 'NA'}
         </div>
         {(!isDesktopCollapsed || isMobile) && (
           <>
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-medium truncate">
-                {user?.name || 'Will Lens'}
+                {user?.full_name || 'User'}
               </p>
               <p className="text-gray-400 text-xs truncate">
-                {user?.email || 'willens@gmail.com'}
+                {user?.email || ''}
               </p>
             </div>
             <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -247,10 +242,7 @@ export default function InstructorSidebar() {
               <X className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="bg-red-600 p-1.5 rounded">
-                <Youtube size={18} className="text-white" />
-              </div>
-              <span className="text-white font-semibold text-lg">EduTube</span>
+              <span className="text-white font-semibold text-lg">{user?.institution?.name || 'Institution'}</span>
             </div>
           </div>
 
@@ -276,10 +268,7 @@ export default function InstructorSidebar() {
           </button>
           {!isDesktopCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="bg-red-600 p-1.5 rounded">
-                <Youtube size={18} className="text-white" />
-              </div>
-              <span className="text-white font-semibold text-lg">EduTube</span>
+              <span className="text-white font-semibold text-lg">{user?.institution?.name || 'Institution'}</span>
             </div>
           )}
         </div>
