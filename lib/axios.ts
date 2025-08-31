@@ -15,7 +15,7 @@ const MAX_RETRIES = {
 const RETRY_DELAY = 1000; 
 
 // Create axios instance with default config
-const axiosInstance: AxiosInstance = axios.create({
+export const axiosInstance: AxiosInstance = axios.create({
     baseURL: API_URL,
     timeout: 10000, // 10 seconds timeout
     headers: {

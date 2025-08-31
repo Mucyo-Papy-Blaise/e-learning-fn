@@ -84,7 +84,7 @@ export const CourseDetails = ({ courseId }: { courseId: string }) => {
           </Button>
           
           <a 
-            href={`/instructor/courses/${courseId}/exam`} 
+            href={`/instructor/exams/new`} 
             className="flex-1 sm:flex-none"
           >
             <Button className="w-full h-12 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">

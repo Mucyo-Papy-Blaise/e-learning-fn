@@ -39,7 +39,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
         setSyllabusData({
           courseInfo: {
             title: course?.title || '',
-            instructor: course?.instructor?.full_name || '',
+            instructor: course?.instructor_id || '',
           },
           description: course?.description || '',
         })
@@ -130,7 +130,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Learning Objectives</h3>
           <ul className="space-y-2">
-            {syllabusData.objectives.map((objective, index) => (
+            {syllabusData.objectives?.map((objective, index) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="text-blue-600 font-bold text-sm">•</span>
                 <span className="text-sm text-gray-700">{objective}</span>
@@ -153,7 +153,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {syllabusData.schedule.map((week, index) => (
+                {syllabusData.schedule?.map((week, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{week.week}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{week.topic}</td>
@@ -169,7 +169,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
         {/* Grading Policy */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Grading Policy</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(syllabusData.grading).map(([key, value]) => (
               <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
@@ -179,20 +179,20 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
                 <span className="text-lg font-bold text-blue-600">{value.percentage}%</span>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
 
         {/* Course Policies */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Course Policies</h3>
-          <ul className="space-y-2">
-            {syllabusData.policies.map((policy, index) => (
+          {/* <ul className="space-y-2">
+            {syllabusData?.policies.map((policy, index) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="text-red-600 font-bold text-sm">•</span>
                 <span className="text-sm text-gray-700">{policy}</span>
               </li>
             ))}
-          </ul>
+          </ul> */}
         </div>
       </main>
     </div>

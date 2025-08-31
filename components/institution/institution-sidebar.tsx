@@ -43,16 +43,10 @@ const navigation = [
     ],
   },
   { 
-    name: "Content & Assessment", 
-    href: "/instructor/assignments", 
+    name: "Instructor", 
+    href: "/instructor/instructor", 
     icon: UserCheck, 
     badge: null,
-    subItems: [
-      { name: "Assignments", href: "/instructor/assignments" },
-      { name: "Exams", href: "/instructor/exams" },
-      { name: "Quizzes", href: "/instructor/quizzes" },
-      { name: "Resources", href: "/instructor/resources" },
-    ]
   },
   { 
     name: "Communication", 
@@ -79,7 +73,7 @@ const navigation = [
 
 const cn = (...classes: (string | boolean | undefined)[]): string => classes.filter(Boolean).join(' ')
 
-export default function InstructorSidebar() {
+export default function InstitutionSidebar() {
   const pathname = mockPathname // Replace with usePathname()
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false)
@@ -215,7 +209,7 @@ export default function InstructorSidebar() {
   )
 
   return (
-    <div className="flex min-h-screen bg-gray-900">
+    <div className="flex min-h-screen">
       {/* Mobile Menu Button */}
       <button
         className="md:hidden fixed top-4 left-4 z-50 p-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg shadow-lg"
@@ -291,6 +285,6 @@ export default function InstructorSidebar() {
 
         <UserProfile />
       </div>
-    </div>
+      </div>
   )
 }

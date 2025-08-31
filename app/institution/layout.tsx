@@ -1,6 +1,5 @@
 "use client";
-
-import InstructorSidebar from "@/components/instructor/sidebar";
+import InstitutionSidebar from "@/components/institution/institution-sidebar";
 import { useAuth } from "@/lib/hooks/use-auth";
 import { redirect } from "next/navigation";
 
@@ -17,7 +16,7 @@ export default function InstructorLayout({
 
   return (
     <div className="flex h-screen">
-      <InstructorSidebar />
+      <InstitutionSidebar />
       <main className="flex-1 overflow-y-auto bg-gray-50 p-8">
         {children}
       </main>

@@ -2,8 +2,11 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AuthState, User, LoginCredentials, RegisterData } from '@/lib/types/auth';
-import { toast, ToastContainer } from 'react-toastify';  // Import Toastify's toast function
-const API_URL = process.env.NEXT_PUBLIC_API_URL 
+import { toast, ToastContainer } from 'react-toastify'; 
+import axios from 'axios';
+
+
+export const API_URL = process.env.NEXT_PUBLIC_API_URL 
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -89,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (credentials: LoginCredentials) => {
-
+    console.log('Login Payload sent:', credentials)
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
@@ -108,8 +111,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success("Logged in successfully");
       if (data.user.role === 'student') {
         window.location.href='/student';  // Redirect to student page
-      } else if (data.user.role === 'institution' || data.user.role==='instructor') {
-        window.location.href='/instructor';  // Redirect to instructor page
+      } else if (data.user.role === 'institution' ) {
+        window.location.href='/institution';  // Redirect to Institution page
+      }else{
+        window.location.href = '/instructor' //Redirect to instructor page
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');

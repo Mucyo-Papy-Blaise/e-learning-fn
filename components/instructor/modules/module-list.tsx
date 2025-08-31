@@ -19,7 +19,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { LessonForm } from "../lessons/lesson-form";
-import { CreateAssignmentForm } from "@/components/assignments/instructor/CreateAssignmentForm";
 
 interface Module {
   _id: string;
@@ -38,8 +37,6 @@ export function ModuleList({
 }) {
   const [activeModule, setActiveModule] = useState<string | null>(null);
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
-  const [isAddAssignmentOpen, setIsAddAssignmentOpen] = useState(false);
-  const [currentModuleId, setCurrentModuleId] = useState<string | null>(null);
 
   return (
     <Accordion
@@ -73,31 +70,25 @@ export function ModuleList({
                   Add Lesson
                 </Button>
               </Link>
-              {/* Add Assignment Dialog */}
-                
-                {/* <DialogTrigger asChild> */}
-                  <Button variant="outline" style={{ borderColor: 'green', color: 'blue' }} size="sm" onClick={() => window.location.href=`/instructor/assignments/${module._id}`}>
-                    
-                     View Assignment
-                  </Button>
-                {/* </DialogTrigger> */}
-              <Dialog open={isAddAssignmentOpen} onOpenChange={setIsAddAssignmentOpen}>
-              <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentModuleId(module._id)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Assignment
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Assignment</DialogTitle>
-                  </DialogHeader>
-                  <CreateAssignmentForm
-                    moduleId={currentModuleId || ''}
-                    onSuccess={() => setIsAddAssignmentOpen(false)}
-                  />
-                </DialogContent>
-              </Dialog>
+              
+              {/* View Assignments Button */}
+              <Link href={`/instructor/assignments/${module._id}`}>
+                <Button 
+                  variant="outline" 
+                  style={{ borderColor: 'green', color: 'blue' }} 
+                  size="sm"
+                >
+                  View Assignments
+                </Button>
+              </Link>
+
+              {/* Add Assignment Button - Now navigates to a page */}
+              <Link href={`/instructor/courses/${courseId}/modules/${module._id}/assignement/new`}>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Assignment
+                </Button>
+              </Link>
             </div>
           </div>
           <AccordionContent>
@@ -113,4 +104,3 @@ export function ModuleList({
     </Accordion>
   );
 }
-
