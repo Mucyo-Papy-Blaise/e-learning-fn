@@ -3,88 +3,52 @@
 import { Book, Calendar, Clock, Users, FileText, Download } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { fetchCourseById } from "@/lib/api/courses"
 
-// Mock syllabus data
-const syllabusData = {
+interface SyllabusData {
   courseInfo: {
-    title: "Communicating for Impact",
-    code: "COM101",
-    credits: "3 Credits",
-    term: "2025 May Term",
-    instructor: "Dr. Sarah Johnson",
-    email: "sarah.johnson@cdy.edu",
-    officeHours: "Mon/Wed 2:00-4:00 PM",
-    officeLocation: "Building A, Room 205",
-  },
-  description: "This course explores the fundamentals of effective communication in various contexts. Students will learn to craft compelling messages, understand audience dynamics, and deliver impactful presentations. Through practical assignments and real-world applications, students will develop essential communication skills for academic and professional success.",
-  objectives: [
-    "Develop clear and persuasive written communication skills",
-    "Master public speaking and presentation techniques",
-    "Understand audience analysis and message adaptation",
-    "Learn effective listening and feedback strategies",
-    "Apply communication principles to real-world scenarios"
-  ],
-  schedule: [
-    {
-      week: "Week 1",
-      topic: "Introduction to Communication Theory",
-      readings: "Chapter 1: Communication Fundamentals",
-      assignments: "Discussion Post: Communication in Daily Life"
-    },
-    {
-      week: "Week 2",
-      topic: "Academic Writing Basics",
-      readings: "Chapter 2: Writing for Academic Audiences",
-      assignments: "Essay Outline Assignment"
-    },
-    {
-      week: "Week 3",
-      topic: "Argumentative Writing",
-      readings: "Chapter 3: Building Strong Arguments",
-      assignments: "Argumentative Essay Draft"
-    },
-    {
-      week: "Week 4",
-      topic: "Voice and Audience",
-      readings: "Chapter 4: Adapting Your Voice",
-      assignments: "Podcast Creation Assignment"
-    },
-    {
-      week: "Week 5",
-      topic: "Storytelling and Narrative",
-      readings: "Chapter 5: The Art of Storytelling",
-      assignments: "Story Mapping Exercise"
-    },
-    {
-      week: "Week 6",
-      topic: "Public Speaking",
-      readings: "Chapter 6: Speech Preparation and Delivery",
-      assignments: "Persuasive Speech Presentation"
-    },
-    {
-      week: "Week 7",
-      topic: "Course Review and Final Project",
-      readings: "Review all course materials",
-      assignments: "Term Paper Submission"
-    }
-  ],
-  grading: {
-    participation: { percentage: 15, description: "Class participation and discussions" },
-    assignments: { percentage: 40, description: "Weekly assignments and projects" },
-    presentations: { percentage: 25, description: "Oral presentations and speeches" },
-    finalProject: { percentage: 20, description: "Comprehensive term paper" }
-  },
-  policies: [
-    "Late assignments will be accepted up to 24 hours after the due date with a 10% penalty",
-    "Attendance is required for all class sessions",
-    "All written work must be submitted through the course platform",
-    "Plagiarism will result in immediate course failure",
-    "Students must participate in at least 80% of class discussions"
-  ]
+    title: string
+    code?: string
+    credits?: string
+    term?: string
+    instructor?: string
+    email?: string
+    officeHours?: string
+    officeLocation?: string
+  }
+  description?: string
+  objectives?: string[]
+  schedule?: { week: string; topic: string; readings?: string; assignments?: string }[]
+  grading?: Record<string, { percentage: number; description: string }>
+  policies?: string[]
+}
+
+const defaultSyllabus: SyllabusData = {
+  courseInfo: { title: "" },
 }
 
 export default function CourseSyllabusPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
+  const [syllabusData, setSyllabusData] = useState<SyllabusData>(defaultSyllabus)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const course = await fetchCourseById(courseId)
+        setSyllabusData({
+          courseInfo: {
+            title: course?.title || '',
+            instructor: course?.instructor_id || '',
+          },
+          description: course?.description || '',
+        })
+      } catch {
+        setSyllabusData(defaultSyllabus)
+      }
+    }
+    load()
+  }, [courseId])
 
   return (
     <div className="flex flex-1 flex-col">
@@ -166,7 +130,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Learning Objectives</h3>
           <ul className="space-y-2">
-            {syllabusData.objectives.map((objective, index) => (
+            {syllabusData.objectives?.map((objective, index) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="text-blue-600 font-bold text-sm">•</span>
                 <span className="text-sm text-gray-700">{objective}</span>
@@ -189,7 +153,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {syllabusData.schedule.map((week, index) => (
+                {syllabusData.schedule?.map((week, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">{week.week}</td>
                     <td className="px-4 py-3 text-sm text-gray-700">{week.topic}</td>
@@ -205,7 +169,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
         {/* Grading Policy */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Grading Policy</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(syllabusData.grading).map(([key, value]) => (
               <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div>
@@ -215,20 +179,20 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
                 <span className="text-lg font-bold text-blue-600">{value.percentage}%</span>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
 
         {/* Course Policies */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Course Policies</h3>
-          <ul className="space-y-2">
-            {syllabusData.policies.map((policy, index) => (
+          {/* <ul className="space-y-2">
+            {syllabusData?.policies.map((policy, index) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="text-red-600 font-bold text-sm">•</span>
                 <span className="text-sm text-gray-700">{policy}</span>
               </li>
             ))}
-          </ul>
+          </ul> */}
         </div>
       </main>
     </div>

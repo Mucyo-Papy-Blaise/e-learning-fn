@@ -173,9 +173,9 @@ export async function fetchEnrolledCourses() {
 
 export async function enrollInCourse(courseId: string) {
   try {
-    const response = await axios.post(`${API_URL}/api/courses/${courseId}/enroll`, {
-      
-    }, {
+    const formData = new FormData();
+    // Backend may not require any fields; send an empty FormData to satisfy multipart requirement
+    const response = await axios.post(`${API_URL}/api/courses/${courseId}/enroll`, formData, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },

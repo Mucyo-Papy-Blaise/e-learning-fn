@@ -3,73 +3,37 @@
 import { ClipboardList, Calendar, Clock, CheckCircle, Circle, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import axios from "axios"
 
-// Mock assignments data
-const assignmentsData = [
-  {
-    id: "term-paper-summative",
-    title: "Term Paper_Module Summative",
-    type: "Assignment",
-    points: "20 pts",
-    dueDate: "Jul 31 at 11:59pm",
-    status: "Available until Aug 4 at 11:59pm",
-    submitted: false,
-    priority: "upcoming",
-  },
-  {
-    id: "roll-call-attendance",
-    title: "Roll Call Attendance",
-    type: "Attendance",
-    points: "100 pts",
-    dueDate: "Ongoing",
-    status: "Not Yet Graded",
-    submitted: true,
-    priority: "undated",
-  },
-  {
-    id: "persuasive-mission-presentation",
-    title: "Persuasive Mission Presentation_Formative Assignment",
-    type: "Assignment",
-    points: "15 pts",
-    dueDate: "Jul 11 at 11:59pm",
-    status: "Closed | Not Yet Graded",
-    submitted: true,
-    priority: "past",
-  },
-  {
-    id: "reflection-activity",
-    title: "Reflection Activity",
-    type: "Activity",
-    points: "15 pts",
-    dueDate: "Jul 8 at 10:59pm",
-    status: "Due Jul 8 at 10:59pm",
-    submitted: true,
-    priority: "past",
-  },
-  {
-    id: "create-your-first-podcast",
-    title: "Create Your First Podcast_Formative Assignment",
-    type: "Assignment",
-    points: "20 pts",
-    dueDate: "Jun 29 at 11:59pm",
-    status: "16/20 pts",
-    submitted: true,
-    priority: "past",
-  },
-  {
-    id: "essay-outline",
-    title: "Essay Outline_Formative Assignment",
-    type: "Assignment",
-    points: "10 pts",
-    dueDate: "Jun 18 at 11:59pm",
-    status: "Closed | Incomplete",
-    submitted: false,
-    priority: "past",
-  },
-]
+interface AssignmentItem {
+  _id: string
+  title: string
+  points?: number
+  due_date?: string
+  status?: string
+  submitted?: boolean
+  type?: string
+}
 
 export default function CourseAssignmentsPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
+  const [assignmentsData, setAssignmentsData] = useState<AssignmentItem[]>([])
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/assignments/${courseId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        })
+        setAssignmentsData(Array.isArray(res.data) ? res.data : [])
+      } catch {
+        setAssignmentsData([])
+      }
+    }
+    load()
+  }, [API_URL, courseId])
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -179,13 +143,13 @@ export default function CourseAssignmentsPage({ params }: { params: { courseId: 
                         </span>
                       </div>
                       <div className="flex items-center gap-4 mt-1">
-                        <span className="text-sm text-gray-500">{assignment.points}</span>
+                        <span className="text-sm text-gray-500">{assignment.points ? `${assignment.points} pts` : ''}</span>
                         <div className="flex items-center gap-1 text-sm text-gray-500">
                           <Clock className="h-4 w-4" />
-                          {assignment.dueDate}
+                          {assignment.due_date ? new Date(assignment.due_date).toLocaleString() : ''}
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">{assignment.status}</p>
+                      <p className="text-sm text-gray-600 mt-1">{assignment.status || ''}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

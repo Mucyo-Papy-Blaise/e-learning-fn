@@ -44,7 +44,7 @@ export const CourseForm = () => {
   });
 
   const [createdCourseId, setCreatedCourseId] = useState<string | null>(null)
-  const [modulesAdded, setModulesAdded] = useState<Array<{ _id: string; title: string }>>([])
+  const [modulesAdded, setModulesAdded] = useState<Array<{ _id: string; title: string ; description: string}>>([])
   const [lessonsAdded, setLessonsAdded] = useState<Array<{ _id: string; title: string; module_id: string }>>([])
   const [isBusy, setIsBusy] = useState<boolean>(false)
 
@@ -95,8 +95,9 @@ export const CourseForm = () => {
     setIsBusy(true)
     try {
       const api = await import('@/lib/api/courses')
+      // eslint-disable-next-line @next/next/no-assign-module-variable
       const module = await api.createModule(createdCourseId, moduleTitle, moduleDescription, moduleOrder || 0)
-      setModulesAdded((prev) => [...prev, { _id: module._id, title: module.title }])
+      setModulesAdded((prev) => [...prev, { _id: module._id, title: module.title, description: module.description }])
       setLessonModuleId((id) => id || module._id)
       setModuleTitle(""); setModuleDescription(""); setModuleOrder(0)
     } catch (e) { console.error(e) } finally { setIsBusy(false) }
@@ -162,27 +163,109 @@ export const CourseForm = () => {
               )}
 
               {step === 2 && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-base font-medium text-gray-900">Add Modules</h2>
-                    <button type="button" onClick={() => setStep(3)} className="text-sm text-gray-600 underline">Skip for now</button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <input value={moduleTitle} onChange={(e) => setModuleTitle(e.target.value)} placeholder="Title" className="h-11 px-3 border border-gray-300 rounded-md" />
-                    <input value={moduleDescription} onChange={(e) => setModuleDescription(e.target.value)} placeholder="Description" className="h-11 px-3 border border-gray-300 rounded-md" />
-                    <input type="number" value={moduleOrder} onChange={(e) => setModuleOrder(Number(e.target.value))} placeholder="Order" className="h-11 px-3 border border-gray-300 rounded-md" />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button type="button" disabled={!createdCourseId || isBusy || !moduleTitle} onClick={addModule} className="px-4 h-10 rounded-md text-sm text-white disabled:opacity-50" style={{ backgroundColor: 'var(--brand-blue)' }}>Add module</button>
-                    <span className="text-xs text-gray-500">{modulesAdded.length} module(s) added</span>
-                  </div>
-                  {modulesAdded.length > 0 && (
-                    <ul className="list-disc list-inside text-sm text-gray-700">
-                      {modulesAdded.map(m => (<li key={m._id}>{m.title}</li>))}
-                    </ul>
-                  )}
-                </div>
-              )}
+  <div className="space-y-6">
+    {/* Header Section */}
+    <div className="flex items-center justify-between pb-4 border-b border-gray-200">
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900">Add Course Modules</h2>
+        <p className="text-sm text-gray-600 mt-1">Build your course structure by adding modules</p>
+      </div>
+      <button 
+        type="button" 
+        onClick={() => setStep(3)} 
+        className="text-sm text-blue-600 hover:text-blue-700 underline font-medium"
+      >
+        Skip for now
+      </button>
+    </div>
+
+    {/* Module Input Form */}
+    <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Module Details</h3>
+      
+      <div className="space-y-4">
+        {/* Module Title */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Module Title
+          </label>
+          <input 
+            value={moduleTitle} 
+            onChange={(e) => setModuleTitle(e.target.value)} 
+            placeholder="Enter module title" 
+            className="w-full h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          />
+        </div>
+
+        {/* Module Description */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Description
+          </label>
+          <textarea 
+            value={moduleDescription} 
+            onChange={(e) => setModuleDescription(e.target.value)} 
+            placeholder="Describe what this module covers..." 
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+          />
+        </div>
+
+        {/* Module Order */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Order
+          </label>
+          <input 
+            type="number" 
+            value={moduleOrder} 
+            onChange={(e) => setModuleOrder(Number(e.target.value))} 
+            placeholder="1" 
+            min="1"
+            className="w-32 h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          />
+        </div>
+      </div>
+
+      {/* Add Module Button */}
+      <div className="flex items-center gap-4 mt-6 pt-4 border-t border-gray-200">
+        <button 
+          type="button" 
+          disabled={!createdCourseId || isBusy || !moduleTitle} 
+          onClick={addModule} 
+          className="px-6 py-2.5 rounded-lg text-sm font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md transition-all duration-200" 
+          style={{ backgroundColor: 'var(--brand-blue)' }}
+        >
+          {isBusy ? 'Adding...' : 'Add Module'}
+        </button>
+        <span className="text-sm text-gray-500 font-medium">
+          {modulesAdded.length} {modulesAdded.length === 1 ? 'module' : 'modules'} added
+        </span>
+      </div>
+    </div>
+
+    {/* Added Modules List */}
+    {modulesAdded.length > 0 && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Added Modules</h3>
+        <div className="space-y-3">
+          {modulesAdded.map((module, index) => (
+            <div key={module._id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                {index + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-gray-900 truncate">{module.title}</h4>
+                {module.description && (
+                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">{module.description}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+)}
 
               {step === 3 && (
                 <div className="space-y-4">
