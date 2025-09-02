@@ -46,6 +46,7 @@ export async function fetchInstructorCoursesWithContent(): Promise<any[]> {
       },
     });
     return response.data.courses;
+    // return response.data;
   } catch (error) {
     showToast('Failed to fetch instructor courses', 'error');
     throw error;
@@ -201,3 +202,7 @@ export async function enrollInCourse(courseId: string) {
     throw error;
   }
 }
+export function fetchInstructorCourses() {
+  throw new Error('Function not implemented.');
+}
+

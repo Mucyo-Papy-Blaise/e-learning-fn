@@ -17,16 +17,16 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/lib/hooks/use-auth";
 
 export function CourseList() {
-  const { courses, loadCourses, isLoading } = useCourses();
+  const { courses, loadCourses, loadInstructorCourses, isLoading } = useCourses();
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
 const {user,loading} = useAuth()
 
   useEffect(()=>{
-     console.log(user, loading)
      if(!loading && user){
-       const instId = (user as any)?.institution?.id || (user as any)?.institution?._id;
-       if (instId) {
-         loadCourses(instId);
+       if (user.role === 'instructor') {
+         loadInstructorCourses();
+       } else if (user.institution?.id) {
+         loadCourses(user.institution.id);
        }
      }
   }, [loading, user]);
