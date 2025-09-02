@@ -45,7 +45,12 @@ export async function fetchInstructorCourses(): Promise<Course[]> {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    return response.data;
+    const data = response.data;
+    if (Array.isArray(data)) return data as Course[];
+    if (Array.isArray(data?.courses)) return data.courses as Course[];
+    if (Array.isArray(data?.data)) return data.data as Course[];
+    if (Array.isArray(data?.results)) return data.results as Course[];
+    return [];
   } catch (error) {
     showToast('Failed to fetch instructor courses', 'error');
     throw error;
