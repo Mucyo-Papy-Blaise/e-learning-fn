@@ -6,7 +6,8 @@ import axiosInstance from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, FileText, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, FileText, CheckCircle2, AlertTriangle, Pencil, UploadCloud, Ban } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Assignment {
   _id: string;
@@ -26,11 +27,25 @@ interface Assignment {
   course_id?: string;
 }
 
+interface SubmissionItem {
+  _id: string;
+  student?: { _id: string; name?: string; email?: string } | string;
+  content?: string;
+  file_url?: string;
+  score?: number;
+  feedback?: string;
+  status: 'pending' | 'graded' | 'late';
+  submitted_at: string;
+}
+
 export default function InstructorAssignmentDetailPage() {
   const { id } = useParams();
   const { toast } = useToast();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
+  const [loadingSubs, setLoadingSubs] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -38,6 +53,17 @@ export default function InstructorAssignmentDetailPage() {
         setLoading(true);
         const res = await axiosInstance.get(`/api/assignments/${id}`);
         setAssignment(res.data);
+        // Load submissions list for instructors
+        try {
+          setLoadingSubs(true);
+          const subs = await axiosInstance.get(`/api/assignments/${id}/submissions`);
+          const list = Array.isArray(subs.data?.submissions) ? subs.data.submissions : (Array.isArray(subs.data) ? subs.data : []);
+          setSubmissions(list);
+        } catch (_) {
+          setSubmissions([]);
+        } finally {
+          setLoadingSubs(false);
+        }
       } catch (error: any) {
         toast({ title: "Error", description: "Failed to load assignment", variant: "destructive" });
       } finally {
@@ -86,6 +112,56 @@ export default function InstructorAssignmentDetailPage() {
                     {statusBadge(assignment.status)}
                   </div>
                 </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="h-9"
+                    onClick={() => window.location.href = `/instructor/assignments/${assignment._id}/edit`}
+                  >
+                    <Pencil className="h-4 w-4 mr-2" /> Edit
+                  </Button>
+                  {assignment.status !== 'published' && (
+                    <Button
+                      disabled={saving}
+                      className="h-9 bg-green-600 hover:bg-green-700"
+                      onClick={async () => {
+                        try {
+                          setSaving(true);
+                          await axiosInstance.put(`/api/assignments/${assignment._id}`, { status: 'published' });
+                          setAssignment({ ...assignment, status: 'published' });
+                          toast({ title: 'Assignment published' });
+                        } catch (e: any) {
+                          toast({ title: 'Error', description: 'Failed to publish', variant: 'destructive' });
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
+                    >
+                      <UploadCloud className="h-4 w-4 mr-2" /> Publish
+                    </Button>
+                  )}
+                  {assignment.status !== 'closed' && (
+                    <Button
+                      disabled={saving}
+                      variant="destructive"
+                      className="h-9"
+                      onClick={async () => {
+                        try {
+                          setSaving(true);
+                          await axiosInstance.put(`/api/assignments/${assignment._id}`, { status: 'closed' });
+                          setAssignment({ ...assignment, status: 'closed' });
+                          toast({ title: 'Assignment closed' });
+                        } catch (e: any) {
+                          toast({ title: 'Error', description: 'Failed to close', variant: 'destructive' });
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
+                    >
+                      <Ban className="h-4 w-4 mr-2" /> Close
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -126,6 +202,45 @@ export default function InstructorAssignmentDetailPage() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Submissions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingSubs ? (
+                <div className="text-sm text-gray-500">Loading submissions...</div>
+              ) : submissions.length === 0 ? (
+                <div className="text-sm text-gray-500">No submissions yet</div>
+              ) : (
+                <div className="space-y-3">
+                  {submissions.map((s) => {
+                    const studentName = typeof s.student === 'string' ? s.student : (s.student?.name || s.student?.email || s.student?._id || 'Student');
+                    return (
+                      <div key={s._id} className="border rounded-md p-3 text-sm">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">{studentName}</div>
+                            <div className="text-xs text-gray-500">{new Date(s.submitted_at).toLocaleString()}</div>
+                          </div>
+                          <div className="text-xs capitalize">{s.status}</div>
+                        </div>
+                        {s.file_url && (
+                          <a href={s.file_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs mt-2 inline-block">
+                            View file
+                          </a>
+                        )}
+                        {typeof s.score === 'number' && (
+                          <div className="mt-1 text-xs">Score: <span className="font-semibold">{s.score}</span>{assignment.points ? ` / ${assignment.points}` : ''}</div>
+                        )}
+                        {s.feedback && <div className="mt-1 text-xs text-gray-600">Feedback: {s.feedback}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
