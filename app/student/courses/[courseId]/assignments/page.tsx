@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 
 interface AssignmentItem {
+  priority: string
   _id: string
   title: string
   points?: number

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, AlertCircle } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { SubmissionForm } from "@/components/assignments/SubmissionForm";
+import TiptapEditor from "@/components/ui/TipTap.Editor";
 
 interface Assignment {
   _id: string;
@@ -109,8 +110,12 @@ export default function AssignmentPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Assignment Description */}
               <div className="prose max-w-none dark:prose-invert">
-                <p>{assignment.description}</p>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Assignment Description</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-gray-700">{assignment.description}</p>
+                </div>
               </div>
 
               {isOverdue && !submission && (
@@ -126,21 +131,28 @@ export default function AssignmentPage() {
                     <CardTitle>Your Submission</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p>{submission.content}</p>
+                    <div className="prose max-w-none dark:prose-invert">
+                      <div dangerouslySetInnerHTML={{ __html: submission.content }} />
+                    </div>
                     {submission.file_url && (
                       <a
                         href={submission.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className="text-blue-600 hover:underline font-medium"
                       >
                         View Attached File
                       </a>
                     )}
                     {submission.status === 'graded' && (
-                      <div className="space-y-2">
-                        <p className="font-medium">Score: {submission.score}/{assignment.max_points}</p>
-                        <p className="text-sm text-muted-foreground">{submission.feedback}</p>
+                      <div className="space-y-2 bg-blue-50 p-4 rounded-lg">
+                        <p className="font-medium text-blue-800">Score: {submission.score}/{assignment.max_points}</p>
+                        {submission.feedback && (
+                          <div>
+                            <p className="font-medium text-blue-800 mb-1">Feedback:</p>
+                            <p className="text-sm text-blue-700">{submission.feedback}</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -164,9 +176,9 @@ export default function AssignmentPage() {
             <CardContent>
               <div className="space-y-4">
                 {Object.entries(assignment.rubric || {}).map(([criterion, points]) => (
-                  <div key={criterion} className="flex justify-between items-center">
-                    <span>{criterion}</span>
-                    <span className="text-muted-foreground">{points} points</span>
+                  <div key={criterion} className="flex justify-between items-center p-2 bg-blue-50 rounded">
+                    <span className="font-medium">{criterion}</span>
+                    <span className="text-blue-600 font-bold">{points} points</span>
                   </div>
                 ))}
               </div>

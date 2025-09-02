@@ -15,9 +15,10 @@ export default function CoursePagesPage({ params }: { params: { courseId: string
       try {
         const modules = await fetchModulesByCourseId(courseId)
         const pages = (modules || []).flatMap((module: any) =>
-          (module.items || module.lessons || []).filter((item: any) => item.type === 'page').map((item: any) => ({
+          (module.items || module.lessons || []).map((item: any) => ({
             ...item,
-            moduleTitle: module.title
+            moduleTitle: module.title,
+            url: String(item.url || item._id || "")
           }))
         )
         setAllPages(pages)

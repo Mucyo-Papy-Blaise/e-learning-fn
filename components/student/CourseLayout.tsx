@@ -73,12 +73,12 @@ export default function CourseLayout() {
 
         {selectedCourse && activeTab === "announcements" && (
           <div className="text-lg font-semibold">
-            <CourseAnnouncements />
+            <CourseAnnouncements courseId={selectedCourse._id as unknown as string} />
           </div>
         ) }
         {selectedCourse && activeTab === "assignments" && (
           <div className="text-lg font-semibold">
-            <CourseAssignments />
+            <CourseAssignments courseId={selectedCourse._id as unknown as string} />
           </div>
         ) }
         {selectedCourse && activeTab === "modules" && (

@@ -84,6 +84,30 @@ export default function CoursesLayout({
               </Link>
 
               <Link
+                href={`/student/courses/${courseId}/modules`}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
+                  pathname.includes(`/student/courses/${courseId}/modules`) &&
+                    "bg-blue-50 text-blue-700 border border-blue-200"
+                )}
+              >
+                <Folder className="h-4 w-4" />
+                Modules
+              </Link>
+              
+              <Link
+                href={`/student/courses/${courseId}/pages`}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
+                  pathname.includes(`/student/courses/${courseId}/pages`) &&
+                    "bg-blue-50 text-blue-700 border border-blue-200"
+                )}
+              >
+                <FileText className="h-4 w-4" />
+                Pages
+              </Link>
+
+              <Link
                 href={`/student/courses/${courseId}/assignments`}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
@@ -108,7 +132,7 @@ export default function CoursesLayout({
                 Grades
               </Link>
 
-              <Link
+              {/* <Link
                 href={`/student/courses/${courseId}/people`}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
@@ -118,19 +142,7 @@ export default function CoursesLayout({
               >
                 <Users className="h-4 w-4" />
                 People
-              </Link>
-
-              <Link
-                href={`/student/courses/${courseId}/pages`}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
-                  pathname.includes(`/student/courses/${courseId}/pages`) &&
-                    "bg-blue-50 text-blue-700 border border-blue-200"
-                )}
-              >
-                <FileText className="h-4 w-4" />
-                Pages
-              </Link>
+              </Link> */}
 
               <Link
                 href={`/student/courses/${courseId}/files`}
@@ -156,7 +168,7 @@ export default function CoursesLayout({
                 Syllabus
               </Link>
 
-              <Link
+              {/* <Link
                 href={`/student/courses/${courseId}/quizzes`}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
@@ -166,19 +178,7 @@ export default function CoursesLayout({
               >
                 <ClipboardList className="h-4 w-4" />
                 Quizzes
-              </Link>
-
-              <Link
-                href={`/student/courses/${courseId}/modules`}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
-                  pathname.includes(`/student/courses/${courseId}/modules`) &&
-                    "bg-blue-50 text-blue-700 border border-blue-200"
-                )}
-              >
-                <Folder className="h-4 w-4" />
-                Modules
-              </Link>
+              </Link> */}
 
               <Link
                 href={`/student/courses/${courseId}/collaborations`}
@@ -193,7 +193,7 @@ export default function CoursesLayout({
                 Group Works
               </Link>
 
-              <Link
+              {/* <Link
                 href={`/student/courses/${courseId}/chat`}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
@@ -203,7 +203,7 @@ export default function CoursesLayout({
               >
                 <MessageCircle className="h-4 w-4" />
                 Chat
-              </Link>
+              </Link> */}
 
               <Link
                 href={`/student/courses/${courseId}/help`}

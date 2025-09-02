@@ -1,683 +1,393 @@
 "use client"
 
-import React, { useState, ChangeEvent, useEffect } from 'react';
-import { 
-  BookOpen, 
-  FileText, 
-  Calendar, 
-  Award, 
-  Upload, 
-  Plus, 
-  X, 
-  Save, 
-  Eye,
-  Settings,
-  Users,
-  Shield,
-  Clock,
-  Target
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
-import { fetchInstructorCourses, fetchModulesByCourseId } from '@/lib/api/courses';
-import axiosInstance from '@/lib/axios';
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import TiptapEditor from "@/components/ui/TipTap.Editor"
+import { Calendar, FileText, Upload, Save, ArrowLeft } from "lucide-react"
+import { toast } from "react-toastify"
+import axios from "axios"
 
-interface Instruction {
-  step: string;
-  content: string;
+interface Course {
+  _id: string
+  title: string
 }
 
-interface AssignmentFormData {
-  course_id: string;
-  module_id: string;
-  title: string;
-  description: string;
-  dueDate: string;
-  availableAfter: string;
-  points: number;
-  submissionType: 'text' | 'file' | 'url' | 'multiple';
-  allowedAttempts: number;
-  status: 'draft' | 'published' | 'closed';
-  isAnonymous: boolean;
-  peerReviewEnabled: boolean;
-  plagiarismCheckEnabled: boolean;
-  instructions: Instruction[];
-  attachments: File[];
-  rubric: Record<string, any>;
+interface Module {
+  _id: string
+  title: string
+  course_id: string
 }
 
-type TabType = 'basic' | 'settings' | 'instructions' | 'review';
-
-const CreateAssignmentForm: React.FC = () => {
-  const router = useRouter();
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<TabType>('basic');
+export default function CreateAssignmentPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [courses, setCourses] = useState<Course[]>([])
+  const [modules, setModules] = useState<Module[]>([])
+  const [selectedCourse, setSelectedCourse] = useState<string>("")
+  const [selectedModule, setSelectedModule] = useState<string>("")
   
-  const [formData, setFormData] = useState<AssignmentFormData>({
-    course_id: '',
-    module_id: '',
-    title: '',
-    description: '',
-    dueDate: '',
-    availableAfter: '',
-    points: 100,
-    submissionType: 'file',
-    allowedAttempts: 1,
-    status: 'draft',
-    isAnonymous: false,
-    peerReviewEnabled: false,
-    plagiarismCheckEnabled: false,
-    instructions: [{ step: '1', content: '' }],
-    attachments: [],
-    rubric: {}
-  });
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    instructions: "",
+    dueDate: "",
+    availableAfter: "",
+    points: "",
+    submissionType: "text",
+    allowedAttempts: "1",
+    status: "draft"
+  })
 
-  const [newInstruction, setNewInstruction] = useState<Instruction>({ step: '', content: '' });
-  
-  // Dynamic data for dropdowns
-  const [courses, setCourses] = useState<any[]>([]);
-  const [modules, setModules] = useState<any[]>([]);
-  const [loadingCourses, setLoadingCourses] = useState<boolean>(true);
-  const [loadingModules, setLoadingModules] = useState<boolean>(false);
+  const [attachments, setAttachments] = useState<File[]>([])
 
-  useEffect(() => {
+  // Load courses on mount
+  useState(() => {
     const loadCourses = async () => {
       try {
-        setLoadingCourses(true);
-        const data = await fetchInstructorCourses();
-        setCourses(Array.isArray(data) ? data : []);
-      } catch (err) {
-        setCourses([]);
-      } finally {
-        setLoadingCourses(false);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/instructor/courses`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
+        setCourses(response.data)
+      } catch (error) {
+        toast.error("Failed to load courses")
       }
-    };
-    loadCourses();
-  }, []);
-
-  const loadModulesForCourse = async (courseId: string) => {
-    if (!courseId) {
-      setModules([]);
-      return;
     }
+    loadCourses()
+  }, [])
+
+  // Load modules when course changes
+  const handleCourseChange = async (courseId: string) => {
+    setSelectedCourse(courseId)
+    setSelectedModule("")
     try {
-      setLoadingModules(true);
-      const data = await fetchModulesByCourseId(courseId);
-      setModules(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setModules([]);
-    } finally {
-      setLoadingModules(false);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/courses/${courseId}/modules`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+      setModules(response.data)
+    } catch (error) {
+      toast.error("Failed to load modules")
+      setModules([])
     }
-  };
+  }
 
-  const handleInputChange = (field: keyof AssignmentFormData, value: any): void => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    setAttachments(prev => [...prev, ...files])
+  }
 
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>): void => {
-    const files = Array.from(e.target.files || []);
-    setFormData(prev => ({
-      ...prev,
-      attachments: [...prev.attachments, ...files]
-    }));
-  };
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index))
+  }
 
-  const removeAttachment = (index: number): void => {
-    setFormData(prev => ({
-      ...prev,
-      attachments: prev.attachments.filter((_, i) => i !== index)
-    }));
-  };
-
-  const addInstruction = (): void => {
-    if (newInstruction.step && newInstruction.content) {
-      setFormData(prev => ({
-        ...prev,
-        instructions: [...prev.instructions, { ...newInstruction }]
-      }));
-      setNewInstruction({ step: '', content: '' });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedCourse || !selectedModule) {
+      toast.error("Please select a course and module")
+      return
     }
-  };
 
-  const removeInstruction = (index: number): void => {
-    setFormData(prev => ({
-      ...prev,
-      instructions: prev.instructions.filter((_, i) => i !== index)
-    }));
-  };
+    setLoading(true)
+    try {
+      const formDataToSend = new FormData()
+      
+      // Add form fields
+      formDataToSend.append("course_id", selectedCourse)
+      formDataToSend.append("module_id", selectedModule)
+      formDataToSend.append("title", formData.title)
+      formDataToSend.append("description", formData.description)
+      formDataToSend.append("instructions", formData.instructions)
+      formDataToSend.append("dueDate", formData.dueDate)
+      formDataToSend.append("availableAfter", formData.availableAfter)
+      formDataToSend.append("points", formData.points)
+      formDataToSend.append("submissionType", formData.submissionType)
+      formDataToSend.append("allowedAttempts", formData.allowedAttempts)
+      formDataToSend.append("status", formData.status)
 
-  const updateInstruction = (index: number, field: keyof Instruction, value: string): void => {
-    setFormData(prev => ({
-      ...prev,
-      instructions: prev.instructions.map((inst, i) => 
-        i === index ? { ...inst, [field]: value } : inst
+      // Add attachments
+      attachments.forEach((file, index) => {
+        formDataToSend.append(`attachment_${index}`, file)
+      })
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/assignments`,
+        formDataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
       )
-    }));
-  };
 
-  const handleSubmit = async (isDraft: boolean = false): Promise<void> => {
-    try {
-      const submissionData = {
-        course_id: formData.course_id,
-        module_id: formData.module_id,
-        title: formData.title,
-        description: formData.description,
-        dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
-        availableAfter: formData.availableAfter ? new Date(formData.availableAfter).toISOString() : undefined,
-        points: Number(formData.points),
-        submissionType: formData.submissionType,
-        allowedAttempts: Number(formData.allowedAttempts),
-        status: isDraft ? 'draft' : formData.status,
-        isAnonymous: formData.isAnonymous,
-        peerReviewEnabled: formData.peerReviewEnabled,
-        plagiarismCheckEnabled: formData.plagiarismCheckEnabled,
-        instructions: formData.instructions,
-        attachments: [],
-        rubric: formData.rubric,
-      };
-
-      await axiosInstance.post('/api/assignments', submissionData);
-
-      toast({ title: 'Success', description: `Assignment ${isDraft ? 'saved as draft' : 'published'} successfully` });
-      if (formData.course_id) {
-        router.push(`/instructor/courses/${formData.course_id}`);
-      } else {
-        router.push('/instructor/assignments');
-      }
-    } catch (error: any) {
-      const message = error?.response?.data?.message || error?.message || 'Failed to create assignment';
-      toast({ title: 'Error', description: message, variant: 'destructive' });
+      toast.success("Assignment created successfully!")
+      router.push("/instructor/assignments")
+    } catch (error) {
+      console.error("Error creating assignment:", error)
+      toast.error("Failed to create assignment")
+    } finally {
+      setLoading(false)
     }
-  };
-
-  const renderBasicTab = () => (
-    <div className="space-y-8">
-      {/* Course and Module Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label htmlFor="course" className="block text-sm font-medium text-gray-700 mb-2">
-            Course *
-          </label>
-          <div className="relative">
-            <BookOpen className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
-            <select
-              id="course"
-              value={formData.course_id}
-              onChange={async (e) => {
-                const value = e.target.value;
-                handleInputChange('course_id', value);
-                handleInputChange('module_id', '');
-                await loadModulesForCourse(value);
-              }}
-              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            >
-              <option value="">Select a course</option>
-              {loadingCourses && <option value="" disabled>Loading courses...</option>}
-              {!loadingCourses && courses.map((course) => (
-                <option key={course._id} value={course._id}>{course.title}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        
-        <div>
-          <label htmlFor="module" className="block text-sm font-medium text-gray-700 mb-2">
-            Module *
-          </label>
-          <div className="relative">
-            <FileText className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
-            <select
-              id="module"
-              value={formData.module_id}
-              onChange={(e) => handleInputChange('module_id', e.target.value)}
-              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            >
-              <option value="">Select a module</option>
-              {loadingModules && <option value="" disabled>Loading modules...</option>}
-              {!loadingModules && modules.map((module) => (
-                <option key={module._id} value={module._id}>{module.title}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Assignment Title */}
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-          Assignment Title *
-        </label>
-        <input
-          type="text"
-          id="title"
-          value={formData.title}
-          onChange={(e) => handleInputChange('title', e.target.value)}
-          placeholder="Enter assignment title"
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-          required
-        />
-      </div>
-
-      {/* Assignment Description */}
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-          Description *
-        </label>
-        <textarea
-          id="description"
-          value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Describe the assignment objectives and requirements"
-          rows={6}
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-          required
-        />
-      </div>
-
-      {/* Dates and Points */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <label htmlFor="availableAfter" className="block text-sm font-medium text-gray-700 mb-2">
-            Available After *
-          </label>
-          <div className="relative">
-            <Calendar className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
-            <input
-              type="datetime-local"
-              id="availableAfter"
-              value={formData.availableAfter}
-              onChange={(e) => handleInputChange('availableAfter', e.target.value)}
-              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 mb-2">
-            Due Date *
-          </label>
-          <div className="relative">
-            <Clock className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
-            <input
-              type="datetime-local"
-              id="dueDate"
-              value={formData.dueDate}
-              onChange={(e) => handleInputChange('dueDate', e.target.value)}
-              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="points" className="block text-sm font-medium text-gray-700 mb-2">
-            Total Points *
-          </label>
-          <div className="relative">
-            <Award className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
-            <input
-              type="number"
-              id="points"
-              value={formData.points}
-              onChange={(e) => handleInputChange('points', parseInt(e.target.value))}
-              min="1"
-              className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderSettingsTab = () => (
-    <div className="space-y-8">
-      {/* Submission Settings */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200 flex items-center">
-          <Settings className="w-5 h-5 mr-2 text-blue-500" />
-          Submission Settings
-        </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="submissionType" className="block text-sm font-medium text-gray-700 mb-2">
-              Submission Type *
-            </label>
-            <select
-              id="submissionType"
-              value={formData.submissionType}
-              onChange={(e) => handleInputChange('submissionType', e.target.value as any)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            >
-              <option value="text">Text Entry</option>
-              <option value="file">File Upload</option>
-              <option value="url">URL Submission</option>
-              <option value="multiple">Multiple Types</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="allowedAttempts" className="block text-sm font-medium text-gray-700 mb-2">
-              Allowed Attempts *
-            </label>
-            <div className="relative">
-              <Target className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
-              <input
-                type="number"
-                id="allowedAttempts"
-                value={formData.allowedAttempts}
-                onChange={(e) => handleInputChange('allowedAttempts', parseInt(e.target.value))}
-                min="1"
-                className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Advanced Options */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200 flex items-center">
-          <Shield className="w-5 h-5 mr-2 text-blue-500" />
-          Advanced Options
-        </h3>
-        
-        <div className="space-y-4">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.isAnonymous}
-              onChange={(e) => handleInputChange('isAnonymous', e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <div>
-              <span className="text-sm font-medium text-gray-900">Anonymous Submission</span>
-              <p className="text-sm text-gray-500">Hide student names during grading</p>
-            </div>
-          </label>
-
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.peerReviewEnabled}
-              onChange={(e) => handleInputChange('peerReviewEnabled', e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <div>
-              <span className="text-sm font-medium text-gray-900">Peer Review</span>
-              <p className="text-sm text-gray-500">Enable students to review each other{"'"}s work</p>
-            </div>
-          </label>
-
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.plagiarismCheckEnabled}
-              onChange={(e) => handleInputChange('plagiarismCheckEnabled', e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <div>
-              <span className="text-sm font-medium text-gray-900">Plagiarism Check</span>
-              <p className="text-sm text-gray-500">Automatically check submissions for plagiarism</p>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      {/* Attachments */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200 flex items-center">
-          <Upload className="w-5 h-5 mr-2 text-blue-500" />
-          Assignment Files
-        </h3>
-        
-        <div className="space-y-4">
-          <div>
-            <input
-              type="file"
-              id="attachments"
-              multiple
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => document.getElementById('attachments')?.click()}
-              className="w-full px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-blue-500 hover:bg-blue-50 transition-colors"
-            >
-              <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Click to upload files or drag and drop</p>
-              <p className="text-xs text-gray-500">PDF, DOC, PPT, Images up to 10MB each</p>
-            </button>
-          </div>
-
-          {formData.attachments.length > 0 && (
-            <div className="space-y-2">
-              {formData.attachments.map((file, index) => (
-                <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                  <span className="text-sm text-gray-700">{file.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeAttachment(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderInstructionsTab = () => (
-    <div className="space-y-8">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200">
-          Assignment Instructions
-        </h3>
-        
-        {/* Existing Instructions */}
-        <div className="space-y-4 mb-6">
-          {formData.instructions.map((instruction, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex justify-between items-start mb-3">
-                <h4 className="font-medium text-gray-800">Step {instruction.step}</h4>
-                <button
-                  type="button"
-                  onClick={() => removeInstruction(index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <input
-                  type="text"
-                  value={instruction.step}
-                  onChange={(e) => updateInstruction(index, 'step', e.target.value)}
-                  placeholder="Step number"
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                <textarea
-                  value={instruction.content}
-                  onChange={(e) => updateInstruction(index, 'content', e.target.value)}
-                  placeholder="Step description"
-                  rows={3}
-                  className="md:col-span-3 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Add New Instruction */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-          <h4 className="font-medium text-gray-800 mb-3">Add New Instruction</h4>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input
-              type="text"
-              value={newInstruction.step}
-              onChange={(e) => setNewInstruction(prev => ({ ...prev, step: e.target.value }))}
-              placeholder="Step number"
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-            <textarea
-              value={newInstruction.content}
-              onChange={(e) => setNewInstruction(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="Step description"
-              rows={3}
-              className="md:col-span-2 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-            />
-            <button
-              type="button"
-              onClick={addInstruction}
-              className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md font-medium transition-colors flex items-center justify-center gap-2 h-fit"
-            >
-              <Plus className="w-4 h-4" />
-              Add Step
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderReviewTab = () => (
-    <div className="space-y-8">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-6 pb-2 border-b border-gray-200 flex items-center">
-          <Eye className="w-5 h-5 mr-2 text-blue-500" />
-          Assignment Preview
-        </h3>
-        
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 space-y-4">
-          <div>
-            <h4 className="font-semibold text-gray-800">Title:</h4>
-            <p className="text-gray-600">{formData.title || 'Not specified'}</p>
-          </div>
-          
-          <div>
-            <h4 className="font-semibold text-gray-800">Description:</h4>
-            <p className="text-gray-600">{formData.description || 'Not specified'}</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h4 className="font-semibold text-gray-800">Due Date:</h4>
-              <p className="text-gray-600">{formData.dueDate || 'Not set'}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-800">Points:</h4>
-              <p className="text-gray-600">{formData.points}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-800">Submission Type:</h4>
-              <p className="text-gray-600 capitalize">{formData.submissionType}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-800">Allowed Attempts:</h4>
-              <p className="text-gray-600">{formData.allowedAttempts}</p>
-            </div>
-          </div>
-          
-          {formData.instructions.length > 0 && (
-            <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Instructions:</h4>
-              <ol className="space-y-2">
-                {formData.instructions.map((instruction, index) => (
-                  <li key={index} className="text-gray-600">
-                    <span className="font-medium">Step {instruction.step}:</span> {instruction.content}
-                  </li>
-                ))}
-              </ol>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const tabs = [
-    { id: 'basic', name: 'Basic Info', icon: FileText },
-    { id: 'settings', name: 'Settings', icon: Settings },
-    { id: 'instructions', name: 'Instructions', icon: Users },
-    { id: 'review', name: 'Review', icon: Eye }
-  ];
+  }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-5xl mx-auto p-6">
-        {/* Header */}
-        <div className="text-center mb-8 pb-6 border-b-2 border-gray-100">
-          <h1 className="text-4xl font-bold text-gray-800 mb-3">Create Assignment</h1>
-          <p className="text-lg text-gray-600">Design and configure a new assignment for your course</p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
-          {/* Tab Navigation */}
-          <div className="flex flex-wrap border-b border-gray-200 mb-8">
-            {tabs.map((tab) => {
-              const IconComponent = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors flex items-center gap-2 ${
-                    activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <IconComponent className="w-4 h-4" />
-                  {tab.name}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Tab Content */}
-          <div className="tab-content min-h-96">
-            {activeTab === 'basic' && renderBasicTab()}
-            {activeTab === 'settings' && renderSettingsTab()}
-            {activeTab === 'instructions' && renderInstructionsTab()}
-            {activeTab === 'review' && renderReviewTab()}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8 border-t-2 border-gray-100">
-            <button
-              type="button"
-              onClick={() => handleSubmit(true)}
-              className="px-8 py-4 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 min-w-32 flex items-center justify-center gap-2"
-            >
-              <Save className="w-4 h-4" />
-              Save as Draft
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSubmit(false)}
-              className="px-8 py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 min-w-32 flex items-center justify-center gap-2"
-            >
-              <Eye className="w-4 h-4" />
-              Publish Assignment
-            </button>
-          </div>
-        </div>
+    <div className="container mx-auto py-6 max-w-4xl">
+      <div className="flex items-center gap-4 mb-6">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.back()}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+        <h1 className="text-2xl font-bold">Create Assignment</h1>
       </div>
-    </div>
-  );
-};
 
-export default CreateAssignmentForm;
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Basic Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="course">Course *</Label>
+                <Select value={selectedCourse} onValueChange={handleCourseChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {courses.map((course) => (
+                      <SelectItem key={course._id} value={course._id}>
+                        {course.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="module">Module *</Label>
+                <Select 
+                  value={selectedModule} 
+                  onValueChange={setSelectedModule}
+                  disabled={!selectedCourse}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a module" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {modules.map((module) => (
+                      <SelectItem key={module._id} value={module._id}>
+                        {module.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="title">Assignment Title *</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter assignment title"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of the assignment"
+                rows={3}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Assignment Instructions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TiptapEditor
+              name="instructions"
+              content={formData.instructions}
+              onChange={(content) => setFormData(prev => ({ ...prev, instructions: content }))}
+              placeholder="Write detailed instructions for the assignment..."
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Schedule & Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Due Date *</Label>
+                <Input
+                  id="dueDate"
+                  type="datetime-local"
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="availableAfter">Available After</Label>
+                <Input
+                  id="availableAfter"
+                  type="datetime-local"
+                  value={formData.availableAfter}
+                  onChange={(e) => setFormData(prev => ({ ...prev, availableAfter: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="points">Points *</Label>
+                <Input
+                  id="points"
+                  type="number"
+                  value={formData.points}
+                  onChange={(e) => setFormData(prev => ({ ...prev, points: e.target.value }))}
+                  placeholder="100"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="submissionType">Submission Type</Label>
+                <Select 
+                  value={formData.submissionType} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, submissionType: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="text">Text Only</SelectItem>
+                    <SelectItem value="file">File Upload</SelectItem>
+                    <SelectItem value="url">URL</SelectItem>
+                    <SelectItem value="multiple">Text + File</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="allowedAttempts">Allowed Attempts</Label>
+                <Input
+                  id="allowedAttempts"
+                  type="number"
+                  value={formData.allowedAttempts}
+                  onChange={(e) => setFormData(prev => ({ ...prev, allowedAttempts: e.target.value }))}
+                  placeholder="1"
+                  min="1"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select 
+                value={formData.status} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Attachments
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="attachments">Upload Files</Label>
+              <Input
+                id="attachments"
+                type="file"
+                multiple
+                onChange={handleFileChange}
+                className="cursor-pointer"
+              />
+            </div>
+
+            {attachments.length > 0 && (
+              <div className="space-y-2">
+                <Label>Selected Files</Label>
+                <div className="space-y-2">
+                  {attachments.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-2 border rounded">
+                      <span className="text-sm">{file.name}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeAttachment(index)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="flex justify-end gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={loading}
+            className="flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            {loading ? "Creating..." : "Create Assignment"}
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
+}
