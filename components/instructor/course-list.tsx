@@ -126,8 +126,8 @@ const {user,loading} = useAuth()
                   >
                     <TableCell className="py-6 px-6">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
-                          {course.title.charAt(0).toUpperCase()}
+                        <div className="w-12 h-12 bg-blue-600 rounded-full overflow-hidden flex items-center justify-center text-white font-bold text-lg shadow-md">
+                        <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover"/>
                         </div>
                         <div>
                           <div className="font-semibold text-gray-900 text-lg">
@@ -151,7 +151,7 @@ const {user,loading} = useAuth()
                         <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
                           <DollarSign className="h-4 w-4 text-white" />
                         </div>
-                        <span className="font-bold text-green-600 text-lg">${course.price.toLocaleString()}</span>
+                        <span className="font-bold text-green-600 text-lg">${course.price}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-6 text-center">
