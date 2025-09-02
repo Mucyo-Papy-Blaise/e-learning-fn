@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { fetchInstructorCourses } from '@/lib/api/courses';
+import { createAnnouncement, updateAnnouncement } from '@/lib/api/announcements';
 
 interface Course {
   _id: string;
@@ -68,35 +70,20 @@ const AnnouncementForm = ({ params, searchParams }: AnnouncementFormProps) => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mock courses data - replace with actual API call
   useEffect(() => {
-    const mockCourses: Course[] = [
-      { _id: 'course1', title: 'Advanced React Development' },
-      { _id: 'course2', title: 'Node.js Backend Architecture' },
-      { _id: 'course3', title: 'Database Design Principles' }
-    ];
-    setCourses(mockCourses);
-
-    // If editing, load announcement data
-    if (isEdit && id) {
-      // Mock existing announcement data
-      const mockAnnouncement = {
-        course_id: 'course1',
-        title: 'Welcome to Advanced React Development',
-        content: 'Welcome students! This course will cover advanced React concepts including hooks, context, and performance optimization.',
-        type: 'general' as const,
-        is_pinned: true,
-        is_published: true,
-        publish_at: '2024-01-15T10:00:00',
-        expires_at: '2024-02-15T23:59:59'
-      };
-      setFormData(prev => ({
-        ...prev,
-        ...mockAnnouncement,
-        attachments: []
-      }));
+    let active = true
+    async function load() {
+      try {
+        const list = await fetchInstructorCourses()
+        if (!active) return
+        setCourses(Array.isArray(list) ? list.map((c: any) => ({ _id: c._id || c.id, title: c.title })) : [])
+      } catch {
+        if (active) setCourses([])
+      }
     }
-  }, [isEdit, id]);
+    load()
+    return () => { active = false }
+  }, [isEdit, id])
 
   const handleInputChange = (field: keyof AnnouncementFormData, value: any) => {
     setFormData(prev => ({
@@ -162,13 +149,25 @@ const AnnouncementForm = ({ params, searchParams }: AnnouncementFormProps) => {
     setLoading(true);
     
     try {
-      // Mock API call - replace with actual implementation
-      console.log('Submitting announcement:', formData);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect to announcements list
+      if (isEdit && id) {
+        await updateAnnouncement(String(id), {
+          title: formData.title,
+          content: formData.content,
+          type: formData.type,
+          isPinned: formData.is_pinned,
+          isPublished: formData.is_published,
+          expiresAt: formData.expires_at,
+        })
+      } else {
+        await createAnnouncement(formData.course_id, {
+          title: formData.title,
+          content: formData.content,
+          type: formData.type,
+          isPinned: formData.is_pinned,
+          publishAt: formData.publish_at,
+          expiresAt: formData.expires_at,
+        })
+      }
       router.push('/instructor/announcements');
       
     } catch (error) {
