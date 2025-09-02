@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +56,7 @@ interface Exam {
   allowReview?: boolean;
   createdBy?: {
     _id: string;
-    full_name: string;
+    name: string;
     role: string;
   };
   institution?: {
@@ -68,6 +69,8 @@ interface Exam {
 
 export default function ExamsPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const filterCourseId = searchParams.get('courseId');
   const { toast } = useToast();
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +85,11 @@ export default function ExamsPage() {
     try {
       setLoading(true);
       const response = await axiosInstance.get('/api/exams');
-      setExams(response.data.exams || []);
+      let items = response.data.exams || [];
+      if (filterCourseId) {
+        items = items.filter((e: any) => (e.course?._id || e.course) === filterCourseId);
+      }
+      setExams(items);
     } catch (error) {
       console.error('Failed to fetch exams:', error);
       toast({
@@ -418,7 +425,7 @@ export default function ExamsPage() {
                         Created: {new Date(exam.createdAt).toLocaleDateString()}
                         {exam.createdBy && (
                           <span className="ml-2">
-                            by {exam.createdBy.full_name} ({exam.createdBy.role})
+                            by {exam.createdBy.name} ({exam.createdBy.role})
                           </span>
                         )}
                       </div>

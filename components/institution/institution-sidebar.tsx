@@ -22,6 +22,7 @@ import { useAuth } from "@/lib/hooks/use-auth"
 import { usePathname } from "next/navigation"
 import axios from "axios"
 import { API_URL } from "@/lib/api/courses"
+import Link from "next/link"
 
 // Removed mocks; using real auth and pathname
 
@@ -35,7 +36,7 @@ const navigation = [
     subItems: [
       { name: "All Courses", href: "/instructor/courses" },
       { name: "Create Course", href: "/instructor/courses/new" },
-      { name: "Course Analytics", href: "/instructor/analytics" },
+      // { name: "Course Analytics", href: "/instructor/analytics" },
     ],
   },
   { name: "Instructors", href: "/institution/instructors", icon: UserCheck, badge: null },
@@ -70,7 +71,7 @@ export default function InstitutionSidebar() {
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const { user } = useAuth()
-  const [instructors, setInstructors] = useState<Array<{ full_name: string; email: string; institution?: { id?: string } }>>([])
+  const [instructors, setInstructors] = useState<Array<{ name: string; email: string; institution?: { id?: string } }>>([])
 
   useEffect(() => {
     const fetchInstructors = async () => {
@@ -192,20 +193,20 @@ export default function InstitutionSidebar() {
           </h3>
         </div>
       )}
-      <div
+      <Link href='/institution/profile'
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group",
           !isMobile && isDesktopCollapsed && "justify-center"
         )}
       >
         <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-          {user?.full_name?.substring(0, 2).toUpperCase() || 'NA'}
+          {user?.name?.substring(0, 2).toUpperCase() || 'NA'}
         </div>
         {(!isDesktopCollapsed || isMobile) && (
           <>
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-medium truncate">
-                {user?.full_name || 'User'}
+                {user?.name || 'User'}
               </p>
               <p className="text-gray-400 text-xs truncate">
                 {user?.email || ''}
@@ -214,7 +215,7 @@ export default function InstitutionSidebar() {
             <ChevronRight className="h-4 w-4 text-gray-400" />
           </>
         )}
-      </div>
+      </Link>
     </div>
   )
 
@@ -285,20 +286,6 @@ export default function InstitutionSidebar() {
         {/* Navigation */}
         <nav className="flex-1 px-2 py-4 overflow-y-auto">
           <NavItems />
-          <div className="mt-4 border-t border-gray-700 pt-4">
-            <h3 className="text-gray-400 text-xs font-medium uppercase tracking-wider px-2 mb-2">Instructors</h3>
-            <div className="space-y-2">
-              {instructors.map((ins, idx) => (
-                <div key={idx} className="px-3 py-2 rounded-lg hover:bg-gray-700">
-                  <p className="text-sm text-white truncate">{ins.full_name}</p>
-                  <p className="text-xs text-gray-400 truncate">{ins.email}</p>
-                </div>
-              ))}
-              {instructors.length === 0 && (
-                <p className="text-xs text-gray-500 px-3">No instructors found</p>
-              )}
-            </div>
-          </div>
         </nav>
 
         <UserProfile />

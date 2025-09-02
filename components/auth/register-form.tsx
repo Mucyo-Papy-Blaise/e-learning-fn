@@ -19,7 +19,7 @@ export function RegisterForm() {
     image: "",
     email: "",
     password: "",
-    full_name: "",
+    name: "",
     role: "student" as "student" | "institution",
     phone: "",
   })
@@ -74,16 +74,16 @@ export function RegisterForm() {
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6 p-8">
             <div className="space-y-2">
-              <Label htmlFor="full_name" className="text-gray-700 text-sm font-medium">
+              <Label htmlFor="name" className="text-gray-700 text-sm font-medium">
                 Full Name
               </Label>
               <div className="relative group">
                 <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 <Input
-                  id="full_name"
-                  name="full_name"
+                  id="name"
+                  name="name"
                   placeholder="Enter your full name"
-                  value={formData.full_name}
+                  value={formData.name}
                   onChange={handleChange}
                   className="pl-12 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                   required

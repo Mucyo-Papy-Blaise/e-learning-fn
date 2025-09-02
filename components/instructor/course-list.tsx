@@ -24,11 +24,12 @@ const {user,loading} = useAuth()
   useEffect(()=>{
      console.log(user, loading)
      if(!loading && user){
-      
-    loadCourses(user?.institution.id);
-
+       const instId = (user as any)?.institution?.id || (user as any)?.institution?._id;
+       if (instId) {
+         loadCourses(instId);
+       }
      }
-  }, [loading]);
+  }, [loading, user]);
 
   const toggleCourseDetails = (courseId: string) => {
     setExpandedCourse(expandedCourse === courseId ? null : courseId);

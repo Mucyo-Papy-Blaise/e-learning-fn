@@ -15,7 +15,7 @@ import axios from 'axios'
 import { API_URL } from "@/lib/api/courses"
 
 interface InstructorFormData {
-  full_name: string
+  name: string
   email: string
   password: string
   confirmPassword: string
@@ -23,7 +23,7 @@ interface InstructorFormData {
 
 export default function AddInstructorForm() {
   const [formData, setFormData] = useState<InstructorFormData>({
-    full_name: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: ""
@@ -55,10 +55,10 @@ export default function AddInstructorForm() {
     const newErrors: Partial<InstructorFormData> = {}
 
     // Name validation
-    if (!formData.full_name.trim()) {
-      newErrors.full_name = "Name is required"
-    } else if (formData.full_name.trim().length < 2) {
-      newErrors.full_name = "Name must be at least 2 characters"
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required"
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters"
     }
 
     // Email validation
@@ -107,7 +107,7 @@ export default function AddInstructorForm() {
     const response = await axios.post(
       `${API_URL}/api/auth/add-instructor`,
       {
-        full_name: formData.full_name,
+        name: formData.name,
         email: formData.email,
         password: formData.password
       },
@@ -121,7 +121,7 @@ export default function AddInstructorForm() {
 
     // Success
     setSuccess(true);
-    setFormData({ full_name: "", email: "", password: "", confirmPassword: "" });
+    setFormData({ name: "", email: "", password: "", confirmPassword: "" });
 
     setTimeout(() => setSuccess(false), 3000);
 
@@ -177,20 +177,20 @@ export default function AddInstructorForm() {
                 <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  id="full_name"
-                  name="full_name"
-                  value={formData.full_name}
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   className={`w-full pl-10 pr-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                    errors.full_name ? 'border-red-300' : 'border-gray-300'
+                    errors.name ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter instructor's full name"
                 />
               </div>
-              {errors.full_name && (
+              {errors.name && (
                 <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
                   <X className="h-3 w-3" />
-                  {errors.full_name}
+                  {errors.name}
                 </p>
               )}
             </div>

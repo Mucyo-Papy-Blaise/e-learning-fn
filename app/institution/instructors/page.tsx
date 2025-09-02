@@ -5,7 +5,7 @@ import axios from "axios"
 import { API_URL } from "@/lib/api/courses"
 
 interface InstructorItem {
-	full_name: string
+	name: string
 	email: string
 	role?: string
 	bio?: string
@@ -20,20 +20,29 @@ export default function InstitutionInstructorsPage() {
 
 	useEffect(() => {
 		const fetchInstructors = async () => {
-			try {
-				setLoading(true)
-				setError("")
-				const token = localStorage.getItem("token")
-				const res = await axios.get(`${API_URL}/api/institutions/instructors/all`, {
-					headers: { Authorization: `Bearer ${token}` },
-				})
-				const data = Array.isArray(res.data) ? res.data : res.data?.instructors || []
-				setInstructors(data)
-			} catch (_e) {
-				setError("Failed to load instructors")
-			} finally {
-				setLoading(false)
-			}
+  			try {
+  			  setLoading(true)
+  			  setError("")
+  			  const token = localStorage.getItem("token")
+  			  const res = await axios.get(`${API_URL}/api/institutions/instructors/all`, {
+  			    headers: { Authorization: `Bearer ${token}` },
+  			  })
+  			  const rawData = res.data?.instructors || []
+		  
+  			  const data = rawData.map((ins: any) => ({
+  			    name: ins.user_id?.name || "—",
+  			    email: ins.user_id?.email || "—",
+  			    bio: ins.bio,
+  			    profession_name: ins.profession_name,
+  			    expertise: ins.expertise,
+  			  }))
+		  
+  			  setInstructors(data)
+  			} catch (_e) {
+  			  setError("Failed to load instructors")
+  			} finally {
+  			  setLoading(false)
+  			}
 		}
 		fetchInstructors()
 	}, [])
@@ -67,7 +76,7 @@ export default function InstitutionInstructorsPage() {
 								<ul className="divide-y divide-gray-200">
 									{instructors.map((ins: InstructorItem, idx: number) => (
 										<li key={`${ins.email}-${idx}`} className="grid grid-cols-12 items-center">
-											<div className="col-span-4 px-4 py-3 text-sm text-gray-900 truncate">{ins.full_name}</div>
+											<div className="col-span-4 px-4 py-3 text-sm text-gray-900 truncate">{ins.name}</div>
 											<div className="col-span-4 px-4 py-3 text-sm text-gray-700 truncate">{ins.email}</div>
 											<div className="col-span-4 px-4 py-3 text-sm text-gray-700 truncate">
 												{Array.isArray(ins.expertise) ? ins.expertise.join(", ") : (ins.expertise || ins.profession_name || "—")}

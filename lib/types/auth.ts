@@ -1,7 +1,7 @@
 export interface User {
   _id: string;
   email: string;
-  full_name: string;
+  name: string;
   institution:{name:string,id:string}
   role: 'student' | 'instructor' | 'admin'|'institution';
 }
@@ -22,7 +22,7 @@ export interface RegisterData {
   image: string;
   email: string;
   password: string;
-  full_name: string;
+  name: string;
   role: 'student' | 'institution';
   phone: string;
 }

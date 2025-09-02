@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 
 // Removed mocks; using real auth data and current pathname
 
@@ -44,8 +45,8 @@ const navigation = [
     subItems: [
       { name: "Assignments", href: "/instructor/assignments" },
       { name: "Exams", href: "/instructor/exams" },
-      { name: "Quizzes", href: "/instructor/quizzes" },
-      { name: "Resources", href: "/instructor/resources" },
+      // { name: "Quizzes", href: "/instructor/quizzes" },
+      // { name: "Resources", href: "/instructor/resources" },
     ]
   },
   { 
@@ -183,20 +184,20 @@ export default function InstructorSidebar() {
           </h3>
         </div>
       )}
-      <div
+      <Link href='/instructor/profile'
         className={cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-700 transition-colors cursor-pointer group",
           !isMobile && isDesktopCollapsed && "justify-center"
         )}
       >
         <div className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-          {user?.full_name?.substring(0, 2).toUpperCase() || 'NA'}
+          {user?.name?.substring(0, 2).toUpperCase() || 'NA'}
         </div>
         {(!isDesktopCollapsed || isMobile) && (
           <>
             <div className="flex-1 min-w-0">
               <p className="text-white text-sm font-medium truncate">
-                {user?.full_name || 'User'}
+                {user?.name || 'User'}
               </p>
               <p className="text-gray-400 text-xs truncate">
                 {user?.email || ''}
@@ -205,7 +206,7 @@ export default function InstructorSidebar() {
             <ChevronRight className="h-4 w-4 text-gray-400" />
           </>
         )}
-      </div>
+      </Link>
     </div>
   )
 
