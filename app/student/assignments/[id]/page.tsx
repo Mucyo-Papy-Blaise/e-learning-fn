@@ -45,13 +45,13 @@ export default function AssignmentPage() {
 
       setAssignment(assignmentRes.data);
 
-      const submissionRes = await axios.get(`${API_URL}/api/submissions/${assignmentRes.data._id}`, {
+      const submissionRes = await axios.get(`${API_URL}/api/assignments/${assignmentRes.data._id}/submissions/me`, {
         headers: { "Authorization": `Bearer ${token}` },
       });
 
-  
-      if (submissionRes.data ) {
-        setSubmission(submissionRes.data);
+      const subs = Array.isArray(submissionRes.data) ? submissionRes.data : (Array.isArray(submissionRes.data?.submissions) ? submissionRes.data.submissions : [])
+      if (subs && subs.length > 0) {
+        setSubmission(subs[0]);
       }
     } catch (error) {
       toast({
@@ -72,12 +72,12 @@ export default function AssignmentPage() {
   const handleSubmissionSuccess = async (assignment_id: string) => {
     try {
       const token = localStorage.getItem("token");
-      const submissionRes = await axios.get(`${API_URL}/api/submissions/${assignment_id}`, {
+      const submissionRes = await axios.get(`${API_URL}/api/assignments/${assignment_id}/submissions/me`, {
         headers: { "Authorization": `Bearer ${token}` },
       });
-
-      if (submissionRes.data && submissionRes.data.length > 0) {
-        setSubmission(submissionRes.data[0]);
+      const subs = Array.isArray(submissionRes.data) ? submissionRes.data : (Array.isArray(submissionRes.data?.submissions) ? submissionRes.data.submissions : [])
+      if (subs && subs.length > 0) {
+        setSubmission(subs[0]);
       }
     } catch (error) {
       // console.error("Error fetching updated submission:", error);
