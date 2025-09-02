@@ -64,11 +64,11 @@ const navigation = [
     href: "/instructor/students", 
     icon: Users, 
     badge: null,
-    subItems: [
-      { name: "All Students", href: "/instructor/students" },
-      { name: "Enrollments", href: "/instructor/enrollments" },
-      { name: "Progress Tracking", href: "/instructor/progress" },
-    ]
+    // subItems: [
+    //   { name: "All Students", href: "/instructor/students" },
+    //   { name: "Enrollments", href: "/instructor/enrollments" },
+    //   { name: "Progress Tracking", href: "/instructor/progress" },
+    // ]
   },
 ]
 
