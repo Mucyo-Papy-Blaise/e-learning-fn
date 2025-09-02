@@ -22,6 +22,7 @@ interface CourseState {
 
 interface CourseContextType extends CourseState {
   loadCourses: (id: string) => Promise<void>;
+  loadInstructorCourses: () => Promise<void>;
   createCourse: (formData:FormData) => Promise<void>;
   loadCourse: (courseId: string) => Promise<void>;
   loadModules: (courseId: string) => Promise<void>;
@@ -133,6 +134,31 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
       // }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to load courses';
+      dispatch({ type: 'SET_ERROR', payload: message });
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadInstructorCourses = async () => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const courses = await courseApi.fetchInstructorCourses();
+      dispatch({ type: 'SET_COURSES', payload: courses });
+      await Promise.all(
+        courses.map(async (course) => {
+          const progress = await progressApi.fetchCourseProgress(course._id);
+          dispatch({
+            type: 'SET_COURSE_PROGRESS',
+            payload: { courseId: course._id, progress },
+          });
+        })
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to load instructor courses';
       dispatch({ type: 'SET_ERROR', payload: message });
       toast({
         title: "Error",
@@ -339,6 +365,7 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
       value={{
         ...state,
         loadCourses,
+        loadInstructorCourses,
         loadCourse,
         loadModules,
         createCourse,

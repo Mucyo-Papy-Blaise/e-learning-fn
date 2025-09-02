@@ -38,6 +38,20 @@ export async function fetchCourses(id: string): Promise<Course[]> {
   }
 }
 
+export async function fetchInstructorCourses(): Promise<Course[]> {
+  try {
+    const response = await axios.get(`${API_URL}/api/instructor/courses`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    showToast('Failed to fetch instructor courses', 'error');
+    throw error;
+  }
+}
+
 export async function fetchCourseById(courseId: string): Promise<Course> {
   try {
     const response = await axios.get(`${API_URL}/api/courses/${courseId}`,{

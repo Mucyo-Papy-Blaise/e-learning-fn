@@ -17,18 +17,19 @@ import { Card } from "@/components/ui/card";
 import { useAuth } from "@/lib/hooks/use-auth";
 
 export function CourseList() {
-  const { courses, loadCourses, isLoading } = useCourses();
+  const { courses, loadCourses, loadInstructorCourses, isLoading } = useCourses();
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
 const {user,loading} = useAuth()
 
   useEffect(()=>{
-     console.log(user, loading)
      if(!loading && user){
-      
-    loadCourses(user?.institution.id);
-
+       if (user.role === 'instructor') {
+         loadInstructorCourses();
+       } else if (user.institution?.id) {
+         loadCourses(user.institution.id);
+       }
      }
-  }, [loading]);
+  }, [loading, user]);
 
   const toggleCourseDetails = (courseId: string) => {
     setExpandedCourse(expandedCourse === courseId ? null : courseId);
