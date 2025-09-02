@@ -1,5 +1,5 @@
 interface IInstructors  { 
-    full_name: string,
+    name: string,
     email: string,
     role: string,
     bio: string,

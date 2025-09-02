@@ -84,12 +84,21 @@ export const CourseDetails = ({ courseId }: { courseId: string }) => {
           </Button>
           
           <a 
-            href={`/instructor/exams/new`} 
+            href={`/instructor/exams/new?courseId=${courseId}`} 
             className="flex-1 sm:flex-none"
           >
             <Button className="w-full h-12 px-6 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
               <GraduationCap className="mr-2 h-5 w-5" />
               Add Exam
+            </Button>
+          </a>
+          <a 
+            href={`/instructor/assignments?courseId=${courseId}`} 
+            className="flex-1 sm:flex-none"
+          >
+            <Button className="w-full h-12 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+              <FileText className="mr-2 h-5 w-5" />
+              View Assignments
             </Button>
           </a>
         </div>

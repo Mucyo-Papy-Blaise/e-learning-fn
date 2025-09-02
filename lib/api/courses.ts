@@ -23,7 +23,7 @@ export async function fetchCourses(id: string): Promise<Course[]> {
       url = `${API_URL}/api/courses/student/all`
     } else {
       // Get courses by institution ID
-      url = `${API_URL}/api/institutions/${id}`
+      url = `${API_URL}/api/institutions/${id}/courses`
     }
     
     const response = await axios.get(url, {
@@ -34,6 +34,26 @@ export async function fetchCourses(id: string): Promise<Course[]> {
     return response.data;
   } catch (error) {
     showToast('Failed to fetch courses', 'error');
+    throw error;
+  }
+}
+
+export async function fetchInstructorCourses(): Promise<any[]> {
+  try {
+    const response = await axios.get(`${API_URL}/api/instructor/courses`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    const data = response.data;
+    console.log("this is the course data:", data)
+    if (Array.isArray(data)) return data as Course[];
+    if (Array.isArray(data?.courses)) return data.courses as Course[];
+    if (Array.isArray(data?.data)) return data.data as Course[];
+    if (Array.isArray(data?.results)) return data.results as Course[];
+    return [];
+  } catch (error) {
+    showToast('Failed to fetch instructor courses', 'error');
     throw error;
   }
 }
@@ -157,6 +177,7 @@ export async function createLesson(module_id: string, title: string, content: st
   }
 }
 
+
 export async function fetchEnrolledCourses() {
   try {
     const response = await axios.get(`${API_URL}/api/enrollement`, {
@@ -187,3 +208,4 @@ export async function enrollInCourse(courseId: string) {
     throw error;
   }
 }
+

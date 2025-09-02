@@ -88,10 +88,14 @@ export default function AssignmentsOverviewPage() {
   const fetchAllAssignments = async () => {
     try {
       setLoading(true);
-      
+      const url = new URL(window.location.href);
+      const filterCourseId = url.searchParams.get('courseId');
       // Get all courses for the logged-in instructor
       const coursesResponse = await axiosInstance.get('/api/instructor/courses');
-      const courses = coursesResponse.data.courses || coursesResponse.data || [];
+      let courses = coursesResponse.data.courses || coursesResponse.data || [];
+      if (filterCourseId) {
+        courses = courses.filter((c: any) => c._id === filterCourseId);
+      }
 
       const allModuleGroups: ModuleGroup[] = [];
 

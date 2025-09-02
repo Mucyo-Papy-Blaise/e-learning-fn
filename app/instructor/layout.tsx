@@ -11,7 +11,7 @@ export default function InstructorLayout({
 }) {
   const { user, loading } = useAuth();
 
-  if (!loading && (!user || user.role !== "institution")) {
+  if (!loading && (!user || user.role !== "instructor")) {
     redirect("/login");
   }
 
