@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import { 
   BookOpen, 
   FileText, 
@@ -17,6 +17,10 @@ import {
   Clock,
   Target
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
+import { fetchInstructorCourses, fetchModulesByCourseId } from '@/lib/api/courses';
+import axiosInstance from '@/lib/axios';
 
 interface Instruction {
   step: string;
@@ -45,6 +49,8 @@ interface AssignmentFormData {
 type TabType = 'basic' | 'settings' | 'instructions' | 'review';
 
 const CreateAssignmentForm: React.FC = () => {
+  const router = useRouter();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>('basic');
   
   const [formData, setFormData] = useState<AssignmentFormData>({
@@ -67,19 +73,43 @@ const CreateAssignmentForm: React.FC = () => {
   });
 
   const [newInstruction, setNewInstruction] = useState<Instruction>({ step: '', content: '' });
+  
+  // Dynamic data for dropdowns
+  const [courses, setCourses] = useState<any[]>([]);
+  const [modules, setModules] = useState<any[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState<boolean>(true);
+  const [loadingModules, setLoadingModules] = useState<boolean>(false);
 
-  // Mock data for dropdowns
-  const courses = [
-    { id: '1', name: 'Computer Science 101' },
-    { id: '2', name: 'Advanced Programming' },
-    { id: '3', name: 'Data Structures' }
-  ];
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        setLoadingCourses(true);
+        const data = await fetchInstructorCourses();
+        setCourses(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setCourses([]);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+    loadCourses();
+  }, []);
 
-  const modules = [
-    { id: '1', name: 'Introduction to Programming' },
-    { id: '2', name: 'Object-Oriented Programming' },
-    { id: '3', name: 'Algorithms and Complexity' }
-  ];
+  const loadModulesForCourse = async (courseId: string) => {
+    if (!courseId) {
+      setModules([]);
+      return;
+    }
+    try {
+      setLoadingModules(true);
+      const data = await fetchModulesByCourseId(courseId);
+      setModules(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setModules([]);
+    } finally {
+      setLoadingModules(false);
+    }
+  };
 
   const handleInputChange = (field: keyof AssignmentFormData, value: any): void => {
     setFormData(prev => ({
@@ -129,13 +159,39 @@ const CreateAssignmentForm: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (isDraft: boolean = false): void => {
-    const submissionData = {
-      ...formData,
-      status: isDraft ? 'draft' : 'published'
-    };
-    console.log('Submitting assignment:', submissionData);
-    alert(`Assignment ${isDraft ? 'saved as draft' : 'published'} successfully!`);
+  const handleSubmit = async (isDraft: boolean = false): Promise<void> => {
+    try {
+      const submissionData = {
+        course_id: formData.course_id,
+        module_id: formData.module_id,
+        title: formData.title,
+        description: formData.description,
+        dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString() : undefined,
+        availableAfter: formData.availableAfter ? new Date(formData.availableAfter).toISOString() : undefined,
+        points: Number(formData.points),
+        submissionType: formData.submissionType,
+        allowedAttempts: Number(formData.allowedAttempts),
+        status: isDraft ? 'draft' : formData.status,
+        isAnonymous: formData.isAnonymous,
+        peerReviewEnabled: formData.peerReviewEnabled,
+        plagiarismCheckEnabled: formData.plagiarismCheckEnabled,
+        instructions: formData.instructions,
+        attachments: [],
+        rubric: formData.rubric,
+      };
+
+      await axiosInstance.post('/api/assignments', submissionData);
+
+      toast({ title: 'Success', description: `Assignment ${isDraft ? 'saved as draft' : 'published'} successfully` });
+      if (formData.course_id) {
+        router.push(`/instructor/courses/${formData.course_id}`);
+      } else {
+        router.push('/instructor/assignments');
+      }
+    } catch (error: any) {
+      const message = error?.response?.data?.message || error?.message || 'Failed to create assignment';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+    }
   };
 
   const renderBasicTab = () => (
@@ -151,13 +207,19 @@ const CreateAssignmentForm: React.FC = () => {
             <select
               id="course"
               value={formData.course_id}
-              onChange={(e) => handleInputChange('course_id', e.target.value)}
+              onChange={async (e) => {
+                const value = e.target.value;
+                handleInputChange('course_id', value);
+                handleInputChange('module_id', '');
+                await loadModulesForCourse(value);
+              }}
               className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               required
             >
               <option value="">Select a course</option>
-              {courses.map(course => (
-                <option key={course.id} value={course.id}>{course.name}</option>
+              {loadingCourses && <option value="" disabled>Loading courses...</option>}
+              {!loadingCourses && courses.map((course) => (
+                <option key={course._id} value={course._id}>{course.title}</option>
               ))}
             </select>
           </div>
@@ -177,8 +239,9 @@ const CreateAssignmentForm: React.FC = () => {
               required
             >
               <option value="">Select a module</option>
-              {modules.map(module => (
-                <option key={module.id} value={module.id}>{module.name}</option>
+              {loadingModules && <option value="" disabled>Loading modules...</option>}
+              {!loadingModules && modules.map((module) => (
+                <option key={module._id} value={module._id}>{module.title}</option>
               ))}
             </select>
           </div>
