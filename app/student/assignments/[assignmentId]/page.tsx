@@ -30,7 +30,7 @@ interface Submission {
 
 export default function AssignmentPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL 
-  const { id } = useParams(); 
+  const { assignmentId } = useParams() as { assignmentId: string };
   const { toast } = useToast();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [submission, setSubmission] = useState<Submission | null>(null);
@@ -40,7 +40,7 @@ export default function AssignmentPage() {
     try {
       const token = localStorage.getItem("token");
 
-      const assignmentRes = await axios.get(`${API_URL}/api/assignments/${id}`, {
+      const assignmentRes = await axios.get(`${API_URL}/api/assignments/${assignmentId}`, {
         headers: { "Authorization": `Bearer ${token}` },
       });
 
@@ -67,9 +67,8 @@ export default function AssignmentPage() {
 
   useEffect(() => {
     fetchData();
-  }, [id]); // Fetch again when moduleId changes
+  }, [assignmentId]);
 
-  // Function to handle successful submission
   const handleSubmissionSuccess = async (assignment_id: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -81,7 +80,7 @@ export default function AssignmentPage() {
         setSubmission(subs[0]);
       }
     } catch (error) {
-      // console.error("Error fetching updated submission:", error);
+      // silent
     }
   };
 
@@ -110,7 +109,6 @@ export default function AssignmentPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Assignment Description */}
               <div className="prose max-w-none dark:prose-invert">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Assignment Description</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -189,3 +187,4 @@ export default function AssignmentPage() {
     </div>
   );
 }
+
