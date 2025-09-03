@@ -92,7 +92,7 @@ export default function AssignmentDetailPage({
         <main className="flex flex-1 items-center justify-center">
           <div className="text-center">
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Assignment Not Found</h2>
-            <p className="text-sm text-gray-600">The assignment you're looking for doesn't exist.</p>
+            <p className="text-sm text-gray-600">The assignment you{"'"}re looking for doesn{"'"}t exist.</p>
           </div>
         </main>
       </div>

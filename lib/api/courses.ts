@@ -180,15 +180,28 @@ export async function createLesson(module_id: string, title: string, content: st
 
 export async function fetchEnrolledCourses() {
   try {
-    const response = await axios.get(`${API_URL}/api/enrollement`, {
+    // Primary path per backend mounting
+    const primary = `${API_URL}/api/enrollment`;
+    const response = await axios.get(primary, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
     });
     return response.data;
-  } catch (error) {
-    showToast('Failed to fetch enrolled courses', 'error');
-    throw error;
+  } catch (primaryErr) {
+    // Backward-compatible alias if older path is used elsewhere
+    try {
+      const fallback = `${API_URL}/api/enrollement`;
+      const response = await axios.get(fallback, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      return response.data;
+    } catch (fallbackErr) {
+      showToast('Failed to fetch enrolled courses', 'error');
+      throw primaryErr;
+    }
   }
 }
 

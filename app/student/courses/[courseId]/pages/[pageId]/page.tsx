@@ -1,4 +1,5 @@
-import { pageContentData } from "@/lib/data"
+"use client"
+
 import { ArrowLeft, ArrowRight, BookMarked, Share2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -19,11 +20,14 @@ export default function CoursePageContent({
       try {
         const modules = await fetchModulesByCourseId(courseId)
         const allItems = (modules || []).flatMap((m: any) => (m.items || m.lessons || []))
-        const found = allItems.find((it: any) => (it.url || it._id) === pageId)
-        if (found) setPage(found)
-        else setPage(pageContentData[pageId as keyof typeof pageContentData] || null)
+        const found = allItems.find((it: any) => {
+          const id = (it._id ? String(it._id) : undefined)
+          const url = (it.url ? String(it.url) : undefined)
+          return id === pageId || url === pageId
+        })
+        setPage(found || null)
       } catch {
-        setPage(pageContentData[pageId as keyof typeof pageContentData] || null)
+        setPage(null)
       }
     }
     load()
@@ -47,7 +51,7 @@ export default function CoursePageContent({
         <div className="flex flex-1 items-center justify-center p-6 text-center text-gray-500">
           <div>
             <h2 className="text-2xl font-bold text-gray-700 mb-2">Page Not Found</h2>
-            <p className="text-gray-600 mb-4">The page you're looking for doesn't exist.</p>
+            <p className="text-gray-600 mb-4">The page you{"'"}re looking for doesn{"'"}t exist.</p>
             <Link 
               href={`/student/courses/${courseId}/modules`}
               className="text-blue-600 hover:underline"
@@ -95,40 +99,14 @@ export default function CoursePageContent({
         <div className="rounded-md border border-gray-200 bg-white p-8 shadow-sm flex-1">
           <h2 className="mb-6 text-3xl font-bold text-gray-800">{page.title}</h2>
           
-          {/* Main Content Image */}
-          <div className="mb-8">
-            <Image
-              src="/ai.png"
-              width={600}
-              height={400}
-              alt={page.title}
-              className="w-full rounded-md object-cover shadow-md"
-            />
-          </div>
-          
           {/* Page Content */}
-          <div
-            className="prose max-w-none text-gray-700 leading-relaxed text-[15px]"
-            dangerouslySetInnerHTML={{ __html: page.content }}
-          />
-          
-          {/* Additional Learning Resources */}
-          <div className="mt-8 p-6 bg-gray-50 rounded-md">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Learning Objectives</h3>
-            <ul className="space-y-2 text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-blue-600 mt-1">•</span>
-                <span>Understand the fundamental principles of {page.title.toLowerCase()}</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-600 mt-1">•</span>
-                <span>Apply the concepts learned in practical scenarios</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-600 mt-1">•</span>
-                <span>Develop critical thinking skills related to this topic</span>
-              </li>
-            </ul>
+          <div className="prose max-w-none text-gray-700 leading-relaxed text-[15px] whitespace-pre-wrap">
+            {(page.content || "")
+              .replace(/<[^>]*>/g, "")
+              .replace(/&nbsp;/g, " ")
+              .replace(/&amp;/g, "&")
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">")}
           </div>
         </div>
 

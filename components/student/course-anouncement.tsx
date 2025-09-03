@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { fetchCourseAnnouncements } from "@/lib/api/student";
 
 // Define types
 type AnnouncementType = 'general' | 'assignment' | 'grade' | 'reminder' | 'urgent';
@@ -94,10 +95,32 @@ const getTypeLabel = (type: AnnouncementType) => {
   }
 };
 
-export default function CourseAnnouncements() {
-  const [announcements, setAnnouncements] = useState<Announcement[]>(MOCK_ANNOUNCEMENTS);
+export default function CourseAnnouncements({ courseId }: { courseId?: string }) {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [filter, setFilter] = useState<'all' | 'unread' | 'pinned'>('all');
+
+  useEffect(() => {
+    const load = async () => {
+      if (!courseId) return;
+      try {
+        const data = await fetchCourseAnnouncements(courseId);
+        const mapped: Announcement[] = (Array.isArray(data) ? data : []).map((a: any) => ({
+          id: a._id || a.id,
+          title: a.title,
+          content: a.content,
+          type: (a.type || 'general') as AnnouncementType,
+          date: a.created_at || a.date || new Date().toISOString(),
+          author: a.author?.name || 'Instructor',
+          isRead: false,
+          isPinned: !!a.is_pinned,
+          hasAttachment: Array.isArray(a.attachments) && a.attachments.length > 0,
+        }));
+        setAnnouncements(mapped);
+      } catch {}
+    };
+    load();
+  }, [courseId]);
 
   const markAsRead = (id: string) => {
     setAnnouncements(prev => 

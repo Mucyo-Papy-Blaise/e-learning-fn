@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { API_URL } from "@/lib/api/student";
 import {
   Bell,
   Calendar,
@@ -13,7 +15,7 @@ import {
 } from "lucide-react";
 import { IAssignment } from "@/types/assignment";
 
-const StudentCourseHome = () => {
+const StudentCourseHome = ({ courseId }: { courseId?: string }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedAssignment, setSelectedAssignment] = useState<IAssignment | null>(null);
 
@@ -74,8 +76,7 @@ const StudentCourseHome = () => {
       "First of all, thank you for attempting to do this podcast. While I didn't expect the approach you used, I liked the introduction. I think it was good at drawing attention. Good potential, kudos.",
   };
 
-  // Recent assignments
-  const recentAssignments: IAssignment[] = [
+  const [recentAssignments, setRecentAssignments] = useState<IAssignment[]>([
     {
       id: "1",
       title: "Academic Writing Essay - Topic Analysis",
@@ -166,7 +167,44 @@ const StudentCourseHome = () => {
         "Consider how voice changes when writing for academic vs. general audiences. Provide specific examples.",
       comments: "",
     },
-  ];
+  ]);
+
+  // Start with no featured assignment when using real API
+  useEffect(() => {
+    setSelectedAssignment(null);
+  }, [courseId]);
+
+  useEffect(() => {
+    const loadAssignments = async () => {
+      if (!courseId) return;
+      try {
+        const res = await axios.get(`${API_URL}/api/assignments/course/${courseId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        const list = res?.data?.assignments || [];
+        const mapped: IAssignment[] = list.map((a: any) => ({
+          id: a._id,
+          title: a.title,
+          dueDate: a.dueDate,
+          availableAfter: a.availableAfter || '',
+          status: a.status || 'not-started',
+          points: a.points || 0,
+          type: a.type || 'assignment',
+          submissionType: a.submissionType || 'file upload',
+          attempts: 0,
+          allowedAttempts: 1,
+          grade: '',
+          gradedAnonymously: false,
+          introduction: a.description || '',
+          instructions: [],
+          detailedInstructions: '',
+          comments: '',
+        }));
+        setRecentAssignments(mapped);
+      } catch {}
+    };
+    loadAssignments();
+  }, [courseId]);
 
   // Announcements
   const announcements = [

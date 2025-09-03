@@ -31,7 +31,11 @@ export async function fetchStudentCalendar() {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
-  return response.data;
+  const data = response.data;
+  // Normalize to an array for consumers expecting a list
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.assignments)) return data.assignments;
+  return [];
 }
 
 // GET /api/student/courses/:courseId/progress
@@ -51,7 +55,11 @@ export async function fetchCourseAnnouncements(courseId: string) {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
-  return response.data;
+  const data = response.data;
+  // Backend returns { announcements, userId }
+  if (Array.isArray(data?.announcements)) return data.announcements;
+  if (Array.isArray(data)) return data;
+  return [];
 }
 
 // Student area helpers for learning journey

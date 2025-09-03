@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect } from 'react';
 import { 
   Save, 
@@ -19,7 +20,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useRouter, useParams } from 'next/navigation';
+import { fetchInstructorCourses } from '@/lib/api/courses';
+import { getCourseAnnouncements, updateAnnouncement } from '@/lib/api/announcements';
 
 interface Course {
   _id: string;
@@ -40,7 +43,8 @@ interface AnnouncementFormData {
 
 const AnnouncementForm = () => {
   const router = useRouter();
-  const { id } = router.query; // For edit mode
+  const params = useParams();
+  const id = params?.id as string | undefined; // For edit mode
   const isEdit = !!id;
 
   const [formData, setFormData] = useState<AnnouncementFormData>({
@@ -57,35 +61,57 @@ const AnnouncementForm = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mock courses data - replace with actual API call
   useEffect(() => {
-    const mockCourses: Course[] = [
-      { _id: 'course1', title: 'Advanced React Development' },
-      { _id: 'course2', title: 'Node.js Backend Architecture' },
-      { _id: 'course3', title: 'Database Design Principles' }
-    ];
-    setCourses(mockCourses);
-
-    // If editing, load announcement data
-    if (isEdit && id) {
-      // Mock existing announcement data
-      const mockAnnouncement = {
-        course_id: 'course1',
-        title: 'Welcome to Advanced React Development',
-        content: 'Welcome students! This course will cover advanced React concepts including hooks, context, and performance optimization.',
-        type: 'general' as const,
-        is_pinned: true,
-        is_published: true,
-        publish_at: '2024-01-15T10:00:00',
-        expires_at: '2024-02-15T23:59:59'
-      };
-      setFormData(prev => ({
-        ...prev,
-        ...mockAnnouncement,
-        attachments: []
-      }));
+    let active = true
+    async function load() {
+      try {
+        const list = await fetchInstructorCourses()
+        if (!active) return
+        setCourses(Array.isArray(list) ? list.map((c: any) => ({ _id: c._id || c.id, title: c.title })) : [])
+      } catch {
+        if (active) setCourses([])
+      }
     }
-  }, [isEdit, id]);
+    load()
+    return () => { active = false }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+    async function loadAnnouncement() {
+      if (!isEdit || !id) return
+      try {
+        // Attempt to find the announcement by scanning courses if needed
+        // If backend had GET /api/announcements/:id we'd use that, but not provided
+        const list = await fetchInstructorCourses()
+        const courseIds = Array.isArray(list) ? list.map((c: any) => c._id || c.id) : []
+        for (const courseId of courseIds) {
+          const data = await getCourseAnnouncements(courseId)
+          const found = (data?.announcements || []).find((a: any) => String(a._id) === String(id))
+          if (found) {
+            if (!active) return
+            setFormData(prev => ({
+              ...prev,
+              course_id: found.course_id || courseId,
+              title: found.title,
+              content: found.content,
+              type: found.type,
+              is_pinned: !!found.is_pinned,
+              is_published: !!found.is_published,
+              publish_at: found.publish_at ? String(found.publish_at).slice(0,16) : undefined,
+              expires_at: found.expires_at ? String(found.expires_at).slice(0,16) : undefined,
+              attachments: []
+            }))
+            break
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadAnnouncement()
+    return () => { active = false }
+  }, [isEdit, id])
 
   const handleInputChange = (field: keyof AnnouncementFormData, value: any) => {
     setFormData(prev => ({
@@ -151,15 +177,16 @@ const AnnouncementForm = () => {
     setLoading(true);
     
     try {
-      // Mock API call - replace with actual implementation
-      console.log('Submitting announcement:', formData);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect to announcements list
-      router.push('/instructor/announcements');
-      
+      if (!id) return
+      await updateAnnouncement(String(id), {
+        title: formData.title,
+        content: formData.content,
+        type: formData.type,
+        isPinned: formData.is_pinned,
+        isPublished: formData.is_published,
+        expiresAt: formData.expires_at,
+      })
+      router.push('/instructor/announcements')
     } catch (error) {
       console.error('Error saving announcement:', error);
     } finally {

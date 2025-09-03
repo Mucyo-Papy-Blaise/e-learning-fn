@@ -5,10 +5,10 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { API_URL } from "@/lib/api/courses";
+import TiptapEditor from "@/components/ui/TipTap.Editor";
 
 const submissionSchema = z.object({
   content: z.string().min(1, "Submission content is required"),
@@ -78,10 +78,17 @@ export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: Submiss
   return (
     <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
       <div>
-        <Textarea
-          placeholder="Enter your submission here"
-          {...register("content")}
-          className={errors.content ? "border-red-500" : ""}
+        <Controller
+          name="content"
+          control={control}
+          render={({ field: { onChange, value } }) => (
+            <TiptapEditor
+              name="submission-content"
+              content={value || ""}
+              onChange={onChange}
+              placeholder="Enter your submission here..."
+            />
+          )}
         />
         {errors.content && (
           <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>

@@ -21,26 +21,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import Link from 'next/link';
+import { fetchInstructorCourses } from '@/lib/api/courses';
+import { getCourseAnnouncements, updateAnnouncement, deleteAnnouncementApi, Announcement as ApiAnnouncement } from '@/lib/api/announcements';
 
-interface Announcement {
-  _id: string;
-  course_id: string;
-  title: string;
-  content: string;
-  author: {
-    _id: string;
-    name: string;
-  };
-  type: 'general' | 'assignment' | 'grade' | 'reminder' | 'urgent';
-  is_pinned: boolean;
-  is_published: boolean;
-  publish_at?: string;
-  expires_at?: string;
-  attachments?: string[];
-  created_at: string;
-  updated_at: string;
-  read_by: string[];
-}
+type Announcement = ApiAnnouncement
 
 const AnnouncementsList = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -48,56 +32,34 @@ const AnnouncementsList = () => {
   const [filter, setFilter] = useState<'all' | 'published' | 'draft' | 'expired'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  // Mock data - replace with actual API calls
   useEffect(() => {
-    const mockAnnouncements: Announcement[] = [
-      {
-        _id: '1',
-        course_id: 'course1',
-        title: 'Welcome to Advanced React Development',
-        content: 'Welcome students! This course will cover advanced React concepts including hooks, context, and performance optimization.',
-        author: { _id: 'instructor1', name: 'Dr. John Smith' },
-        type: 'general',
-        is_pinned: true,
-        is_published: true,
-        created_at: '2024-01-15T10:00:00Z',
-        updated_at: '2024-01-15T10:00:00Z',
-        read_by: ['student1', 'student2']
-      },
-      {
-        _id: '2',
-        course_id: 'course1',
-        title: 'Assignment 1: Component Lifecycle',
-        content: 'Please complete the React component lifecycle assignment. Due date is next Friday.',
-        author: { _id: 'instructor1', name: 'Dr. John Smith' },
-        type: 'assignment',
-        is_pinned: false,
-        is_published: true,
-        expires_at: '2024-02-01T23:59:59Z',
-        created_at: '2024-01-18T14:30:00Z',
-        updated_at: '2024-01-18T14:30:00Z',
-        read_by: ['student1']
-      },
-      {
-        _id: '3',
-        course_id: 'course1',
-        title: 'Urgent: Class Cancelled Tomorrow',
-        content: 'Due to unforeseen circumstances, tomorrow\'s class is cancelled. We will resume on Thursday.',
-        author: { _id: 'instructor1', name: 'Dr. John Smith' },
-        type: 'urgent',
-        is_pinned: true,
-        is_published: true,
-        created_at: '2024-01-20T16:45:00Z',
-        updated_at: '2024-01-20T16:45:00Z',
-        read_by: []
+    let isMounted = true
+    async function loadAnnouncements() {
+      try {
+        setLoading(true)
+        const courses = await fetchInstructorCourses()
+        const courseIds = Array.isArray(courses) ? courses.map((c: any) => c._id || c.id) : []
+        const results = await Promise.all(
+          courseIds.map(async (courseId) => {
+            try {
+              const data = await getCourseAnnouncements(courseId)
+              return (data?.announcements || []).map((a: any) => ({ ...a, course_id: a.course_id || courseId }))
+            } catch {
+              return []
+            }
+          })
+        )
+        const merged: Announcement[] = results.flat()
+        if (isMounted) setAnnouncements(merged)
+      } catch (e) {
+        if (isMounted) setAnnouncements([])
+      } finally {
+        if (isMounted) setLoading(false)
       }
-    ];
-    
-    setTimeout(() => {
-      setAnnouncements(mockAnnouncements);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    }
+    loadAnnouncements()
+    return () => { isMounted = false }
+  }, [])
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -121,27 +83,41 @@ const AnnouncementsList = () => {
     }
   };
 
-  const togglePin = (id: string) => {
-    setAnnouncements(prev => 
-      prev.map(ann => 
-        ann._id === id ? { ...ann, is_pinned: !ann.is_pinned } : ann
-      )
-    );
-  };
-
-  const togglePublish = (id: string) => {
-    setAnnouncements(prev => 
-      prev.map(ann => 
-        ann._id === id ? { ...ann, is_published: !ann.is_published } : ann
-      )
-    );
-  };
-
-  const deleteAnnouncement = (id: string) => {
-    if (confirm('Are you sure you want to delete this announcement?')) {
-      setAnnouncements(prev => prev.filter(ann => ann._id !== id));
+  const togglePin = async (id: string) => {
+    const previous = announcements
+    const next = announcements.map(ann => ann._id === id ? { ...ann, is_pinned: !ann.is_pinned } : ann)
+    setAnnouncements(next)
+    try {
+      const current = next.find(a => a._id === id)
+      await updateAnnouncement(id, { isPinned: current?.is_pinned })
+    } catch (e) {
+      setAnnouncements(previous)
     }
-  };
+  }
+
+  const togglePublish = async (id: string) => {
+    const previous = announcements
+    const next = announcements.map(ann => ann._id === id ? { ...ann, is_published: !ann.is_published } : ann)
+    setAnnouncements(next)
+    try {
+      const current = next.find(a => a._id === id)
+      await updateAnnouncement(id, { isPublished: current?.is_published })
+    } catch (e) {
+      setAnnouncements(previous)
+    }
+  }
+
+  const deleteAnnouncement = async (id: string) => {
+    const ok = confirm('Are you sure you want to delete this announcement?')
+    if (!ok) return
+    const previous = announcements
+    setAnnouncements(prev => prev.filter(ann => ann._id !== id))
+    try {
+      await deleteAnnouncementApi(id)
+    } catch (e) {
+      setAnnouncements(previous)
+    }
+  }
 
   const filteredAnnouncements = announcements
     .filter(ann => {

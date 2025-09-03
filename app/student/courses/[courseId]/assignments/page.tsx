@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import axios from "axios"
 
 interface AssignmentItem {
+  priority: string
   _id: string
   title: string
   points?: number
@@ -24,10 +25,11 @@ export default function CourseAssignmentsPage({ params }: { params: { courseId: 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`${API_URL}/api/assignments/${courseId}`, {
+        const res = await axios.get(`${API_URL}/api/assignments/course/${courseId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         })
-        setAssignmentsData(Array.isArray(res.data) ? res.data : [])
+        const items = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.assignments) ? res.data.assignments : [])
+        setAssignmentsData(items)
       } catch {
         setAssignmentsData([])
       }
@@ -125,15 +127,15 @@ export default function CourseAssignmentsPage({ params }: { params: { courseId: 
           </div>
           
           <div className="divide-y divide-gray-200">
-            {assignmentsData.map((assignment) => (
-              <div key={assignment.id} className="px-6 py-4 hover:bg-gray-50">
+            {assignmentsData.map((assignment: any) => (
+              <div key={assignment._id || assignment.id} className="px-6 py-4 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    {getStatusIcon(assignment.submitted, assignment.priority)}
+                    {getStatusIcon(!!assignment.submitted, assignment.priority)}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <Link 
-                          href={`/student/courses/${courseId}/assignments/${assignment.id}`}
+                          href={`/student/assignments/${assignment._id || assignment.id}`}
                           className="text-sm font-medium text-blue-600 hover:underline"
                         >
                           {assignment.title}
@@ -146,7 +148,7 @@ export default function CourseAssignmentsPage({ params }: { params: { courseId: 
                         <span className="text-sm text-gray-500">{assignment.points ? `${assignment.points} pts` : ''}</span>
                         <div className="flex items-center gap-1 text-sm text-gray-500">
                           <Clock className="h-4 w-4" />
-                          {assignment.due_date ? new Date(assignment.due_date).toLocaleString() : ''}
+                          {assignment.dueDate ? new Date(assignment.dueDate).toLocaleString() : (assignment.due_date ? new Date(assignment.due_date).toLocaleString() : '')}
                         </div>
                       </div>
                       <p className="text-sm text-gray-600 mt-1">{assignment.status || ''}</p>

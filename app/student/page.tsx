@@ -48,7 +48,19 @@ function DashboardOverview() {
         fetchStudentCalendar().catch(() => []),
       ]);
       setNotifications(Array.isArray(notif) ? notif : []);
-      setCalendarItems(Array.isArray(cal) ? cal : []);
+      const normalizedCal = Array.isArray(cal)
+        ? cal.map((item: any) => ({
+            ...item,
+            // Ensure 'course' is a displayable string
+            course:
+              typeof item.course === 'object'
+                ? (item.course?.title || item.course?.name || '')
+                : (item.course || ''),
+            // Normalize date field used in UI
+            dueDate: item.dueDate || item.date || item.due_date,
+          }))
+        : [];
+      setCalendarItems(normalizedCal);
     } catch {}
   };
 

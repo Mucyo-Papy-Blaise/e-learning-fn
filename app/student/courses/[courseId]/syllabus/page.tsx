@@ -127,7 +127,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
         </div>
 
         {/* Learning Objectives */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+        {/* <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-3">Learning Objectives</h3>
           <ul className="space-y-2">
             {syllabusData.objectives?.map((objective, index) => (
@@ -137,10 +137,10 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
         {/* Course Schedule */}
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+        {/* <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Schedule</h3>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -164,7 +164,7 @@ export default function CourseSyllabusPage({ params }: { params: { courseId: str
               </tbody>
             </table>
           </div>
-        </div>
+        </div> */}
 
         {/* Grading Policy */}
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
