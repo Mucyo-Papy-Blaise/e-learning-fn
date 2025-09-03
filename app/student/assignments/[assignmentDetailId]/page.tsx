@@ -30,7 +30,7 @@ interface Submission {
 
 export default function AssignmentPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL 
-  const { id } = useParams(); // Get the moduleId from the URL params
+  const { id } = useParams(); 
   const { toast } = useToast();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [submission, setSubmission] = useState<Submission | null>(null);
