@@ -7,6 +7,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { toast } from 'react-toastify'
 
 type NewQuestion = {
   question: string
@@ -50,16 +52,31 @@ export default function NewQuizPage() {
         await createQuizQuestion(quizId, { quiz_id: quizId, question: q.question, options: q.options, correct_answer: q.correct_answer, points: q.points } as any)
       }
       setSaving(false)
-      alert('Quiz created')
+      toast.success('Quiz created')
     } else {
       setSaving(false)
-      alert(res.message)
+      toast.error(res.message)
     }
   }
 
   return (
     <div className="p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/instructor">Instructor</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/instructor/quizzes">Quizzes</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>New</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <h1 className="text-2xl font-semibold">Create Quiz</h1>
         <Card className="bg-white">
           <CardHeader>

@@ -4,6 +4,8 @@ import { getExamById, getExamQuestions, manualGradeSubmission } from '@/app/lib/
 import type { Exam, ExamQuestion, ExamSubmission } from '@/lib/types/assessments'
 import GradingForm from '@/components/assessments/GradingForm'
 import { useParams, useRouter } from 'next/navigation'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { toast } from 'react-toastify'
 
 export default function GradeSubmissionPage() {
   const params = useParams()
@@ -29,10 +31,10 @@ export default function GradeSubmissionPage() {
   const handleSubmit = async (payload: Array<{ questionId: string; pointsAwarded: number; feedback?: string }>) => {
     const res = await manualGradeSubmission(submissionId, payload as any)
     if (res.ok) {
-      alert('Saved')
+      toast.success('Grades saved')
       router.push(`/instructor/exams/${examId}/submissions`)
     } else {
-      alert(res.message)
+      toast.error(res.message)
     }
   }
 
@@ -49,6 +51,21 @@ export default function GradeSubmissionPage() {
   return (
     <div className="p-4 md:p-6">
       <div className="max-w-4xl mx-auto space-y-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/instructor">Instructor</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href={`/instructor/exams/${examId}/submissions`}>Submissions</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Grade</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <h1 className="text-2xl font-semibold">Grade Submission</h1>
         <GradingForm questions={questions} submission={submission} onSubmit={handleSubmit} />
       </div>

@@ -5,6 +5,8 @@ import type { Quiz, QuizAttempt, QuizQuestion } from '@/lib/types/assessments'
 import QuestionForm from '@/components/assessments/QuestionForm'
 import { Button } from '@/components/ui/button'
 import { useParams, useRouter } from 'next/navigation'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { toast } from 'react-toastify'
 
 export default function QuizAttemptPage() {
   const params = useParams()
@@ -37,7 +39,12 @@ export default function QuizAttemptPage() {
   const handleStart = async () => {
     if (!id) return
     const res = await startQuizAttempt(id)
-    if (res.ok) setAttempt(res.data)
+    if (res.ok) {
+      setAttempt(res.data)
+      toast.success('Attempt started')
+    } else {
+      toast.error(res.message)
+    }
   }
 
   const handleSubmit = async () => {
@@ -46,13 +53,31 @@ export default function QuizAttemptPage() {
     const res = await submitQuizAttempt(attempt._id, answers)
     setSubmitting(false)
     if (res.ok) {
+      toast.success('Quiz submitted')
       router.push('/student/results')
+    } else {
+      toast.error(res.message)
     }
   }
 
   return (
     <div className="p-4 md:p-6">
       <div className="max-w-3xl mx-auto space-y-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/student">Student</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/student/quizzes">Quizzes</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{quiz?.title ?? 'Quiz'}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <h1 className="text-2xl font-semibold">{quiz?.title ?? 'Quiz'}</h1>
         {!attempt ? (
           <div className="space-y-4">

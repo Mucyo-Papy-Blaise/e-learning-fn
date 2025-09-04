@@ -2,9 +2,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getQuizAttempts, listExams, getOwnExamSubmission } from '@/app/lib/api'
 import ResultsTable, { ResultRow } from '@/components/assessments/ResultsTable'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function StudentResultsPage() {
   const [rows, setRows] = useState<ResultRow[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let mounted = true
@@ -54,7 +57,10 @@ export default function StudentResultsPage() {
         }))
       }
 
-      if (mounted) setRows(out)
+      if (mounted) {
+        setRows(out)
+        setLoading(false)
+      }
     }
     load()
     return () => { mounted = false }
@@ -65,8 +71,26 @@ export default function StudentResultsPage() {
   return (
     <div className="p-4 md:p-6">
       <div className="max-w-5xl mx-auto space-y-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/student">Student</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Results</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <h1 className="text-2xl font-semibold">My Results</h1>
-        <ResultsTable rows={sorted} />
+        {loading ? (
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        ) : (
+          <ResultsTable rows={sorted} />
+        )}
       </div>
     </div>
   )

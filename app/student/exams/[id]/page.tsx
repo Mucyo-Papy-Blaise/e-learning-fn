@@ -5,6 +5,8 @@ import type { Exam, ExamQuestion } from '@/lib/types/assessments'
 import QuestionForm from '@/components/assessments/QuestionForm'
 import { Button } from '@/components/ui/button'
 import { useParams, useRouter } from 'next/navigation'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
+import { toast } from 'react-toastify'
 
 export default function ExamAttemptPage() {
   const params = useParams()
@@ -39,13 +41,31 @@ export default function ExamAttemptPage() {
     const res = await submitExam(id, { courseId: exam.course, answers })
     setSubmitting(false)
     if (res.ok) {
+      toast.success('Exam submitted')
       router.push('/student/results')
+    } else {
+      toast.error(res.message)
     }
   }
 
   return (
     <div className="p-4 md:p-6">
       <div className="max-w-3xl mx-auto space-y-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/student">Student</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/student/exams">Exams</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{exam?.title ?? 'Exam'}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <h1 className="text-2xl font-semibold">{exam?.title ?? 'Exam'}</h1>
         <p className="text-muted-foreground">{exam?.instructions}</p>
         <QuestionForm questions={simpleQuestions as any} value={answers} onChange={setAnswers} />
