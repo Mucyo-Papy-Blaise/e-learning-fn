@@ -19,6 +19,7 @@ export default function QuizAttemptPage() {
   const [submitting, setSubmitting] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [confirmGuard, setConfirmGuard] = useState(false)
+  const [autoSaveTimer, setAutoSaveTimer] = useState<any>(null)
 
   useEffect(() => {
     let mounted = true
@@ -110,6 +111,32 @@ export default function QuizAttemptPage() {
     return () => clearTimeout(t)
   }, [timeLeft])
 
+  // Periodic autosave while attempting
+  useEffect(() => {
+    if (!attempt) return
+    if (autoSaveTimer) clearInterval(autoSaveTimer)
+    const interval = setInterval(() => {
+      const raw = localStorage.getItem(`quizAttempt:${id}`)
+      let payload: any = { answers }
+      if (raw) {
+        try { const prev = JSON.parse(raw); payload = { ...prev, answers } } catch {}
+      }
+      localStorage.setItem(`quizAttempt:${id}`, JSON.stringify(payload))
+    }, 15000)
+    setAutoSaveTimer(interval)
+    return () => clearInterval(interval)
+  }, [attempt, answers, id])
+
+  const handleSaveDraft = () => {
+    const raw = localStorage.getItem(`quizAttempt:${id}`)
+    let payload: any = { answers }
+    if (raw) {
+      try { const prev = JSON.parse(raw); payload = { ...prev, answers } } catch {}
+    }
+    localStorage.setItem(`quizAttempt:${id}`, JSON.stringify(payload))
+    toast.success('Draft saved')
+  }
+
   const onAnswersChange = (next: Record<string, string>) => {
     setAnswers(next)
     const raw = localStorage.getItem(`quizAttempt:${id}`)
@@ -150,7 +177,10 @@ export default function QuizAttemptPage() {
               <div className="text-right text-sm">Time left: <span className={timeLeft < 60 ? 'text-red-600 font-medium' : 'font-medium'}>{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2,'0')}</span></div>
             )}
             <QuestionForm questions={simpleQuestions} value={answers} onChange={onAnswersChange} />
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" onClick={handleSaveDraft} disabled={submitting}>
+                Save Draft
+              </Button>
               <Button onClick={handleSubmit} disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit Quiz'}
               </Button>

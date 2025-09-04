@@ -19,6 +19,7 @@ export default function ExamAttemptPage() {
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [started, setStarted] = useState(false)
   const [confirmGuard, setConfirmGuard] = useState(false)
+  const [autoSaveTimer, setAutoSaveTimer] = useState<any>(null)
 
   useEffect(() => {
     let mounted = true
@@ -63,6 +64,44 @@ export default function ExamAttemptPage() {
     const t = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
     return () => clearTimeout(t)
   }, [started, timeLeft])
+
+  // Restore saved attempt timing/answers
+  useEffect(() => {
+    if (!id) return
+    const raw = localStorage.getItem(`examAttempt:${id}`)
+    if (!raw) return
+    try {
+      const saved = JSON.parse(raw) as { answers?: Record<string,string>; endTime?: number }
+      if (saved.answers) setAnswers(saved.answers)
+      if (saved.endTime && saved.endTime > Date.now()) {
+        setStarted(true)
+        setTimeLeft(Math.max(0, Math.floor((saved.endTime - Date.now())/1000)))
+        setConfirmGuard(true)
+      }
+    } catch {}
+  }, [id])
+
+  // Periodic autosave while attempting
+  useEffect(() => {
+    if (!started) return
+    if (autoSaveTimer) clearInterval(autoSaveTimer)
+    const interval = setInterval(() => {
+      const raw = localStorage.getItem(`examAttempt:${id}`)
+      let payload: any = { answers }
+      if (raw) { try { const prev = JSON.parse(raw); payload = { ...prev, answers } } catch {} }
+      localStorage.setItem(`examAttempt:${id}`, JSON.stringify(payload))
+    }, 15000)
+    setAutoSaveTimer(interval)
+    return () => clearInterval(interval)
+  }, [started, answers, id])
+
+  const handleSaveDraft = () => {
+    const raw = localStorage.getItem(`examAttempt:${id}`)
+    let payload: any = { answers }
+    if (raw) { try { const prev = JSON.parse(raw); payload = { ...prev, answers } } catch {} }
+    localStorage.setItem(`examAttempt:${id}`, JSON.stringify(payload))
+    toast.success('Draft saved')
+  }
 
   const handleStart = () => {
     setStarted(true)
@@ -122,6 +161,9 @@ export default function ExamAttemptPage() {
               localStorage.setItem(`examAttempt:${id}`, JSON.stringify(payload))
             }} />
             <div className="flex justify-end">
+              <Button variant="secondary" onClick={handleSaveDraft} disabled={submitting} className="mr-2">
+                Save Draft
+              </Button>
               <Button onClick={handleSubmit} disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit Exam'}
               </Button>
