@@ -3,6 +3,7 @@ import { cookies } from "next/headers"
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { MainSidebar } from "@/components/student/main-sidebar"
+import { ToastProvider } from "@/components/ui/toastContainer"
 
 export default async function StudentLayout({
   children,
@@ -15,7 +16,9 @@ export default async function StudentLayout({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <MainSidebar />
-      <SidebarInset className="bg-content-background text-content-foreground">{children}</SidebarInset>
+      <SidebarInset className="bg-content-background text-content-foreground">{children}
+        <ToastProvider />
+      </SidebarInset>
     </SidebarProvider>
   )
 }
