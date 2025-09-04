@@ -128,7 +128,8 @@ export default function InstructorExamDetailPage() {
                 <Label>Total points</Label>
                 <Input type="number" value={exam.totalPoints ?? 0} onChange={(e) => setExam({ ...exam, totalPoints: Number(e.target.value) })} />
               </div>
-              <div className="md:col-span-2 flex justify-end gap-2">
+              <div className="md:col-span-2 flex justify-between gap-2">
+                <Button variant="outline" onClick={() => window.location.href = `/instructor/exams/${id}/submissions`}>View Submissions</Button>
                 <Button variant="destructive" onClick={handleDelete}>Delete</Button>
                 <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
               </div>
