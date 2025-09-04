@@ -81,12 +81,16 @@ export default function CourseQuizzesPage() {
           <div className="text-muted-foreground">No quizzes available for this course.</div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {quizzes.map(q => (
-              <div key={q._id} className="space-y-2">
-                <QuizCard quiz={q} href={`/student/quizzes/${q._id}`} />
-                <div className="text-xs text-muted-foreground">Module: {moduleNameById[q.module_id] || q.module_id}</div>
-              </div>
-            ))}
+            {quizzes.map((q: any) => {
+              const moduleId = typeof q.module_id === 'string' ? q.module_id : q.module_id?._id
+              const moduleTitle = typeof q.module_id === 'object' && q.module_id?.title ? q.module_id.title : moduleNameById[moduleId] || moduleId
+              return (
+                <div key={q._id} className="space-y-2">
+                  <QuizCard quiz={q} href={`/student/quizzes/${q._id}`} />
+                  <div className="text-xs text-muted-foreground">Module: {moduleTitle}</div>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
