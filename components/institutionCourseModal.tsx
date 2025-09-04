@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useEducation } from "@/context/educationContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'react-toastify';
 
 export const InstitutionCoursesModal = ({
   open,
@@ -18,7 +18,6 @@ export const InstitutionCoursesModal = ({
 }) => {
   const { selectedInstitution, course, enrollInCourse, loadingEducation } =
     useEducation();
-  const { toast } = useToast();
 
   if (!selectedInstitution) return null;
 

@@ -20,7 +20,8 @@ import {
   File,
   CheckCircle2
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+// Use react-toastify consistently to avoid provider conflicts
+import { toast } from "react-toastify";
 import axiosInstance from "@/lib/axios";
 import { createExam } from "@/app/lib/api";
 
@@ -49,7 +50,7 @@ interface ExamFormData {
 
 export default function CreateExamPage() {
   const router = useRouter();
-  const { toast } = useToast();
+  // toast imported from react-toastify
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
   const [modules, setModules] = useState<any[]>([]);

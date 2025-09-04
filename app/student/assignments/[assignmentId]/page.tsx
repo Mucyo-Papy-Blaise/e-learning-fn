@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import axios from "axios"; // Import axios
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, AlertCircle } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "react-toastify";
 import { SubmissionForm } from "@/components/assignments/SubmissionForm";
 import TiptapEditor from "@/components/ui/TipTap.Editor";
 
@@ -31,7 +31,6 @@ interface Submission {
 export default function AssignmentPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL 
   const { assignmentId } = useParams() as { assignmentId: string };
-  const { toast } = useToast();
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [loading, setLoading] = useState(true);
