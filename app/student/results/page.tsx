@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
-import { getQuizAttempts, listExams, getOwnExamSubmission } from '@/app/lib/api'
+import { getQuizAttempts, listExams, getOwnExamSubmission, getQuizById, getQuizQuestions } from '@/app/lib/api'
 import ResultsTable, { ResultRow } from '@/components/assessments/ResultsTable'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -20,19 +20,24 @@ export default function StudentResultsPage() {
       const out: ResultRow[] = []
 
       if (quizAttemptsRes.ok) {
-        for (const a of quizAttemptsRes.data) {
+        // enrich with quiz title and max points from questions
+        const enriched = await Promise.all(quizAttemptsRes.data.map(async (a) => {
+          const [q, qs] = await Promise.all([getQuizById(a.quiz_id), getQuizQuestions(a.quiz_id)])
+          const title = q.ok ? q.data.title : a.quiz_id
+          const max = qs.ok ? qs.data.reduce((acc, q) => acc + (q.points || 0), 0) : 100
           const score = typeof a.score === 'number' ? a.score : 0
-          out.push({
+          return {
             id: a._id,
-            type: 'quiz',
-            title: a.quiz_id,
-            score: score,
-            maxScore: 100,
-            percentage: score,
-            passed: score >= 50,
+            type: 'quiz' as const,
+            title,
+            score,
+            maxScore: max,
+            percentage: max ? (score / max) * 100 : 0,
+            passed: max ? (score / max) * 100 >=  (q.ok ? q.data.pass_percentage : 50) : score >= 50,
             date: a.completed_at || a.started_at,
-          })
-        }
+          } as ResultRow
+        }))
+        out.push(...enriched)
       }
 
       if (examsRes.ok) {
