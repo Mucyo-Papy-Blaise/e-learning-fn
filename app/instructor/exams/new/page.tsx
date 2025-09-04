@@ -309,7 +309,7 @@ export default function CreateExamPage() {
                     ))}
                   </select>
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="module">Module *</Label>
                   <select
                     id="module"
@@ -326,7 +326,7 @@ export default function CreateExamPage() {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
               </div>
 
               <div className="space-y-2">
