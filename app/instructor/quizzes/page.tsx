@@ -78,20 +78,24 @@ export default function InstructorQuizzesListPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {quizzes.map(q => (
-                  <TableRow key={q._id}>
-                    <TableCell className="font-medium">{q.title}</TableCell>
-                    <TableCell className="max-w-[360px] truncate" title={q.description}>{q.description}</TableCell>
-                    <TableCell>{q.module_id}</TableCell>
-                    <TableCell>{q.time_limit} min</TableCell>
-                    <TableCell>{q.pass_percentage}%</TableCell>
-                    <TableCell>{q.max_attempts}</TableCell>
-                    <TableCell>{counts[q._id] ?? '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <Link href={`/instructor/quizzes/${q._id}`} className="text-primary underline">View/Edit</Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {quizzes.map((q: any) => {
+                  const moduleId = typeof q.module_id === 'string' ? q.module_id : q.module_id?._id
+                  const moduleTitle = typeof q.module_id === 'object' && q.module_id?.title ? q.module_id.title : moduleId
+                  return (
+                    <TableRow key={q._id}>
+                      <TableCell className="font-medium">{q.title}</TableCell>
+                      <TableCell className="max-w-[360px] truncate" title={q.description}>{q.description}</TableCell>
+                      <TableCell>{moduleTitle}</TableCell>
+                      <TableCell>{q.time_limit} min</TableCell>
+                      <TableCell>{q.pass_percentage}%</TableCell>
+                      <TableCell>{q.max_attempts}</TableCell>
+                      <TableCell>{counts[q._id] ?? '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/instructor/quizzes/${q._id}`} className="text-primary underline">View/Edit</Link>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
