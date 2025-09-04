@@ -51,6 +51,7 @@ export default function CreateExamPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
+  const [modules, setModules] = useState<any[]>([]);
   const [formData, setFormData] = useState<ExamFormData>({
     title: '',
     course: '',
@@ -98,6 +99,16 @@ export default function CreateExamPage() {
       [field]: value
     }));
   };
+
+  const handleCourseChange = async (courseId: string) => {
+    handleInputChange('course', courseId)
+    try {
+      const res = await axiosInstance.get(`/api/courses/${courseId}/modules`)
+      setModules(res.data || [])
+    } catch (e) {
+      setModules([])
+    }
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -201,6 +212,9 @@ export default function CreateExamPage() {
       submitData.append('showResults', formData.showResults.toString());
       submitData.append('allowReview', formData.allowReview.toString());
       submitData.append('status', formData.status);
+      // Optional module linkage
+      const moduleId = (formData as any).module_id as string | undefined
+      if (moduleId) submitData.append('module_id', moduleId)
 
       // Append files
       formData.attachments.forEach((file, index) => {
@@ -283,7 +297,7 @@ export default function CreateExamPage() {
                   <select
                     id="course"
                     value={formData.course}
-                    onChange={(e) => handleInputChange('course', e.target.value)}
+                    onChange={(e) => handleCourseChange(e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800"
                     required
                   >
@@ -291,6 +305,24 @@ export default function CreateExamPage() {
                     {courses.map((course) => (
                       <option key={course._id} value={course._id}>
                         {course.code} - {course.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="module">Module *</Label>
+                  <select
+                    id="module"
+                    value={(formData as any).module_id || ''}
+                    onChange={(e) => (setFormData(prev => ({ ...prev, ...( { module_id: e.target.value } as any) })))}
+                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800"
+                    disabled={!formData.course}
+                    required
+                  >
+                    <option value="">Select a module</option>
+                    {modules.map((m) => (
+                      <option key={m._id} value={m._id}>
+                        {m.title}
                       </option>
                     ))}
                   </select>
