@@ -5,10 +5,8 @@ import { useRouter } from "next/navigation";
 import {
   Search,
   User,
-  Mail,
-  Calendar,
-  BookOpen,
   GraduationCap,
+  Upload,
 } from "lucide-react";
 import { RegisterData } from "@/lib/types/auth";
 import axios from "axios";
@@ -30,7 +28,6 @@ interface Student {
   joinDate: string;
 }
 
-// Remove mock data - will be fetched from API
 
 const statusFilters = ["Active", "Completed", "Paused"];
 

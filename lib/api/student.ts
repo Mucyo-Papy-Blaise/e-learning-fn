@@ -1,8 +1,92 @@
 "use client";
 
 import axios from "axios";
+import axiosInstance from "../axios";
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+
+export type StudentProfile = {
+  _id: string;
+  user_id: {
+    _id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    isActive?: boolean;
+    isVerified?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+  bio?: string;
+  gender?: 'male' | 'female' | 'other';
+  dateOfBirth?: string;
+  paymentStatus: 'paid' | 'pending' | 'unpaid';
+  profile_image?: string;
+  joinedDate?: string;
+  is_active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AccountOverview = {
+  personalInfo: {
+    name: string;
+    email: string;
+    phone?: string;
+    memberSince?: string;
+    accountAge: string;
+  };
+  accountStatus: {
+    isActive: boolean;
+    isVerified: boolean;
+    paymentStatus: 'paid' | 'pending' | 'unpaid';
+    lastUpdated: string;
+  };
+  profileCompletion: {
+    percentage: number;
+    missingFields: string[];
+  };
+};
+
+export type StudentAlert = {
+  type: 'error' | 'warning' | 'info' | 'success';
+  title: string;
+  message: string;
+  action?: string | null;
+};
+
+// Get comprehensive student profile
+export async function getMyStudentProfile(): Promise<{ message: string; student: StudentProfile }> {
+  const res = await axiosInstance.get(`${API_URL}/api/student/profile`);
+  return res.data;
+}
+
+// Update student profile (bio, gender, dateOfBirth, profile_image)
+export async function updateMyStudentProfile(form: FormData): Promise<{ message: string; student: StudentProfile }> {
+  const res = await axiosInstance.put(`${API_URL}/api/student/profile`, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
+
+export async function updatePassword(payload: { oldPassword: string; newPassword: string }): Promise<{ message: string }> {
+  const res = await axiosInstance.put(`${API_URL}/api/student/password`, payload);
+  return res.data;
+}
+
+// Get account overview/dashboard data
+export async function getAccountOverview(): Promise<{ message: string; overview: AccountOverview }> {
+  const res = await axiosInstance.get(`${API_URL}/api/student/account/overview`);
+  return res.data;
+}
+
+// Get student alerts/notifications
+export async function getStudentAlerts(): Promise<{ message: string; alerts: StudentAlert[]; count: number }> {
+  const res = await axiosInstance.get(`${API_URL}/api/student/alerts`);
+  return res.data;
+}
+
 
 // GET /api/student/dashboard
 export async function fetchStudentDashboard() {
@@ -109,4 +193,5 @@ export async function markLessonComplete(lessonId: string, payload?: Record<stri
   });
   return response.data;
 }
+
 

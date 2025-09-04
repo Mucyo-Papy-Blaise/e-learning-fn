@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, FileText, CheckCircle2, AlertTriangle, Pencil, UploadCloud, Ban } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface Assignment {
   _id: string;
@@ -29,12 +30,13 @@ interface Assignment {
 
 interface SubmissionItem {
   _id: string;
-  student?: { _id: string; name?: string; email?: string } | string;
+  user_id: { _id: string; name?: string; email?: string };
+  assignment_id: { _id: string; title: string; points: number };
   content?: string;
   file_url?: string;
   score?: number;
   feedback?: string;
-  status: 'pending' | 'graded' | 'late';
+  status: 'submitted' | 'pending' | 'graded' | 'late';
   submitted_at: string;
 }
 
@@ -217,9 +219,10 @@ export default function InstructorAssignmentDetailPage() {
               ) : (
                 <div className="space-y-3">
                   {submissions.map((s) => {
-                    const studentName = typeof s.student === 'string' ? s.student : (s.student?.name || s.student?.email || s.student?._id || 'Student');
+                    const studentName = typeof s.user_id._id === 'string' ? s.user_id.name : (s.user_id.name || s.user_id.email || 'Student');
                     return (
-                      <div key={s._id} className="border rounded-md p-3 text-sm">
+                      <div key={s._id} className="border rounded-md p-3 text-sm hover:bg-gray-200">
+                        <Link href={`/instructor/assignments/${assignment._id}/submissions/${s._id}`}>
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium">{studentName}</div>
@@ -236,6 +239,7 @@ export default function InstructorAssignmentDetailPage() {
                           <div className="mt-1 text-xs">Score: <span className="font-semibold">{s.score}</span>{assignment.points ? ` / ${assignment.points}` : ''}</div>
                         )}
                         {s.feedback && <div className="mt-1 text-xs text-gray-600">Feedback: {s.feedback}</div>}
+                        </Link>
                       </div>
                     );
                   })}

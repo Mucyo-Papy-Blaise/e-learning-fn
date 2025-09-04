@@ -168,7 +168,7 @@ export default function CoursesLayout({
                 Syllabus
               </Link>
 
-              {/* <Link
+              <Link
                 href={`/student/courses/${courseId}/quizzes`}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md",
@@ -178,7 +178,7 @@ export default function CoursesLayout({
               >
                 <ClipboardList className="h-4 w-4" />
                 Quizzes
-              </Link> */}
+              </Link>
 
               <Link
                 href={`/student/courses/${courseId}/collaborations`}
