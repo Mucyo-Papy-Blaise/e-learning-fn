@@ -45,8 +45,8 @@ const navigation = [
     subItems: [
       { name: "Assignments", href: "/instructor/assignments" },
       { name: "Exams", href: "/instructor/exams" },
-      // { name: "Quizzes", href: "/instructor/quizzes" },
-      // { name: "Resources", href: "/instructor/resources" },
+      { name: "Quizzes", href: "/instructor/quizzes" },
+      { name: "Resources", href: "/instructor/resources" },
     ]
   },
   { 
