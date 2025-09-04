@@ -16,6 +16,8 @@ export default function ExamAttemptPage() {
   const [questions, setQuestions] = useState<ExamQuestion[]>([])
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [timeLeft, setTimeLeft] = useState<number | null>(null)
+  const [started, setStarted] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -48,6 +50,22 @@ export default function ExamAttemptPage() {
     }
   }
 
+  useEffect(() => {
+    if (!started) return
+    if (timeLeft == null) return
+    if (timeLeft <= 0) {
+      handleSubmit()
+      return
+    }
+    const t = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
+    return () => clearTimeout(t)
+  }, [started, timeLeft])
+
+  const handleStart = () => {
+    setStarted(true)
+    if (exam?.duration) setTimeLeft(exam.duration * 60)
+  }
+
   return (
     <div className="p-4 md:p-6">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -68,12 +86,24 @@ export default function ExamAttemptPage() {
         </Breadcrumb>
         <h1 className="text-2xl font-semibold">{exam?.title ?? 'Exam'}</h1>
         <p className="text-muted-foreground">{exam?.instructions}</p>
-        <QuestionForm questions={simpleQuestions as any} value={answers} onChange={setAnswers} />
-        <div className="flex justify-end">
-          <Button onClick={handleSubmit} disabled={submitting}>
-            {submitting ? 'Submitting...' : 'Submit Exam'}
-          </Button>
-        </div>
+        {!started ? (
+          <div className="space-y-4">
+            <p className="text-muted-foreground">Duration: {exam?.duration ?? '-'} minutes.</p>
+            <Button onClick={handleStart}>Start Exam</Button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {timeLeft != null && (
+              <div className="text-right text-sm">Time left: <span className={timeLeft < 60 ? 'text-red-600 font-medium' : 'font-medium'}>{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2,'0')}</span></div>
+            )}
+            <QuestionForm questions={simpleQuestions as any} value={answers} onChange={setAnswers} />
+            <div className="flex justify-end">
+              <Button onClick={handleSubmit} disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Submit Exam'}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

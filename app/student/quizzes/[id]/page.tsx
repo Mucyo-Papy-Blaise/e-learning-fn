@@ -17,6 +17,7 @@ export default function QuizAttemptPage() {
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null)
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [timeLeft, setTimeLeft] = useState<number | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -42,6 +43,7 @@ export default function QuizAttemptPage() {
     if (res.ok) {
       setAttempt(res.data)
       toast.success('Attempt started')
+      if (quiz?.time_limit) setTimeLeft(quiz.time_limit * 60)
     } else {
       toast.error(res.message)
     }
@@ -59,6 +61,17 @@ export default function QuizAttemptPage() {
       toast.error(res.message)
     }
   }
+
+  useEffect(() => {
+    if (timeLeft == null) return
+    if (timeLeft <= 0) {
+      // Auto submit when time is up
+      handleSubmit()
+      return
+    }
+    const t = setTimeout(() => setTimeLeft(timeLeft - 1), 1000)
+    return () => clearTimeout(t)
+  }, [timeLeft])
 
   return (
     <div className="p-4 md:p-6">
@@ -86,6 +99,9 @@ export default function QuizAttemptPage() {
           </div>
         ) : (
           <div className="space-y-6">
+            {timeLeft != null && (
+              <div className="text-right text-sm">Time left: <span className={timeLeft < 60 ? 'text-red-600 font-medium' : 'font-medium'}>{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2,'0')}</span></div>
+            )}
             <QuestionForm questions={simpleQuestions} value={answers} onChange={setAnswers} />
             <div className="flex justify-end">
               <Button onClick={handleSubmit} disabled={submitting}>
