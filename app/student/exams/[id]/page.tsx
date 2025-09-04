@@ -18,6 +18,7 @@ export default function ExamAttemptPage() {
   const [submitting, setSubmitting] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [started, setStarted] = useState(false)
+  const [confirmGuard, setConfirmGuard] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -45,6 +46,8 @@ export default function ExamAttemptPage() {
     if (res.ok) {
       toast.success('Exam submitted')
       router.push('/student/results')
+      localStorage.removeItem(`examAttempt:${id}`)
+      setConfirmGuard(false)
     } else {
       toast.error(res.message)
     }
@@ -64,6 +67,21 @@ export default function ExamAttemptPage() {
   const handleStart = () => {
     setStarted(true)
     if (exam?.duration) setTimeLeft(exam.duration * 60)
+    const endTime = exam?.duration ? Date.now() + exam.duration * 60 * 1000 : undefined
+    localStorage.setItem(`examAttempt:${id}`, JSON.stringify({ answers: {}, endTime }))
+    setConfirmGuard(true)
+    history.pushState(null, '', window.location.href)
+    const onPop = (e: PopStateEvent) => {
+      if (confirmGuard) {
+        const ok = confirm('You have an ongoing exam. Are you sure you want to leave? Your progress may be lost.')
+        if (!ok) history.pushState(null, '', window.location.href)
+      }
+    }
+    window.addEventListener('popstate', onPop)
+    const onBefore = (e: BeforeUnloadEvent) => {
+      if (confirmGuard) { e.preventDefault(); e.returnValue = '' }
+    }
+    window.addEventListener('beforeunload', onBefore)
   }
 
   return (
@@ -96,7 +114,13 @@ export default function ExamAttemptPage() {
             {timeLeft != null && (
               <div className="text-right text-sm">Time left: <span className={timeLeft < 60 ? 'text-red-600 font-medium' : 'font-medium'}>{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2,'0')}</span></div>
             )}
-            <QuestionForm questions={simpleQuestions as any} value={answers} onChange={setAnswers} />
+            <QuestionForm questions={simpleQuestions as any} value={answers} onChange={(next) => {
+              setAnswers(next)
+              const raw = localStorage.getItem(`examAttempt:${id}`)
+              let payload: any = { answers: next }
+              if (raw) { try { const prev = JSON.parse(raw); payload = { ...prev, answers: next } } catch {} }
+              localStorage.setItem(`examAttempt:${id}`, JSON.stringify(payload))
+            }} />
             <div className="flex justify-end">
               <Button onClick={handleSubmit} disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit Exam'}
