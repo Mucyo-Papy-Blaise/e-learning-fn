@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createQuiz, createQuizQuestion } from '@/app/lib/api'
 import type { Quiz } from '@/lib/types/assessments'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { toast } from 'react-toastify'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import axiosInstance from '@/lib/axios'
 
 type NewQuestion = {
   question: string
@@ -18,6 +20,8 @@ type NewQuestion = {
 }
 
 export default function NewQuizPage() {
+  const [courses, setCourses] = useState<Array<{ _id: string; title: string }>>([])
+  const [modules, setModules] = useState<Array<{ _id: string; title: string }>>([])
   const [form, setForm] = useState<{ module_id: string; title: string; description: string; pass_percentage: string; max_attempts: string; time_limit: string }>({
     module_id: '', title: '', description: '', pass_percentage: '70', max_attempts: '1', time_limit: '15'
   })
@@ -32,6 +36,30 @@ export default function NewQuizPage() {
 
   const updateOption = (idx: number, optIdx: number, val: string) => {
     setQuestions(qs => qs.map((q, i) => i === idx ? { ...q, options: q.options.map((o, j) => j === optIdx ? val : o) } : q))
+  }
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      try {
+        const r = await axiosInstance.get('/api/instructor/courses')
+        const list = r.data?.courses || r.data || []
+        setCourses(list)
+      } catch (e) {
+        toast.error('Failed to load courses')
+      }
+    }
+    loadCourses()
+  }, [])
+
+  const handleCourseChange = async (courseId: string) => {
+    setForm(f => ({ ...f, module_id: '' }))
+    try {
+      const r = await axiosInstance.get(`/api/courses/${courseId}/modules`)
+      setModules(r.data || [])
+    } catch (e) {
+      toast.error('Failed to load modules')
+      setModules([])
+    }
   }
 
   const handleCreate = async () => {
@@ -83,9 +111,31 @@ export default function NewQuizPage() {
             <CardTitle>Details</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label>Module ID</Label>
-              <Input value={form.module_id} onChange={(e) => setForm({ ...form, module_id: e.target.value })} />
+            <div className="space-y-2">
+              <Label>Course</Label>
+              <Select onValueChange={handleCourseChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map(c => (
+                    <SelectItem key={c._id} value={c._id}>{c.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Module</Label>
+              <Select value={form.module_id} onValueChange={(v) => setForm({ ...form, module_id: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a module" />
+                </SelectTrigger>
+                <SelectContent>
+                  {modules.map(m => (
+                    <SelectItem key={m._id} value={m._id}>{m.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="md:col-span-2">
               <Label>Title</Label>
