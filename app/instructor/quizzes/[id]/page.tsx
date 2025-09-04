@@ -127,7 +127,10 @@ export default function InstructorQuizDetailPage() {
 
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Questions</h2>
-          <Button variant="secondary" onClick={addQuestion}>Add Question</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => window.location.href = `/instructor/quizzes/${id}/attempts`}>View Attempts</Button>
+            <Button variant="secondary" onClick={addQuestion}>Add Question</Button>
+          </div>
         </div>
 
         <div className="space-y-4">

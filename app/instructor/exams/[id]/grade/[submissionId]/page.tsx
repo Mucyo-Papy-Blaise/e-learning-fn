@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { getExamById, getExamQuestions, manualGradeSubmission } from '@/app/lib/api'
+import { getExamById, getExamQuestions, manualGradeSubmission, listSubmissionsForCourse } from '@/app/lib/api'
 import type { Exam, ExamQuestion, ExamSubmission } from '@/lib/types/assessments'
 import GradingForm from '@/components/assessments/GradingForm'
 import { useParams, useRouter } from 'next/navigation'
@@ -19,12 +19,20 @@ export default function GradeSubmissionPage() {
   useEffect(() => {
     let mounted = true
     if (!examId) return
-    getExamById(examId).then(r => { if (mounted && r.ok) setExam(r.data) })
-    getExamQuestions(examId, true).then(r => { if (mounted && r.ok) setQuestions(r.data) })
-    // Fetch a single submission is not specified; assume passed via state or use a cached list in previous page.
-    // For simplicity, redirect back if submission is not available via history state.
-    const historyState = history.state as any
-    if (historyState?.submission) setSubmission(historyState.submission)
+    getExamById(examId).then(async (r) => {
+      if (mounted && r.ok) {
+        setExam(r.data)
+        // Load questions with answers for grading view
+        const qs = await getExamQuestions(examId, true)
+        if (qs.ok) setQuestions(qs.data)
+        // Load submissions for the course and pick by submissionId
+        const subs = await listSubmissionsForCourse(r.data.course)
+        if (subs.ok) {
+          const found = subs.data.find(s => s._id === submissionId)
+          if (found) setSubmission(found)
+        }
+      }
+    })
     return () => { mounted = false }
   }, [examId])
 
