@@ -51,7 +51,8 @@ export const CourseForm = () => {
   // Step 2 - Module local form state
   const [moduleTitle, setModuleTitle] = useState<string>("")
   const [moduleDescription, setModuleDescription] = useState<string>("")
-  const [moduleOrder, setModuleOrder] = useState<number>(0)
+  // duration in hours per backend: duration_hours
+  const [moduleDurationHours, setModuleDurationHours] = useState<number>(1)
 
   // Step 3 - Lesson local form state
   const [lessonModuleId, setLessonModuleId] = useState<string>("")
@@ -95,11 +96,11 @@ export const CourseForm = () => {
     setIsBusy(true)
     try {
       const api = await import('@/lib/api/courses')
-      // eslint-disable-next-line @next/next/no-assign-module-variable
-      const module = await api.createModule(createdCourseId, moduleTitle, moduleDescription, moduleOrder || 0)
+      // Create module with required duration_hours field
+      const module = await api.createModule(createdCourseId, moduleTitle, moduleDescription, moduleDurationHours || 1)
       setModulesAdded((prev) => [...prev, { _id: module._id, title: module.title, description: module.description }])
       setLessonModuleId((id) => id || module._id)
-      setModuleTitle(""); setModuleDescription(""); setModuleOrder(0)
+      setModuleTitle(""); setModuleDescription(""); setModuleDurationHours(1)
     } catch (e) { console.error(e) } finally { setIsBusy(false) }
   }
 
@@ -210,15 +211,15 @@ export const CourseForm = () => {
           />
         </div>
 
-        {/* Module Order */}
+        {/* Module Duration (Hours) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Order
+            Duration (hours)
           </label>
           <input 
             type="number" 
-            value={moduleOrder} 
-            onChange={(e) => setModuleOrder(Number(e.target.value))} 
+            value={moduleDurationHours} 
+            onChange={(e) => setModuleDurationHours(Number(e.target.value))} 
             placeholder="1" 
             min="1"
             className="w-32 h-11 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
@@ -281,7 +282,16 @@ export const CourseForm = () => {
                       ))}
                     </select>
                     <input value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} placeholder="Lesson title" className="h-11 px-3 border border-gray-300 rounded-md" />
-                    <input value={lessonContent} onChange={(e) => setLessonContent(e.target.value)} placeholder="Content" className="h-11 px-3 border border-gray-300 rounded-md md:col-span-2" />
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Lesson Content</label>
+                      <TiptapEditor
+                        name="lesson-content"
+                        content={lessonContent}
+                        onChange={setLessonContent}
+                        placeholder="Enter lesson content"
+                        className="bg-white border border-gray-300 rounded-md"
+                      />
+                    </div>
                     <div className="grid grid-cols-2 gap-3 md:col-span-2">
                       <input type="number" value={lessonOrder} onChange={(e) => setLessonOrder(Number(e.target.value))} placeholder="Order" className="h-11 px-3 border border-gray-300 rounded-md" />
                       <input type="file" accept="video/*" onChange={(e) => setLessonVideo(e.target.files?.[0] || null)} className="h-11" />
