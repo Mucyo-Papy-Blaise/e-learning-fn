@@ -88,6 +88,7 @@ export default function CreateExamPage() {
     } catch (error) {
       console.error('Failed to fetch courses:', error);
       toast({
+        
         title: "Error",
         description: "Failed to load courses",
         variant: "destructive",
@@ -100,7 +101,7 @@ export default function CreateExamPage() {
       ...prev,
       [field]: value
     }));
-  };
+  };  1
 
   const handleCourseChange = async (courseId: string) => {
     handleInputChange('course', courseId)
