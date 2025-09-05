@@ -5,6 +5,7 @@ export interface Course {
   description: string;
   price: number;
   thumbnail: string;
+  category?: string;
   difficulty_level: 'beginner' | 'intermediate' | 'advanced';
   students: number
   prerequisites: string[];
@@ -12,6 +13,7 @@ export interface Course {
   end_date: Date;
   is_certified: boolean;
   duration_weeks: number;
+  status?: 'draft' | 'published' | 'archived';
 }
 
 export interface Module {

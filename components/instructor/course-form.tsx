@@ -1,50 +1,58 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, Loader, Award } from "lucide-react";
+import { BookOpen, Loader, Award, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-interface FormData {
+interface CourseFormState {
   title: string;
   description: string;
   price: string;
-  duration: string;
-  totalHours: string;
   category: string;
-  level: "Bigginer" | "Intermediate" | "Advanced";
-  status: "Active" | "Draft";
-  institution: string;
-  modules: string[];
+  difficulty_level: "beginner" | "intermediate" | "advanced";
+  status: "draft" | "published";
+  prerequisites: string;
+  start_date: string;
+  end_date: string;
+  is_certified: boolean;
+  duration_weeks: string;
 }
 
 export default function CourseForm() {
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formState, setFormState] = useState<CourseFormState>({
     title: "",
     description: "",
     price: "",
-    duration: "",
-    totalHours: "",
     category: "",
-    level: "Bigginer",
-    status: "Draft",
-    institution: "",
-    modules: [],
+    difficulty_level: "beginner",
+    status: "draft",
+    prerequisites: "",
+    start_date: "",
+    end_date: "",
+    is_certified: false,
+    duration_weeks: "",
   });
 
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
+    const { name, value, type, checked } = e.target as HTMLInputElement & HTMLTextAreaElement & HTMLSelectElement;
+    setFormState((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
+  };
+
+  const handleThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setThumbnailFile(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,48 +61,66 @@ export default function CourseForm() {
 
     try {
       const token = localStorage.getItem("token");
+      const body = new FormData();
+      body.append("title", formState.title);
+      body.append("description", formState.description);
+      body.append("price", String(Number(formState.price) || 0));
+      body.append("category", formState.category);
+      body.append("difficulty_level", formState.difficulty_level);
+      body.append("status", formState.status);
+      if (formState.prerequisites.trim()) {
+        // Backend expects prerequisites[]; send as JSON string or repeated field; use JSON string
+        body.append("prerequisites", JSON.stringify(
+          formState.prerequisites
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        ));
+      }
+      if (formState.start_date) body.append("start_date", formState.start_date);
+      if (formState.end_date) body.append("end_date", formState.end_date);
+      body.append("is_certified", String(Boolean(formState.is_certified)));
+      body.append("duration_weeks", String(Number(formState.duration_weeks) || 0));
+      if (thumbnailFile) body.append("thumbnail", thumbnailFile);
+
       const res = await fetch(`${API_URL}/api/courses`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...formData,
-          price: Number(formData.price),
-        }),
+        body,
       });
 
       if (!res.ok) {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         toast({
-          title: "❌ Failed",
+          title: "Failed",
           description: err.message || "Failed to create course.",
           variant: "destructive",
         });
       } else {
         toast({
-          title: "✅ Success",
+          title: "Success",
           description: "Course created successfully!",
         });
-
-        setFormData({
+        setFormState({
           title: "",
           description: "",
           price: "",
-          duration: "",
-          totalHours: "",
           category: "",
-          level: "Bigginer",
-          status: "Draft",
-          institution: "",
-          modules: [],
+          difficulty_level: "beginner",
+          status: "draft",
+          prerequisites: "",
+          start_date: "",
+          end_date: "",
+          is_certified: false,
+          duration_weeks: "",
         });
+        setThumbnailFile(null);
       }
     } catch (error) {
-      console.error(error);
       toast({
-        title: "⚠️ Error",
+        title: "Error",
         description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
@@ -111,7 +137,6 @@ export default function CourseForm() {
       </h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Title */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Title *
@@ -119,158 +144,165 @@ export default function CourseForm() {
           <input
             type="text"
             name="title"
-            value={formData.title}
+            value={formState.title}
             onChange={handleChange}
             required
             className="w-full px-4 py-2 border rounded-lg"
           />
         </div>
 
-        {/* Description */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Description
           </label>
           <textarea
             name="description"
-            value={formData.description}
+            value={formState.description}
             onChange={handleChange}
             className="w-full px-4 py-2 border rounded-lg"
           />
         </div>
 
-        {/* Price */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Price *
-          </label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Price *
+            </label>
+            <input
+              type="number"
+              name="price"
+              value={formState.price}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Category
+            </label>
+            <input
+              type="text"
+              name="category"
+              value={formState.category}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg"
+              placeholder="web, ui/ux, ..."
+            />
+          </div>
         </div>
 
-        {/* Duration */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Duration
-          </label>
-          <input
-            type="text"
-            name="duration"
-            value={formData.duration}
-            onChange={handleChange}
-            placeholder="e.g. 8 weeks"
-            className="w-full px-4 py-2 border rounded-lg"
-          />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Difficulty Level
+            </label>
+            <select
+              name="difficulty_level"
+              value={formState.difficulty_level}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg bg-white"
+            >
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Status
+            </label>
+            <select
+              name="status"
+              value={formState.status}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg bg-white"
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </div>
         </div>
 
-        {/* Total Hours */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Total Hours
-          </label>
-          <input
-            type="text"
-            name="totalHours"
-            value={formData.totalHours}
-            onChange={handleChange}
-            placeholder="e.g. 40 hours"
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
-
-        {/* Category */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Category
-          </label>
-          <input
-            type="text"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg"
-          />
-        </div>
-
-        {/* Level */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Level
-          </label>
-          <select
-            name="level"
-            value={formData.level}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg bg-white"
-          >
-            <option value="Bigginer">Beginner</option>
-            <option value="Intermediate">Intermediate</option>
-            <option value="Advanced">Advanced</option>
-          </select>
-        </div>
-
-        {/* Status */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Status
-          </label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg bg-white"
-          >
-            <option value="Active">Active</option>
-            <option value="Draft">Draft</option>
-          </select>
-        </div>
-
-        {/* Institution */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Institution ID *
+            Prerequisites (comma-separated)
           </label>
           <input
             type="text"
-            name="institution"
-            value={formData.institution}
+            name="prerequisites"
+            value={formState.prerequisites}
             onChange={handleChange}
-            required
             className="w-full px-4 py-2 border rounded-lg"
-            placeholder="Enter institution ObjectId"
+            placeholder="HTML, CSS, Basics of JS"
           />
         </div>
 
-        {/* Modules */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Start Date
+            </label>
+            <input
+              type="date"
+              name="start_date"
+              value={formState.start_date}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              End Date
+            </label>
+            <input
+              type="date"
+              name="end_date"
+              value={formState.end_date}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex items-center gap-2">
+            <input
+              id="is_certified"
+              type="checkbox"
+              name="is_certified"
+              checked={formState.is_certified}
+              onChange={handleChange}
+              className="h-4 w-4"
+            />
+            <label htmlFor="is_certified" className="text-sm font-semibold text-gray-700">
+              Certified Course
+            </label>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Duration (weeks)
+            </label>
+            <input
+              type="number"
+              name="duration_weeks"
+              value={formState.duration_weeks}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg"
+              min={0}
+            />
+          </div>
+        </div>
+
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Modules (comma-separated ObjectIds)
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <ImageIcon className="w-4 h-4" /> Thumbnail (optional)
           </label>
-          <input
-            type="text"
-            name="modules"
-            value={formData.modules.join(",")}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                modules: e.target.value
-                  .split(",")
-                  .map((id) => id.trim())
-                  .filter(Boolean),
-              }))
-            }
-            className="w-full px-4 py-2 border rounded-lg"
-            placeholder="moduleId1,moduleId2"
-          />
+          <input type="file" accept="image/*" onChange={handleThumbnail} />
         </div>
 
-        {/* Submit */}
         <button
           type="submit"
           disabled={isSubmitting}

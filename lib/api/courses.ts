@@ -40,22 +40,38 @@ export async function fetchCourses(id: string): Promise<Course[]> {
 
 export async function fetchInstructorCourses(): Promise<any[]> {
   try {
-    const response = await axios.get(`${API_URL}/api/instructor/courses`, {
+    // Preferred per latest backend: returns only instructor-owned courses for instructor role
+    const primary = await axios.get(`${API_URL}/api/courses`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    const data = response.data;
-    console.log("this is the course data:", data)
-    if (Array.isArray(data)) return data as Course[];
-    if (Array.isArray(data?.courses)) return data.courses as Course[];
-    if (Array.isArray(data?.data)) return data.data as Course[];
-    if (Array.isArray(data?.results)) return data.results as Course[];
-    return [];
-  } catch (error) {
-    showToast('Failed to fetch instructor courses', 'error');
-    throw error;
+    const pdata = primary.data;
+    if (Array.isArray(pdata)) return pdata as Course[];
+    if (Array.isArray(pdata?.courses)) return pdata.courses as Course[];
+    if (Array.isArray(pdata?.data)) return pdata.data as Course[];
+    if (Array.isArray(pdata?.results)) return pdata.results as Course[];
+    // If shape unexpected, fall through to legacy path
+  } catch (primaryErr) {
+    try {
+      // Legacy/older backend path
+      const fallback = await axios.get(`${API_URL}/api/instructor/courses`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const fdata = fallback.data;
+      if (Array.isArray(fdata)) return fdata as Course[];
+      if (Array.isArray(fdata?.courses)) return fdata.courses as Course[];
+      if (Array.isArray(fdata?.data)) return fdata.data as Course[];
+      if (Array.isArray(fdata?.results)) return fdata.results as Course[];
+      return [];
+    } catch (fallbackErr) {
+      showToast('Failed to fetch instructor courses', 'error');
+      throw primaryErr;
+    }
   }
+  return [];
 }
 
 export async function fetchCourseById(courseId: string): Promise<Course> {
