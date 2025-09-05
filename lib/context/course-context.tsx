@@ -31,6 +31,9 @@ interface CourseContextType extends CourseState {
   loadLessons: (moduleId: string, studentId: string) => Promise<void>;
   loadResources: (lessonId: string) => Promise<void>;
   updateProgress: (lessonId: string, data: Partial<UserProgress>) => Promise<void>;
+  updateCourse: (courseId: string, payload: Partial<Course>) => Promise<Course | null>;
+  deleteCourse: (courseId: string) => Promise<boolean>;
+  publishCourse: (courseId: string) => Promise<Course | null>;
 }
 
 const initialState: CourseState = {
@@ -360,6 +363,54 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateCourse = async (courseId: string, payload: Partial<Course>) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const updated = await courseApi.updateCourse(courseId, payload);
+      // Update currentCourse and list
+      dispatch({ type: 'SET_CURRENT_COURSE', payload: updated });
+      const next = state.courses.map(c => (c._id === updated._id ? updated : c));
+      dispatch({ type: 'SET_COURSES', payload: next });
+      return updated;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update course';
+      dispatch({ type: 'SET_ERROR', payload: message });
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+      return null;
+    }
+  };
+
+  const deleteCourse = async (courseId: string) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      await courseApi.deleteCourse(courseId);
+      const next = state.courses.filter(c => c._id !== courseId);
+      dispatch({ type: 'SET_COURSES', payload: next });
+      return true;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to delete course';
+      dispatch({ type: 'SET_ERROR', payload: message });
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+      return false;
+    }
+  };
+
+  const publishCourse = async (courseId: string) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      const published = await courseApi.publishCourse(courseId);
+      dispatch({ type: 'SET_CURRENT_COURSE', payload: published });
+      const next = state.courses.map(c => (c._id === published._id ? published : c));
+      dispatch({ type: 'SET_COURSES', payload: next });
+      return published;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to publish course';
+      dispatch({ type: 'SET_ERROR', payload: message });
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+      return null;
+    }
+  };
+
   return (
     <CourseContext.Provider
       value={{
@@ -374,6 +425,9 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
         loadLessons,
         loadResources,
         updateProgress,
+        updateCourse,
+        deleteCourse,
+        publishCourse,
       }}
     >
       {children}

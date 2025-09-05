@@ -238,3 +238,51 @@ export async function enrollInCourse(courseId: string) {
   }
 }
 
+// Update course (ownership enforced by backend)
+export async function updateCourse(courseId: string, payload: Partial<Course>) {
+  try {
+    const response = await axios.put(`${API_URL}/api/courses/${courseId}`, payload, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    showToast('Course updated successfully', 'success');
+    return response.data as Course;
+  } catch (error) {
+    showToast('Failed to update course', 'error');
+    throw error;
+  }
+}
+
+// Delete course
+export async function deleteCourse(courseId: string) {
+  try {
+    const response = await axios.delete(`${API_URL}/api/courses/${courseId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    showToast('Course deleted', 'success');
+    return response.data;
+  } catch (error) {
+    showToast('Failed to delete course', 'error');
+    throw error;
+  }
+}
+
+// Publish course
+export async function publishCourse(courseId: string) {
+  try {
+    const response = await axios.patch(`${API_URL}/api/courses/${courseId}/publish`, {}, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    showToast('Course published', 'success');
+    return response.data as Course;
+  } catch (error) {
+    showToast('Failed to publish course', 'error');
+    throw error;
+  }
+}
+
