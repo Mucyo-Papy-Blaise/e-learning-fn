@@ -23,9 +23,13 @@ export default function StudentResultsPage() {
         // enrich with quiz title and max points from questions
         const enriched = await Promise.all(
           quizAttemptsRes.data.map(async (a) => {
+            const quizId = typeof a.quiz_id === 'object'
+              // @ts-expect-error possible populated object
+              ? String(a.quiz_id._id ?? a.quiz_id)
+              : a.quiz_id
             const [q, qs] = await Promise.all([
-              getQuizById(a.quiz_id),
-              getQuizQuestions(a.quiz_id),
+              getQuizById(quizId),
+              getQuizQuestions(quizId),
             ])
 
             // Always make title a string

@@ -20,8 +20,10 @@ import {
   File,
   CheckCircle2
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+// Use react-toastify consistently to avoid provider conflicts
+import { toast } from "react-toastify";
 import axiosInstance from "@/lib/axios";
+import { createExam } from "@/app/lib/api";
 
 interface ExamFormData {
   title: string;
@@ -48,7 +50,7 @@ interface ExamFormData {
 
 export default function CreateExamPage() {
   const router = useRouter();
-  const { toast } = useToast();
+  // toast imported from react-toastify
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
   const [modules, setModules] = useState<any[]>([]);
@@ -86,6 +88,7 @@ export default function CreateExamPage() {
     } catch (error) {
       console.error('Failed to fetch courses:', error);
       toast({
+        
         title: "Error",
         description: "Failed to load courses",
         variant: "destructive",
@@ -98,7 +101,7 @@ export default function CreateExamPage() {
       ...prev,
       [field]: value
     }));
-  };
+  };  1
 
   const handleCourseChange = async (courseId: string) => {
     handleInputChange('course', courseId)
@@ -190,42 +193,23 @@ export default function CreateExamPage() {
 
     try {
       setLoading(true);
-      
-      // Create FormData for file uploads
-      const submitData = new FormData();
-      submitData.append('title', formData.title);
-      submitData.append('course', formData.course);
-      submitData.append('description', formData.description);
-      submitData.append('instructions', formData.instructions);
-      submitData.append('examContent', formData.examContent);
-      submitData.append('startDate', formData.startDate);
-      submitData.append('endDate', formData.endDate);
-      submitData.append('duration', formData.duration.toString());
-      submitData.append('passingScore', formData.passingScore.toString());
-      submitData.append('maxAttempts', formData.maxAttempts.toString());
-      submitData.append('allowFileSubmission', formData.allowFileSubmission.toString());
-      submitData.append('allowTextSubmission', formData.allowTextSubmission.toString());
-      submitData.append('submissionInstructions', formData.submissionInstructions);
-      submitData.append('gradingCriteria', formData.gradingCriteria);
-      submitData.append('totalPoints', formData.totalPoints.toString());
-      submitData.append('isRandomized', formData.isRandomized.toString());
-      submitData.append('showResults', formData.showResults.toString());
-      submitData.append('allowReview', formData.allowReview.toString());
-      submitData.append('status', formData.status);
-      // Optional module linkage
-      const moduleId = (formData as any).module_id as string | undefined
-      if (moduleId) submitData.append('module_id', moduleId)
 
-      // Append files
-      formData.attachments.forEach((file, index) => {
-        submitData.append(`attachments`, file);
-      });
+      // Send JSON body to backend (no multipart)
+      const payload = {
+        title: formData.title,
+        course: formData.course,
+        description: formData.description,
+        instructions: formData.instructions,
+        examContent: formData.examContent,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        duration: formData.duration,
+        passingScore: formData.passingScore,
+        totalPoints: formData.totalPoints,
+      } as const;
 
-      await axiosInstance.post('/api/exams', submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const res = await createExam(payload as any);
+      if (!res.ok) throw new Error(res.message);
       
       toast({
         title: "Success",
@@ -309,7 +293,7 @@ export default function CreateExamPage() {
                     ))}
                   </select>
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="module">Module *</Label>
                   <select
                     id="module"
@@ -326,7 +310,7 @@ export default function CreateExamPage() {
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
               </div>
 
               <div className="space-y-2">

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AuthState, User, LoginCredentials, RegisterData } from '@/lib/types/auth';
-import { toast, ToastContainer } from 'react-toastify'; 
+import { toast } from 'react-toastify'; 
 import axios from 'axios';
 
 
@@ -204,9 +204,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       >
         {children}
       </AuthContext.Provider>
-
-      {/* ToastContainer should be included in the root component */}
-      <ToastContainer />
     </>
   );
 }

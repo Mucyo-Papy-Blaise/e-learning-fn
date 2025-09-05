@@ -23,7 +23,7 @@ interface Assignment {
   isAnonymous: boolean;
   peerReviewEnabled: boolean;
   plagiarismCheckEnabled: boolean;
-  rubric: Record<string, any>;
+  rubric: string,
   module_id?: { _id: string; title: string } | string;
   course_id?: string;
 }
@@ -193,17 +193,9 @@ export default function InstructorAssignmentDetailPage() {
               <CardTitle>Rubric</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 text-sm">
-                {Object.entries(assignment.rubric || {}).length === 0 && (
-                  <div className="text-gray-500">No rubric configured</div>
-                )}
-                {Object.entries(assignment.rubric || {}).map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between">
-                    <span>{k}</span>
-                    <span className="text-gray-600">{String(v)}</span>
-                  </div>
-                ))}
-              </div>
+              {assignment.rubric.split("\n").map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
             </CardContent>
           </Card>
 

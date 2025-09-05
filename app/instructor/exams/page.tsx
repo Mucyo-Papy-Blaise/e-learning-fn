@@ -65,19 +65,24 @@ export default function InstructorExamsListPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {exams.map(e => (
-                  <TableRow key={e._id}>
-                    <TableCell className="font-medium">{e.title}</TableCell>
-                    <TableCell className="max-w-[360px] truncate" title={e.description}>{e.description}</TableCell>
-                    <TableCell>{e.course}</TableCell>
-                    <TableCell>{e.duration ?? '-'} min</TableCell>
-                    <TableCell>{e.passingScore ?? '-'}</TableCell>
-                    <TableCell>{e.totalPoints ?? '-'}</TableCell>
-                    <TableCell className="text-right">
-                      <Link href={`/instructor/exams/${e._id}`} className="text-primary underline">View/Edit</Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {exams.map((e: any) => {
+                  const courseText = typeof e.course === 'object' && e.course !== null
+                    ? (e.course.title ?? e.course._id ?? '')
+                    : String(e.course ?? '')
+                  return (
+                    <TableRow key={e._id}>
+                      <TableCell className="font-medium">{e.title}</TableCell>
+                      <TableCell className="max-w-[360px] truncate" title={e.description}>{e.description}</TableCell>
+                      <TableCell>{courseText}</TableCell>
+                      <TableCell>{e.duration ?? '-'} min</TableCell>
+                      <TableCell>{e.passingScore ?? '-'}</TableCell>
+                      <TableCell>{e.totalPoints ?? '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <Link href={`/instructor/exams/${e._id}`} className="text-primary underline">View/Edit</Link>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
