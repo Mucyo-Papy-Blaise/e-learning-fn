@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import axios from 'axios'
+import { uploadResource } from '@/lib/api/resources'
 import { toast } from 'react-toastify'
 
 const formSchema = z.object({
@@ -34,8 +34,6 @@ const formSchema = z.object({
 })
 
 export const AddResourceForm = ({ lessonId, onSuccess }: { lessonId: string, onSuccess: () => void })=> {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL 
-
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -55,13 +53,8 @@ export const AddResourceForm = ({ lessonId, onSuccess }: { lessonId: string, onS
     formData.append('lesson_id', lessonId)
 
     try {
-      const response = await axios.post(`${API_URL}/api/resources`, 
-        formData,{
-        headers:{
-            "Authorization":`Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      toast.success(response.data.message)
+      const response = await uploadResource(lessonId, values.title, values.resource_type, values.file)
+      toast.success(response.message || 'Resource added')
       onSuccess()
       form.reset()
     } catch (error) {
