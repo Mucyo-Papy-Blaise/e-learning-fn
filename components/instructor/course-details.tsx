@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ModuleList } from "./modules/module-list";
 import { ModuleForm } from "./modules/module-form";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen, Settings, FileText, GraduationCap } from "lucide-react";
+import { Plus, BookOpen, Settings, FileText, GraduationCap, Edit3, Trash2, Rocket } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,12 +14,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useCourses } from "@/lib/hooks/use-courses";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 
 export const CourseDetails = ({ courseId }: { courseId: string }) => {
   const [activeTab, setActiveTab] = useState("modules");
   const [isAddModuleOpen, setIsAddModuleOpen] = useState(false);
-  const { currentCourse, modules, loadCourse, loadModules, isLoading } = useCourses();
+  const { currentCourse, modules, loadCourse, loadModules, isLoading, updateCourse, deleteCourse, publishCourse } = useCourses();
+  const router = useRouter();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editState, setEditState] = useState<{ title: string; description: string; price: string; category: string; difficulty_level: 'beginner'|'intermediate'|'advanced'; } | null>(null);
 
   useEffect(() => {
     loadCourse(courseId);
@@ -82,6 +86,44 @@ export const CourseDetails = ({ courseId }: { courseId: string }) => {
             <Plus className="mr-2 h-5 w-5" />
             Add Module
           </Button>
+
+          <Button
+            onClick={() => {
+              setEditState({
+                title: currentCourse.title,
+                description: currentCourse.description || '',
+                price: String(currentCourse.price ?? ''),
+                category: currentCourse.category || '',
+                difficulty_level: currentCourse.difficulty_level,
+              });
+              setIsEditOpen(true);
+            }}
+            className="flex-1 sm:flex-none h-12 px-6 bg-gray-700 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            <Edit3 className="mr-2 h-5 w-5" />
+            Edit
+          </Button>
+
+          <Button
+            onClick={async () => {
+              const confirmed = window.confirm('Delete this course? This cannot be undone.');
+              if (!confirmed) return;
+              const ok = await deleteCourse(courseId);
+              if (ok) router.push('/instructor/courses');
+            }}
+            className="flex-1 sm:flex-none h-12 px-6 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            <Trash2 className="mr-2 h-5 w-5" />
+            Delete
+          </Button>
+
+          <Button
+            onClick={async () => { await publishCourse(courseId); }}
+            className="flex-1 sm:flex-none h-12 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            <Rocket className="mr-2 h-5 w-5" />
+            Publish
+          </Button>
           
           <a 
             href={`/instructor/exams/new?courseId=${courseId}`} 
@@ -113,6 +155,84 @@ export const CourseDetails = ({ courseId }: { courseId: string }) => {
             courseId={courseId}
             onSuccess={() => setIsAddModuleOpen(false)}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog for Edit Course */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="sm:max-w-[600px] p-6">
+          <DialogHeader>
+            <DialogTitle>Edit Course</DialogTitle>
+          </DialogHeader>
+          {editState && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                await updateCourse(courseId, {
+                  title: editState.title,
+                  description: editState.description,
+                  price: Number(editState.price) || 0,
+                  category: editState.category,
+                  difficulty_level: editState.difficulty_level,
+                } as any);
+                setIsEditOpen(false);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium mb-1">Title</label>
+                <input
+                  className="w-full border rounded px-3 py-2"
+                  value={editState.title}
+                  onChange={(e) => setEditState({ ...(editState as any), title: e.target.value })}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea
+                  className="w-full border rounded px-3 py-2"
+                  value={editState.description}
+                  onChange={(e) => setEditState({ ...(editState as any), description: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Price</label>
+                  <input
+                    type="number"
+                    className="w-full border rounded px-3 py-2"
+                    value={editState.price}
+                    onChange={(e) => setEditState({ ...(editState as any), price: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Category</label>
+                  <input
+                    className="w-full border rounded px-3 py-2"
+                    value={editState.category}
+                    onChange={(e) => setEditState({ ...(editState as any), category: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Difficulty</label>
+                  <select
+                    className="w-full border rounded px-3 py-2 bg-white"
+                    value={editState.difficulty_level}
+                    onChange={(e) => setEditState({ ...(editState as any), difficulty_level: e.target.value as any })}
+                  >
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                <Button type="submit" className="bg-gray-900 text-white">Save</Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
 

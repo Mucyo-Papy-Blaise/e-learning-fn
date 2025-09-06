@@ -40,22 +40,38 @@ export async function fetchCourses(id: string): Promise<Course[]> {
 
 export async function fetchInstructorCourses(): Promise<any[]> {
   try {
-    const response = await axios.get(`${API_URL}/api/instructor/courses`, {
+    // Preferred per latest backend: returns only instructor-owned courses for instructor role
+    const primary = await axios.get(`${API_URL}/api/courses`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
       },
     });
-    const data = response.data;
-    console.log("this is the course data:", data)
-    if (Array.isArray(data)) return data as Course[];
-    if (Array.isArray(data?.courses)) return data.courses as Course[];
-    if (Array.isArray(data?.data)) return data.data as Course[];
-    if (Array.isArray(data?.results)) return data.results as Course[];
-    return [];
-  } catch (error) {
-    showToast('Failed to fetch instructor courses', 'error');
-    throw error;
+    const pdata = primary.data;
+    if (Array.isArray(pdata)) return pdata as Course[];
+    if (Array.isArray(pdata?.courses)) return pdata.courses as Course[];
+    if (Array.isArray(pdata?.data)) return pdata.data as Course[];
+    if (Array.isArray(pdata?.results)) return pdata.results as Course[];
+    // If shape unexpected, fall through to legacy path
+  } catch (primaryErr) {
+    try {
+      // Legacy/older backend path
+      const fallback = await axios.get(`${API_URL}/api/instructor/courses`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const fdata = fallback.data;
+      if (Array.isArray(fdata)) return fdata as Course[];
+      if (Array.isArray(fdata?.courses)) return fdata.courses as Course[];
+      if (Array.isArray(fdata?.data)) return fdata.data as Course[];
+      if (Array.isArray(fdata?.results)) return fdata.results as Course[];
+      return [];
+    } catch (fallbackErr) {
+      showToast('Failed to fetch instructor courses', 'error');
+      throw primaryErr;
+    }
   }
+  return [];
 }
 
 export async function fetchCourseById(courseId: string): Promise<Course> {
@@ -218,6 +234,54 @@ export async function enrollInCourse(courseId: string) {
     return response.data;
   } catch (error) {
     showToast('Failed to enroll', 'error');
+    throw error;
+  }
+}
+
+// Update course (ownership enforced by backend)
+export async function updateCourse(courseId: string, payload: Partial<Course>) {
+  try {
+    const response = await axios.put(`${API_URL}/api/courses/${courseId}`, payload, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    showToast('Course updated successfully', 'success');
+    return response.data as Course;
+  } catch (error) {
+    showToast('Failed to update course', 'error');
+    throw error;
+  }
+}
+
+// Delete course
+export async function deleteCourse(courseId: string) {
+  try {
+    const response = await axios.delete(`${API_URL}/api/courses/${courseId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    showToast('Course deleted', 'success');
+    return response.data;
+  } catch (error) {
+    showToast('Failed to delete course', 'error');
+    throw error;
+  }
+}
+
+// Publish course
+export async function publishCourse(courseId: string) {
+  try {
+    const response = await axios.patch(`${API_URL}/api/courses/${courseId}/publish`, {}, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    showToast('Course published', 'success');
+    return response.data as Course;
+  } catch (error) {
+    showToast('Failed to publish course', 'error');
     throw error;
   }
 }

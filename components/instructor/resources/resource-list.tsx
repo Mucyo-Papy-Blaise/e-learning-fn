@@ -11,26 +11,18 @@ import { Button } from "@/components/ui/button";
 import { useCourses } from "@/lib/hooks/use-courses";
 import { useEffect, useState } from "react";
 import { Resource } from "@/lib/types/course";
-import axios from "axios";
+import { fetchResourcesByLessonId } from "@/lib/api/resources";
 import { toast } from "react-toastify";
 
 export function ResourceList({ lessonId }: { lessonId: string }) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL
-
   const { resources, loadResources, isLoading } = useCourses();
   const [lessonResources, setLessonResources] = useState<Resource[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`${API_URL}/api/resources/${lessonId}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        ;
-        setLessonResources(response.data);
-
+        const data = await fetchResourcesByLessonId(lessonId);
+        setLessonResources(data);
       } catch (error) {
         toast.error('Failed to fetch resources');
 
