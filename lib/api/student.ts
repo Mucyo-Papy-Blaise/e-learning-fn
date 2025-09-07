@@ -162,7 +162,14 @@ export async function fetchStudentGrades(courseId: string) {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
-  return response.data;
+  const data = response.data;
+  // Normalize to an array of grade rows regardless of backend envelope
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.grades)) return data.grades;
+  if (Array.isArray(data?.results)) return data.results;
+  // Some backends return { data: [...] }
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
 }
 
 export async function fetchStudentSubmissions(courseId?: string) {
