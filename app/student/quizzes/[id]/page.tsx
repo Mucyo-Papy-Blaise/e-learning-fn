@@ -92,7 +92,35 @@ export default function QuizAttemptPage() {
     setSubmitting(false)
     if (res.ok) {
       toast.success('Quiz submitted')
-      router.push('/student/results')
+      try {
+        const q = await getQuizById(id)
+        const axios = (await import('@/lib/axios')).default
+        let courseId: string | null = null
+        if (q.ok) {
+          const moduleId = (q.data as any).module_id
+          const normalizedModuleId = typeof moduleId === 'object' ? String(moduleId?._id ?? moduleId) : String(moduleId)
+          // Resolve module to course by fetching module details list across courses user is enrolled in
+          // Prefer a simple attempt: try the enrolled courses endpoint and find a course whose modules include this module
+          try {
+            const enrolled = await axios.get(`/api/enrollment`, {
+              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            })
+            const courses = Array.isArray(enrolled.data) ? enrolled.data : (enrolled.data?.courses || [])
+            for (const c of courses) {
+              try {
+                const modsRes = await axios.get(`/api/courses/${c._id}/modules`, {
+                  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                })
+                const mods = Array.isArray(modsRes.data) ? modsRes.data : (modsRes.data?.modules || [])
+                if (mods.some((m: any) => String(m._id) === normalizedModuleId)) { courseId = String(c._id); break }
+              } catch {}
+            }
+          } catch {}
+        }
+        router.push(courseId ? `/student/courses/${courseId}/grades` : '/student')
+      } catch {
+        router.push('/student')
+      }
       localStorage.removeItem(`quizAttempt:${id}`)
       setConfirmGuard(false)
     } else {
