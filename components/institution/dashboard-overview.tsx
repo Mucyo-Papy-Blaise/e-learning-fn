@@ -11,6 +11,7 @@ import {
   Plus,
 } from "lucide-react"
 import Link from "next/link"
+import { fetchInstitutionStats } from "@/lib/api/institution-dashboard"
 
 interface IDashboard {
   totalInstructors: number
@@ -22,15 +23,28 @@ interface IDashboard {
 }
 
 export default function InstitutionDashboardOverview() {
-  const [dashboard, setDashboard] = useState<IDashboard>({
-    totalInstructors: 45,
-    totalStudents: 1250,
-    totalCourses: 89,
-    activeEnrollments: 2340,
-    completionRate: 78,
-    newRegistrations: 156
-  })
-  const [loading, setLoading] = useState<boolean>(false)
+  const [dashboard, setDashboard] = useState<IDashboard | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchInstitutionStats()
+        const normalized: IDashboard = {
+          totalInstructors: Number((data as any)?.totalInstructors ?? (data as any)?.instructors ?? 0),
+          totalStudents: Number((data as any)?.totalStudents ?? (data as any)?.students ?? 0),
+          totalCourses: Number((data as any)?.totalCourses ?? (data as any)?.courses ?? 0),
+          activeEnrollments: Number((data as any)?.activeEnrollments ?? (data as any)?.enrollments ?? 0),
+          completionRate: Number((data as any)?.completionRate ?? (data as any)?.completion_rate ?? 0),
+          newRegistrations: Number((data as any)?.newRegistrations ?? (data as any)?.registrations ?? 0),
+        }
+        setDashboard(normalized)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
 
   const institutionStats = [
     { title: "Total Instructors", value: dashboard?.totalInstructors || 0, icon: UserCheck },
