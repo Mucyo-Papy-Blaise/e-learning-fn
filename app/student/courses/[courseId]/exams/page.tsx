@@ -46,7 +46,7 @@ export default function CourseExamsPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href={`/student/courses/${courseId}`}>{course?.title ?? 'Course'}</BreadcrumbLink>
+              <BreadcrumbLink href={`/student/courses/${courseId}/home`}>{course?.title ?? 'Course'}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

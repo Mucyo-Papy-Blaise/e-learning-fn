@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
+import { fetchInstructorDashboard } from "@/lib/api/instructor"
 import {
   BookOpen,
   Users,
@@ -36,14 +37,9 @@ export const DashboardOverview = () => {
 
   const fetchDashboard = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/progress/dashboard`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-
-      if (response.data) {
-        setDashboard(response.data)
+      const data = await fetchInstructorDashboard()
+      if (data) {
+        setDashboard(data)
       } else {
         throw new Error("Invalid response data")
       }
