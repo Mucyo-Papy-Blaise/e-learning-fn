@@ -14,16 +14,29 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { User2, LayoutDashboard, BookOpen, Users, Calendar, Inbox, History, LifeBuoy } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { getMyStudentProfile } from "@/lib/api/student"
 
 export function MainSidebar() {
   const pathname = usePathname()
   const { state, isMobile, toggleSidebar } = useSidebar()
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({})
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   const toggleSubmenu = (title: string) => {
     setOpenSubmenus((prev) => ({ ...prev, [title]: !prev[title] }))
   }
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await getMyStudentProfile()
+        const url = res?.student?.profile_image || null
+        setAvatarUrl(url)
+      } catch {}
+    }
+    load()
+  }, [])
 
   return (
     <TooltipProvider>
@@ -49,7 +62,12 @@ export function MainSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Account">
                   <Link href="/student/account" className="flex items-center gap-3 px-3 py-2 text-white hover:bg-blue-800">
-                    <User2 className="h-5 w-5" />
+                    {avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={avatarUrl} alt="Profile" className="h-5 w-5 rounded-full object-cover" />
+                    ) : (
+                      <User2 className="h-5 w-5" />
+                    )}
                     {state === "expanded" && <span>Account</span>}
                   </Link>
                 </SidebarMenuButton>

@@ -45,6 +45,10 @@ export default function StudentCalendarPage() {
 
   const selectedKey = selectedDate ? selectedDate.toDateString() : ''
   const dayItems = itemsByDay.get(selectedKey) || []
+  const eventDates = useMemo(() => {
+    const keys = Array.from(itemsByDay.keys())
+    return keys.map(k => new Date(k))
+  }, [itemsByDay])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -59,6 +63,8 @@ export default function StudentCalendarPage() {
                 mode="single"
                 selected={selectedDate}
                 onSelect={setSelectedDate}
+                modifiers={{ hasEvent: eventDates }}
+                modifiersClassNames={{ hasEvent: 'has-event' }}
               />
             </CardContent>
           </Card>
@@ -93,6 +99,22 @@ export default function StudentCalendarPage() {
           </Card>
         </div>
       </div>
+      <style jsx>{`
+        :global(.has-event) {
+          position: relative;
+        }
+        :global(.has-event)::after {
+          content: '';
+          position: absolute;
+          bottom: 4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 4px;
+          height: 4px;
+          border-radius: 9999px;
+          background-color: #2563eb; /* blue-600 */
+        }
+      `}</style>
     </div>
   )
 }
