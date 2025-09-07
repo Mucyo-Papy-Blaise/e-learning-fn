@@ -4,13 +4,14 @@ import { getQuizById, getQuizQuestions, startQuizAttempt, submitQuizAttempt } fr
 import type { Quiz, QuizAttempt, QuizQuestion } from '@/lib/types/assessments'
 import QuestionForm from '@/components/assessments/QuestionForm'
 import { Button } from '@/components/ui/button'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
 import { toast } from 'react-toastify'
 
 export default function QuizAttemptPage() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const id = params?.id as string
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
@@ -92,7 +93,8 @@ export default function QuizAttemptPage() {
     setSubmitting(false)
     if (res.ok) {
       toast.success('Quiz submitted')
-      router.push('/student/results')
+      const courseId = searchParams?.get('courseId')
+      router.push(courseId ? `/student/courses/${courseId}/grades` : '/student/courses')
       localStorage.removeItem(`quizAttempt:${id}`)
       setConfirmGuard(false)
     } else {

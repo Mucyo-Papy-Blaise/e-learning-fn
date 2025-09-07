@@ -86,7 +86,7 @@ export default function CourseQuizzesPage() {
               const moduleTitle = typeof q.module_id === 'object' && q.module_id?.title ? q.module_id.title : moduleNameById[moduleId] || moduleId
               return (
                 <div key={q._id} className="space-y-2">
-                  <QuizCard quiz={q} href={`/student/quizzes/${q._id}`} />
+                  <QuizCard quiz={q} href={`/student/quizzes/${q._id}?courseId=${courseId}`} />
                   <div className="text-xs text-muted-foreground">Module: {moduleTitle}</div>
                 </div>
               )
