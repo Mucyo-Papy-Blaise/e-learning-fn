@@ -14,6 +14,7 @@ import { fetchStudentDashboard, fetchStudentNotifications, fetchStudentCalendar 
 function DashboardOverview() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [dashboard, setDashboard] = useState<IEnrollment[]>([]);
+  const [stats, setStats] = useState<{ totalCourses?: number; averageProgress?: number; upcomingDeadlines?: number; totalAssignments?: number } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -29,8 +30,10 @@ function DashboardOverview() {
       const data = await fetchStudentDashboard();
       if (data && Array.isArray(data)) {
         setDashboard(data);
+        if (data?.stats) setStats(data.stats);
       } else if (data?.enrollments && Array.isArray(data.enrollments)) {
         setDashboard(data.enrollments);
+        if (data?.stats) setStats(data.stats);
       } else {
         throw new Error("Invalid response data");
       }
@@ -198,6 +201,7 @@ function DashboardOverview() {
                     <p className="text-2xl font-bold text-gray-900">
                       {dashboard ? dashboard.filter((dash) => dash.status === "active").length : 0}
                     </p>
+                    <p className="text-xs text-gray-500 mt-1">Avg progress: {typeof stats?.averageProgress === 'number' ? `${Math.round(stats.averageProgress)}%` : 'N/A'}</p>
                   </div>
                   <div className="p-2 bg-gray-100 rounded-lg ml-3">
                     <TrendingUp className="h-4 w-4 text-gray-700" />
@@ -229,14 +233,14 @@ function DashboardOverview() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-600 uppercase tracking-wide mb-1">
-                      Certificates
+                      Upcoming Deadlines
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
-                      {dashboard ? dashboard.filter((dash) => dash.status === "completed").length : 0}
+                      {typeof stats?.upcomingDeadlines === 'number' ? stats.upcomingDeadlines : 0}
                     </p>
                   </div>
                   <div className="p-2 bg-gray-100 rounded-lg ml-3">
-                    <Award className="h-4 w-4 text-gray-700" />
+                    <Calendar className="h-4 w-4 text-gray-700" />
                   </div>
                 </div>
               </CardContent>
