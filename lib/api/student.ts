@@ -118,7 +118,9 @@ export async function fetchStudentCalendar() {
   const data = response.data;
   // Normalize to an array for consumers expecting a list
   if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.assignments)) return data.assignments;
+  const assignments = Array.isArray(data?.assignments) ? data.assignments : [];
+  const announcements = Array.isArray(data?.announcements) ? data.announcements : [];
+  if (assignments.length || announcements.length) return [...assignments, ...announcements];
   return [];
 }
 
