@@ -35,10 +35,23 @@ export default function CourseHomePage({ params }: { params: { courseId: string 
           setCompletedLessons(progress.completedLessons ?? 0)
           setTotalLessons(progress.totalLessons ?? 0)
         }
-        setAnnouncements(Array.isArray(anns) ? anns : [])
-        const filtered = Array.isArray(calendar)
-          ? calendar.filter((c: any) => (c.courseId || c.course_id?._id || c.course_id) === courseId)
-          : []
+        const normalizedAnns = (Array.isArray(anns) ? anns : []).map((a: any) => ({
+          id: a._id || a.id,
+          title: a.title,
+          content: a.content,
+          created_at: a.created_at || a.publish_at || a.createdAt,
+        }))
+        setAnnouncements(normalizedAnns)
+        const merged = Array.isArray(calendar) ? calendar : []
+        const filtered = merged
+          .filter((c: any) => {
+            const cid = c.courseId || c.course_id?._id || c.course_id || c.course?._id || c.course
+            return String(cid) === String(courseId)
+          })
+          .map((c: any) => ({
+            ...c,
+            due: c.dueDate || c.due_date || c.date,
+          }))
         setCalendarItems(filtered)
       } catch (e) {
         // keep UI minimal if fails
@@ -144,7 +157,7 @@ export default function CourseHomePage({ params }: { params: { courseId: string 
                           <div className="flex-1">
                             <h4 className="font-semibold text-gray-900 mb-1">{deadline.title}</h4>
                             <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
-                              <span>Due: {new Date(deadline.dueDate || deadline.due_date).toLocaleDateString()}</span>
+                              <span>{deadline.type === 'announcement' ? 'Date' : 'Due'}: {new Date(deadline.due || deadline.dueDate || deadline.due_date || deadline.date).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
