@@ -11,7 +11,7 @@ import {
   Plus,
 } from "lucide-react"
 import Link from "next/link"
-import { fetchInstitutionStats } from "@/lib/api/institution-dashboard"
+import { fetchInstitutionStats, fetchInstitutionDashboardAggregated } from "@/lib/api/institution-dashboard"
 
 interface IDashboard {
   totalInstructors: number
@@ -25,20 +25,43 @@ interface IDashboard {
 export default function InstitutionDashboardOverview() {
   const [dashboard, setDashboard] = useState<IDashboard | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+  const [recentActivities, setRecentActivities] = useState<Array<{ action?: string; title?: string; detail?: string; time?: string }>>([])
 
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetchInstitutionStats()
-        const normalized: IDashboard = {
-          totalInstructors: Number((data as any)?.totalInstructors ?? (data as any)?.instructors ?? 0),
-          totalStudents: Number((data as any)?.totalStudents ?? (data as any)?.students ?? 0),
-          totalCourses: Number((data as any)?.totalCourses ?? (data as any)?.courses ?? 0),
-          activeEnrollments: Number((data as any)?.activeEnrollments ?? (data as any)?.enrollments ?? 0),
-          completionRate: Number((data as any)?.completionRate ?? (data as any)?.completion_rate ?? 0),
-          newRegistrations: Number((data as any)?.newRegistrations ?? (data as any)?.registrations ?? 0),
+        const agg = await fetchInstitutionDashboardAggregated().catch(() => null)
+        if (agg?.stats) {
+          const s = agg.stats
+          const normalized: IDashboard = {
+            totalInstructors: Number(s?.totalInstructors ?? 0),
+            totalStudents: Number(s?.totalStudents ?? 0),
+            totalCourses: Number(s?.totalCourses ?? 0),
+            activeEnrollments: Number(s?.activeEnrollments ?? 0),
+            completionRate: Number(s?.completionRate ?? 0),
+            newRegistrations: Number(s?.newRegistrations ?? 0),
+          }
+          setDashboard(normalized)
+        } else {
+          const data = await fetchInstitutionStats()
+          const normalized: IDashboard = {
+            totalInstructors: Number((data as any)?.totalInstructors ?? (data as any)?.instructors ?? 0),
+            totalStudents: Number((data as any)?.totalStudents ?? (data as any)?.students ?? 0),
+            totalCourses: Number((data as any)?.totalCourses ?? (data as any)?.courses ?? 0),
+            activeEnrollments: Number((data as any)?.activeEnrollments ?? (data as any)?.enrollments ?? 0),
+            completionRate: Number((data as any)?.completionRate ?? (data as any)?.completion_rate ?? 0),
+            newRegistrations: Number((data as any)?.newRegistrations ?? (data as any)?.registrations ?? 0),
+          }
+          setDashboard(normalized)
         }
-        setDashboard(normalized)
+        if (Array.isArray(agg?.recentActivity)) {
+          const mapped = agg.recentActivity.map((a: any) => ({
+            action: a.title || a.type,
+            detail: a.detail,
+            time: a.time,
+          }))
+          setRecentActivities(mapped)
+        }
       } finally {
         setLoading(false)
       }
@@ -59,12 +82,7 @@ export default function InstitutionDashboardOverview() {
     { title: "Student Satisfaction", value: "4.8/5", change: "+0.3" },
   ]
 
-  const recentActivities = [
-    { action: "New instructor onboarded", detail: "Dr. Sarah Johnson joined Computer Science", time: "2 hours ago" },
-    { action: "Course approval pending", detail: "Advanced Machine Learning by Prof. Smith", time: "4 hours ago" },
-    { action: "Student milestone achieved", detail: "500+ completions in Data Science track", time: "1 day ago" },
-    { action: "System maintenance completed", detail: "Platform upgrade successfully deployed", time: "2 days ago" },
-  ]
+  
 
   if (loading) {
     return (

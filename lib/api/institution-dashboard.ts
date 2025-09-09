@@ -17,3 +17,15 @@ export async function fetchInstitutionStats(): Promise<InstitutionStats> {
   return data;
 }
 
+export type InstitutionDashboardAgg = any;
+
+export async function fetchInstitutionDashboardAggregated(): Promise<InstitutionDashboardAgg> {
+  const response = await axios.get(`${API_URL}/api/institutions/dashboard`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  const data = response.data?.data ?? response.data;
+  return data;
+}
+

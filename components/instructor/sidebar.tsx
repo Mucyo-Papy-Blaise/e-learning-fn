@@ -36,7 +36,7 @@ const navigation = [
     subItems: [
       { name: "All Courses", href: "/instructor/courses" },
       { name: "Create Course", href: "/instructor/courses/new" },
-      { name: "Course Analytics", href: "/instructor/analytics" },
+      // { name: "Course Analytics", href: "/instructor/analytics" },
     ],
   },
   { 
@@ -48,7 +48,7 @@ const navigation = [
       { name: "Assignments", href: "/instructor/assignments" },
       { name: "Exams", href: "/instructor/exams" },
       { name: "Quizzes", href: "/instructor/quizzes" },
-      { name: "Resources", href: "/instructor/resources" },
+      // { name: "Resources", href: "/instructor/resources" },
     ]
   },
   { 
@@ -58,7 +58,7 @@ const navigation = [
     badge: null,
     subItems: [
       { name: "Announcements", href: "/instructor/announcements" },
-      { name: "Discussions", href: "/instructor/discussions" },
+      // { name: "Discussions", href: "/instructor/discussions" },
     ]
   },
   { 
