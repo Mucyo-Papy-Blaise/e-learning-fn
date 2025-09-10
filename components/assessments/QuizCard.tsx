@@ -25,7 +25,7 @@ export default function QuizCard({ quiz, href }: Props) {
         </div>
       </CardContent>
       <CardFooter className="justify-end">
-        <Button asChild>
+        <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white">
           <Link href={link}>Start</Link>
         </Button>
       </CardFooter>
