@@ -169,12 +169,21 @@ export default function QuizAttemptPage() {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow">
-          <div className="p-6">
-            <h1 className="text-2xl font-semibold">{quiz?.title ?? 'Quiz'}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-blue-100">
-              {quiz?.time_limit ? <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1">Time limit: {quiz.time_limit} min</span> : null}
-              {quiz?.max_attempts ? <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1">Max attempts: {quiz.max_attempts}</span> : null}
+          <div className="p-6 flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold">{quiz?.title ?? 'Quiz'}</h1>
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-blue-100">
+                {quiz?.time_limit ? <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1">Time limit: {quiz.time_limit} min</span> : null}
+                {quiz?.max_attempts ? <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1">Max attempts: {quiz.max_attempts}</span> : null}
+              </div>
             </div>
+            {attempt && timeLeft != null && (
+              <div className="mt-1">
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${timeLeft < 60 ? 'bg-red-500/30 text-white' : 'bg-white/10 text-white'}`}>
+                  Time left: {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2,'0')}
+                </span>
+              </div>
+            )}
           </div>
         </div>
         {!attempt ? (
@@ -184,9 +193,6 @@ export default function QuizAttemptPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {timeLeft != null && (
-              <div className="text-right text-sm">Time left: <span className={timeLeft < 60 ? 'text-red-600 font-medium' : 'font-medium'}>{Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2,'0')}</span></div>
-            )}
             <QuestionForm questions={simpleQuestions} value={answers} onChange={onAnswersChange} />
             <div className="flex justify-end gap-2">
               <Button variant="secondary" onClick={handleSaveDraft} disabled={submitting} className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100">
