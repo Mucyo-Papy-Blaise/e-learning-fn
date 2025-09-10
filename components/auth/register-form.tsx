@@ -70,7 +70,7 @@ export function RegisterForm() {
         <h1 className="text-3xl font-bold text-white mb-2">Create an account</h1>
         <p className="text-slate-400">
           Already have an account?{" "}
-          <Link href="/login" className="text-purple-400 hover:text-purple-300 ml-1 underline">
+          <Link href="/login" className="text-blue-400 hover:text-blue-300 ml-1 underline">
             Sign in here
           </Link>
         </p>
@@ -135,7 +135,7 @@ export function RegisterForm() {
               placeholder="Enter your full name"
               value={formData.name}
               onChange={handleChange}
-              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg"
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg"
               required
             />
             <User className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -155,7 +155,7 @@ export function RegisterForm() {
               placeholder="Enter your email"
               value={formData.email}
               onChange={handleChange}
-              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg"
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg"
               required
             />
             <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -175,7 +175,7 @@ export function RegisterForm() {
               placeholder="Create a password"
               value={formData.password}
               onChange={handleChange}
-              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg pr-12"
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg pr-12"
               required
             />
             <button
@@ -201,7 +201,7 @@ export function RegisterForm() {
               placeholder="Enter your phone number"
               value={formData.phone}
               onChange={handleChange}
-              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg"
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg"
               required
             />
             <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -221,14 +221,14 @@ export function RegisterForm() {
             }
             className="grid grid-cols-2 gap-4"
           >
-            <div className="flex items-center space-x-3 p-4 bg-slate-800/30 border border-slate-600 rounded-lg hover:border-purple-500 transition-colors">
-              <RadioGroupItem value="student" id="student" className="text-purple-500 border-slate-500" />
+            <div className="flex items-center space-x-3 p-4 bg-slate-800/30 border border-slate-600 rounded-lg hover:border-blue-500 transition-colors">
+              <RadioGroupItem value="student" id="student" className="text-blue-500 border-slate-500" />
               <Label htmlFor="student" className="text-slate-300 font-medium cursor-pointer">
                 Student
               </Label>
             </div>
-            <div className="flex items-center space-x-3 p-4 bg-slate-800/30 border border-slate-600 rounded-lg hover:border-purple-500 transition-colors">
-              <RadioGroupItem value="institution" id="institution" className="text-purple-500 border-slate-500" />
+            <div className="flex items-center space-x-3 p-4 bg-slate-800/30 border border-slate-600 rounded-lg hover:border-blue-500 transition-colors">
+              <RadioGroupItem value="institution" id="institution" className="text-blue-500 border-slate-500" />
               <Label htmlFor="institution" className="text-slate-300 font-medium cursor-pointer">
                 Institution
               </Label>
@@ -239,7 +239,7 @@ export function RegisterForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 group border-0"
+          className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 group border-0"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -269,7 +269,7 @@ export function RegisterForm() {
         <div className="text-center text-sm mt-6">
           <span className="text-slate-400">
             Already have an account?{" "}
-            <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+            <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
               Sign in
             </Link>
           </span>

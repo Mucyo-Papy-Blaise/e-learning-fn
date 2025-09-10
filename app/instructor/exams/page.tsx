@@ -40,7 +40,7 @@ export default function InstructorExamsListPage() {
         </Breadcrumb>
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">All Exams</h1>
-          <Button asChild>
+          <Button asChild className='bg-blue-600 hover:bg-blue-700'>
             <Link href="/instructor/exams/new">New Exam</Link>
           </Button>
         </div>

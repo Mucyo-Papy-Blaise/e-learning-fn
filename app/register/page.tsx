@@ -14,14 +14,14 @@ export default function RegisterPage() {
         <div
           className="hidden lg:flex lg:w-1/2 relative bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `linear-gradient(45deg, rgba(76, 29, 149, 0.7), rgba(59, 130, 246, 0.5)), url('/thumbail.jpeg')`
+            backgroundImage: `linear-gradient(45deg, rgba(37, 99, 235, 0.7), rgba(59, 130, 246, 0.5)), url('/thumbail.jpeg')`,
           }}
         >
           {/* Content overlay */}
           <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white h-full">
             <div className="space-y-4 max-w-md">
               <h1 className="text-5xl font-bold leading-tight">
-                Welcome aboard
+                Welcome E-Learning
                 <br />
                 <span className="text-4xl font-light">Start Your Journey</span>
               </h1>

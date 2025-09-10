@@ -33,7 +33,7 @@ export function LoginForm() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Create an account</h1>
         <p className="text-slate-400">Already have an account? 
-          <Link href="/login" className="text-purple-400 hover:text-purple-300 ml-1 underline">
+          <Link href="/login" className="text-blue-400 hover:text-blue-300 ml-1 underline">
             Sign in here
           </Link>
         </p>
@@ -52,7 +52,7 @@ export function LoginForm() {
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg"
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg"
               required
             />
             <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
@@ -71,7 +71,7 @@ export function LoginForm() {
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg pr-12"
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 rounded-lg pr-12"
               required
             />
             <button
@@ -89,11 +89,11 @@ export function LoginForm() {
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
-              className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-purple-600 focus:ring-purple-500 focus:ring-1"
+              className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-blue-600 focus:ring-blue-500 focus:ring-1"
             />
             <span className="text-slate-300 text-sm">Remember me</span>
           </label>
-          <Link href="/forgot-password" className="text-purple-400 hover:text-purple-300 text-sm">
+          <Link href="/forgot-password" className="text-blue-400 hover:text-blue-300 text-sm">
             Forgot password?
           </Link>
         </div>
@@ -101,7 +101,7 @@ export function LoginForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 group border-0"
+          className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 group border-0"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -131,7 +131,7 @@ export function LoginForm() {
         <div className="text-center text-sm mt-6">
           <span className="text-slate-400">
             Don{"'"}t have an account?{" "}
-            <Link href="/register" className="text-purple-400 hover:text-purple-300 font-medium">
+            <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium">
               Sign up for free
             </Link>
           </span>

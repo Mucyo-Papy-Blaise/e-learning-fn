@@ -52,7 +52,7 @@ export default function InstructorQuizzesListPage() {
         </Breadcrumb>
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold">All Quizzes</h1>
-          <Button asChild>
+          <Button asChild className='bg-blue-600 hover:bg-blue-700'>
             <Link href="/instructor/quizzes/new">New Quiz</Link>
           </Button>
         </div>

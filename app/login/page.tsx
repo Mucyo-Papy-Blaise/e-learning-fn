@@ -14,7 +14,7 @@ export default function LoginPage() {
         <div
   className="hidden lg:flex lg:w-1/2 relative bg-cover bg-center bg-no-repeat"
   style={{
-    backgroundImage: `linear-gradient(45deg, rgba(76, 29, 149, 0.7), rgba(59, 130, 246, 0.5)), url('/thumbail.jpeg')`
+    backgroundImage: `linear-gradient(45deg, rgba(37, 99, 235, 0.7), rgba(59, 130, 246, 0.5)), url('/thumbail.jpeg')`,
   }}
 >
           {/* Content overlay */}
