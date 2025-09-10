@@ -6,10 +6,9 @@ import { useState } from "react"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Mail, Lock, User, Phone, UserPlus, ArrowRight } from "lucide-react"
+import { Mail, Lock, User, Phone, ArrowRight, Eye, EyeOff, Upload, X } from "lucide-react"
 import Link from "next/link"
 
 export function RegisterForm() {
@@ -25,6 +24,7 @@ export function RegisterForm() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,171 +41,240 @@ export function RegisterForm() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>)=>{
-    const {name, value, files} = e.target
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = e.target
     
-    if(name === 'image' && files &&files[0]){
+    if (name === 'image' && files && files[0]) {
       const file = files[0]
-      const reader =  new FileReader()
+      const reader = new FileReader()
 
-      reader.onloadend = () =>{
-        setFormData((prev)=> ({...prev, image: reader.result as string}))
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, image: reader.result as string }))
         setPreviewImage(reader.result as string)
       }
       reader.readAsDataURL(file)
-    }else{
-      setFormData((prev)=> ({...prev, [name]: value}))
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }))
     }
   }
+
+  const removeImage = () => {
+    setFormData((prev) => ({ ...prev, image: "" }))
+    setPreviewImage(null)
+  }
+
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-white p-4">
-      <Card className="max-w-lg mx-auto bg-white border border-gray-200 shadow-xl">
-        {/* Blue Header */}
-        <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg space-y-6 text-center pb-4 pt-4">
-          <div className="mx-auto w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-            <UserPlus className="h-4 w-4 text-white" />
-          </div>
-          <div className="space-y-2">
-            <h2 className="text-3xl font-light text-white">Join our platform</h2>
-            <p className="text-blue-100 text-sm">Create your account to start learning</p>
-          </div>
-        </CardHeader>
+    <div className="w-full">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white mb-2">Create an account</h1>
+        <p className="text-slate-400">
+          Already have an account?{" "}
+          <Link href="/login" className="text-purple-400 hover:text-purple-300 ml-1 underline">
+            Sign in here
+          </Link>
+        </p>
+      </div>
 
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-6 p-8">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-gray-700 text-sm font-medium">
-                Full Name
-              </Label>
-              <div className="relative group">
-                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Enter your full name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="pl-12 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-                  required
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Profile Image Upload */}
+        {/* <div className="space-y-2">
+          <Label className="text-slate-300 text-sm font-medium">
+            Profile Picture (Optional)
+          </Label>
+          <div className="flex items-center space-x-4">
+            {previewImage ? (
+              <div className="relative">
+                <img
+                  src={previewImage}
+                  alt="Preview"
+                  className="w-16 h-16 rounded-full object-cover border-2 border-slate-600"
                 />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700 text-sm font-medium">
-                Email Address
-              </Label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="pl-12 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-                  required
-                />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-slate-800/50 border-2 border-dashed border-slate-600 flex items-center justify-center">
+                <Upload className="h-6 w-6 text-slate-400" />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700 text-sm font-medium">
-                Password
-              </Label>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Create a password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="pl-12 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-gray-700 text-sm font-medium">
-                Phone Number
-              </Label>
-              <div className="relative group">
-                <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="Enter your phone number"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="pl-12 h-12 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-gray-700 text-sm font-medium">Account Type</Label>
-              <RadioGroup
-                defaultValue="student"
-                onValueChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    role: value as "student" | "institution",
-                  }))
-                }
-                className="grid grid-cols-2 gap-4"
+            )}
+            <div className="flex-1">
+              <input
+                type="file"
+                name="image"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+                id="image-upload"
+              />
+              <Label
+                htmlFor="image-upload"
+                className="cursor-pointer inline-flex items-center px-4 py-2 bg-slate-800/50 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-700/50 transition-colors"
               >
-                <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
-                  <RadioGroupItem value="student" id="student" className="text-blue-500" />
-                  <Label htmlFor="student" className="text-gray-700 font-medium cursor-pointer">
-                    Student
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
-                  <RadioGroupItem value="institution" id="institution" className="text-blue-500" />
-                  <Label htmlFor="institution" className="text-gray-700 font-medium cursor-pointer">
-                    Institution
-                  </Label>
-                </div>
-              </RadioGroup>
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Photo
+              </Label>
             </div>
-          </CardContent>
+          </div>
+        </div> */}
 
-          <CardFooter className="flex flex-col space-y-6 p-8 pt-2">
-            {/* Blue Button */}
-            <Button
-              type="submit"
-              className="w-full h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200 group"
-              disabled={isLoading}
+        {/* Name Field */}
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-slate-300 text-sm font-medium">
+            Full Name
+          </Label>
+          <div className="relative">
+            <Input
+              id="name"
+              name="name"
+              placeholder="Enter your full name"
+              value={formData.name}
+              onChange={handleChange}
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg"
+              required
+            />
+            <User className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+          </div>
+        </div>
+
+        {/* Email Field */}
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
+            Email Address
+          </Label>
+          <div className="relative">
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg"
+              required
+            />
+            <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+          </div>
+        </div>
+
+        {/* Password Field */}
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
+            Password
+          </Label>
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Create a password"
+              value={formData.password}
+              onChange={handleChange}
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg pr-12"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
             >
-              {isLoading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Creating account...</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <span>Create account</span>
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </div>
-              )}
-            </Button>
-            <div className="text-center text-sm">
-              <span className="text-gray-600">
-                Already have an account?{" "}
-                <Link href="/login" className="text-blue-500 hover:text-blue-600 font-medium transition-colors">
-                  Sign in
-                </Link>
-              </span>
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Phone Field */}
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-slate-300 text-sm font-medium">
+            Phone Number
+          </Label>
+          <div className="relative">
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              placeholder="Enter your phone number"
+              value={formData.phone}
+              onChange={handleChange}
+              className="h-12 bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-lg"
+              required
+            />
+            <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+          </div>
+        </div>
+
+        {/* Account Type */}
+        <div className="space-y-3">
+          <Label className="text-slate-300 text-sm font-medium">Account Type</Label>
+          <RadioGroup
+            defaultValue="student"
+            onValueChange={(value) =>
+              setFormData((prev) => ({
+                ...prev,
+                role: value as "student" | "institution",
+              }))
+            }
+            className="grid grid-cols-2 gap-4"
+          >
+            <div className="flex items-center space-x-3 p-4 bg-slate-800/30 border border-slate-600 rounded-lg hover:border-purple-500 transition-colors">
+              <RadioGroupItem value="student" id="student" className="text-purple-500 border-slate-500" />
+              <Label htmlFor="student" className="text-slate-300 font-medium cursor-pointer">
+                Student
+              </Label>
             </div>
-          </CardFooter>
-        </form>
-      </Card>
+            <div className="flex items-center space-x-3 p-4 bg-slate-800/30 border border-slate-600 rounded-lg hover:border-purple-500 transition-colors">
+              <RadioGroupItem value="institution" id="institution" className="text-purple-500 border-slate-500" />
+              <Label htmlFor="institution" className="text-slate-300 font-medium cursor-pointer">
+                Institution
+              </Label>
+            </div>
+          </RadioGroup>
+        </div>
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 group border-0"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <span>Creating account...</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center space-x-2">
+              <span>Create Account</span>
+              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </div>
+          )}
+        </Button>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-600"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 text-slate-400 bg-slate-900">Or</span>
+          </div>
+        </div>
+
+        {/* Sign In Link */}
+        <div className="text-center text-sm mt-6">
+          <span className="text-slate-400">
+            Already have an account?{" "}
+            <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+              Sign in
+            </Link>
+          </span>
+        </div>
+      </form>
     </div>
   )
 }
