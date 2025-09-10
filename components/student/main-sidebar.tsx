@@ -9,6 +9,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarCollapseTrigger, // ✅ new import
   useSidebar,
 } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -19,13 +20,8 @@ import { getMyStudentProfile } from "@/lib/api/student"
 
 export function MainSidebar() {
   const pathname = usePathname()
-  const { state, isMobile, toggleSidebar } = useSidebar()
-  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({})
+  const { state } = useSidebar()
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-
-  const toggleSubmenu = (title: string) => {
-    setOpenSubmenus((prev) => ({ ...prev, [title]: !prev[title] }))
-  }
 
   useEffect(() => {
     const load = async () => {
@@ -45,7 +41,7 @@ export function MainSidebar() {
         collapsible="icon"
         className="bg-slate-700 text-white border-r border-blue-800"
       >
-        <div className="flex h-16 items-center justify-center border-b border-slate-600 px-2">
+        <div className="flex h-16 items-center justify-between border-b border-slate-600 px-2">
           <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
             <span className="text-red-500 text-base font-bold">CDY</span>
             {state === "expanded" && (
@@ -54,6 +50,9 @@ export function MainSidebar() {
               </span>
             )}
           </Link>
+
+          {/* Collapse/Expand trigger */}
+          <SidebarCollapseTrigger />
         </div>
 
         <SidebarContent className="flex-1 py-2">
@@ -63,7 +62,6 @@ export function MainSidebar() {
                 <SidebarMenuButton asChild tooltip="Account">
                   <Link href="/student/account" className="flex items-center gap-3 px-3 py-2 text-white hover:bg-blue-800">
                     {avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img src={avatarUrl} alt="Profile" className="h-5 w-5 rounded-full object-cover" />
                     ) : (
                       <User2 className="h-5 w-5" />

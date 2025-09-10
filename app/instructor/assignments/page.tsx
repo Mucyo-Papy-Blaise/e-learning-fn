@@ -280,142 +280,101 @@ export default function AssignmentsOverviewPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <div className="container py-8 space-y-8">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="space-y-2">
-            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
-              Institution Assignments
-            </h1>
-            <p className="text-muted-foreground">
-              View and manage all assignments across your institution{"'"}s courses
+<div className="flex flex-col md:flex-row items-start justify-between gap-4">
+  <div className="space-y-1">
+    <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+      Institution Assignments
+    </h1>
+    <p className="text-sm text-gray-500">
+      Manage and track assignments across your institution’s courses
+    </p>
+  </div>
+
+  <Button
+    className="bg-blue-600 hover:bg-blue-700 h-9 px-4 text-sm font-medium"
+    onClick={() => router.push("/instructor/assignments/create")}
+  >
+    <Plus className="h-4 w-4 mr-2" />
+    Create Assignment
+  </Button>
+</div>
+
+{/* Stats Cards */}
+<div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+  {[
+    { label: "Total", value: totalAssignments, icon: FileText },
+    { label: "Published", value: statusCounts.published, icon: CheckCircle2 },
+    { label: "Drafts", value: statusCounts.draft, icon: Edit3 },
+    { label: "Institution", value: creatorCounts.institution, icon: Building2 },
+    { label: "Admin", value: creatorCounts.admin, icon: UserCheck },
+    { label: "Instructor", value: creatorCounts.instructor, icon: Users },
+  ].map((item, i) => (
+    <Card
+      key={i}
+      className="border shadow-sm bg-white dark:bg-slate-900 rounded-md"
+    >
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-gray-500">{item.label}</p>
+            <p className="text-lg font-semibold text-gray-800">
+              {item.value}
             </p>
           </div>
-          
-          <Button 
-            className="bg-blue-600 hover:bg-blue-700"
-            onClick={() => router.push('/instructor/assignments/create')}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Assignment
-          </Button>
+          <item.icon className="h-5 w-5 text-blue-600" />
         </div>
+      </CardContent>
+    </Card>
+  ))}
+</div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
-          <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total</p>
-                  <p className="text-3xl font-bold">{totalAssignments}</p>
-                </div>
-                <FileText className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
+{/* Search + Filters */}
+<Card className="border shadow-sm bg-white dark:bg-slate-900 rounded-md">
+  <CardContent className="p-4">
+    <div className="flex flex-col sm:flex-row gap-3">
+      {/* Search */}
+      <div className="relative flex-1">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Input
+          placeholder="Search assignments..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-9 text-sm"
+        />
+      </div>
 
-          <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Published</p>
-                  <p className="text-3xl font-bold text-green-600">{statusCounts.published}</p>
-                </div>
-                <CheckCircle2 className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
+      {/* Status Filter */}
+      <div className="flex items-center gap-2">
+        <Filter className="h-4 w-4 text-gray-400" />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-sm"
+        >
+          <option value="all">All Status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
 
-          <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Drafts</p>
-                  <p className="text-3xl font-bold text-gray-600">{statusCounts.draft}</p>
-                </div>
-                <Edit3 className="h-8 w-8 text-gray-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Institution</p>
-                  <p className="text-3xl font-bold text-blue-600">{creatorCounts.institution}</p>
-                </div>
-                <Building2 className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Admin</p>
-                  <p className="text-3xl font-bold text-purple-600">{creatorCounts.admin}</p>
-                </div>
-                <UserCheck className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Instructor</p>
-                  <p className="text-3xl font-bold text-orange-600">{creatorCounts.instructor}</p>
-                </div>
-                <Users className="h-8 w-8 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Search and Filter */}
-        <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search assignments..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-sm"
-                >
-                  <option value="all">All Status</option>
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <UserCheck className="h-4 w-4 text-muted-foreground" />
-                <select
-                  value={creatorFilter}
-                  onChange={(e) => setCreatorFilter(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-sm"
-                >
-                  <option value="all">All Creators</option>
-                  <option value="institution">Institution</option>
-                  <option value="admin">Admin</option>
-                  <option value="instructor">Instructor</option>
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Creator Filter */}
+      <div className="flex items-center gap-2">
+        <UserCheck className="h-4 w-4 text-gray-400" />
+        <select
+          value={creatorFilter}
+          onChange={(e) => setCreatorFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-sm"
+        >
+          <option value="all">All Creators</option>
+          <option value="institution">Institution</option>
+          <option value="admin">Admin</option>
+          <option value="instructor">Instructor</option>
+        </select>
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
         {/* Assignments by Module */}
         <div className="space-y-6">

@@ -29,13 +29,34 @@ import {
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import HeroSection from "@/components/heroSection"
+import { fetchTrendingCourses, fetchCategories, enrollInCourse, Course, Category } from "@/lib/api/public"
 
 export default function ELearningLanding() {
   const [isVisible, setIsVisible] = useState(false)
+  const [trendingCourses, setTrendingCourses] = useState<Course[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setIsVisible(true)
+    loadData()
   }, [])
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const [trendingData, categoriesData] = await Promise.all([
+        fetchTrendingCourses(4, 1),
+        fetchCategories()
+      ])
+      setTrendingCourses(trendingData.data)
+      setCategories(categoriesData.data)
+    } catch (error) {
+      console.error('Error loading data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -132,94 +153,77 @@ export default function ELearningLanding() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {[
-              {
-                name: "Business",
-                icon: Briefcase,
-                description: "Leadership, Finance, Marketing",
-                courses: "2,450+ courses",
-                color: "from-blue-500 to-blue-600",
-                bgColor: "bg-blue-50",
-              },
-              {
-                name: "Computer Science",
-                icon: Code,
-                description: "Programming, Web Development",
-                courses: "1,890+ courses",
-                color: "from-green-500 to-green-600",
-                bgColor: "bg-green-50",
-              },
-              {
-                name: "Data Science",
-                icon: Database,
-                description: "Machine Learning, Analytics",
-                courses: "1,560+ courses",
-                color: "from-purple-500 to-purple-600",
-                bgColor: "bg-purple-50",
-              },
-              {
-                name: "Arts & Humanities",
-                icon: Palette,
-                description: "History, Philosophy, Literature",
-                courses: "1,230+ courses",
-                color: "from-pink-500 to-pink-600",
-                bgColor: "bg-pink-50",
-              },
-              {
-                name: "Health",
-                icon: Stethoscope,
-                description: "Medicine, Psychology, Nutrition",
-                courses: "980+ courses",
-                color: "from-red-500 to-red-600",
-                bgColor: "bg-red-50",
-              },
-              {
-                name: "Math & Logic",
-                icon: Calculator,
-                description: "Statistics, Calculus, Logic",
-                courses: "890+ courses",
-                color: "from-orange-500 to-orange-600",
-                bgColor: "bg-orange-50",
-              },
-              {
-                name: "Physical Science",
-                icon: Atom,
-                description: "Physics, Chemistry, Biology",
-                courses: "750+ courses",
-                color: "from-teal-500 to-teal-600",
-                bgColor: "bg-teal-50",
-              },
-              {
-                name: "Social Sciences",
-                icon: Users,
-                description: "Economics, Psychology, Law",
-                courses: "670+ courses",
-                color: "from-indigo-500 to-indigo-600",
-                bgColor: "bg-indigo-50",
-              },
-            ].map((category, index) => (
-              <Card
-                key={category.name}
-                className="group cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-white hover:bg-gray-50 transform hover:-translate-y-1"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <CardContent className="p-6">
-                  <div
-                    className={`w-16 h-16 ${category.bgColor} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
-                  >
-                    <category.icon className="h-8 w-8 text-gray-700" />
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-blue-600 transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-3 leading-relaxed">{category.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 font-medium">{category.courses}</span>
-                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-200" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 8 }).map((_, index) => (
+                <Card key={index} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="w-16 h-16 bg-gray-200 rounded-2xl mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-3"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              categories.slice(0, 8).map((category, index) => {
+                // Map category names to icons and colors
+                const getCategoryIcon = (name: string) => {
+                  const lowerName = name.toLowerCase();
+                  if (lowerName.includes('business')) return Briefcase;
+                  if (lowerName.includes('computer') || lowerName.includes('programming')) return Code;
+                  if (lowerName.includes('data') || lowerName.includes('analytics')) return Database;
+                  if (lowerName.includes('art') || lowerName.includes('design')) return Palette;
+                  if (lowerName.includes('health') || lowerName.includes('medical')) return Stethoscope;
+                  if (lowerName.includes('math') || lowerName.includes('logic')) return Calculator;
+                  if (lowerName.includes('science') || lowerName.includes('physics')) return Atom;
+                  if (lowerName.includes('social') || lowerName.includes('psychology')) return Users;
+                  return BookOpen;
+                };
+
+                const getCategoryColor = (index: number) => {
+                  const colors = [
+                    { color: "from-blue-500 to-blue-600", bgColor: "bg-blue-50" },
+                    { color: "from-green-500 to-green-600", bgColor: "bg-green-50" },
+                    { color: "from-purple-500 to-purple-600", bgColor: "bg-purple-50" },
+                    { color: "from-pink-500 to-pink-600", bgColor: "bg-pink-50" },
+                    { color: "from-red-500 to-red-600", bgColor: "bg-red-50" },
+                    { color: "from-orange-500 to-orange-600", bgColor: "bg-orange-50" },
+                    { color: "from-teal-500 to-teal-600", bgColor: "bg-teal-50" },
+                    { color: "from-indigo-500 to-indigo-600", bgColor: "bg-indigo-50" },
+                  ];
+                  return colors[index % colors.length];
+                };
+
+                const IconComponent = getCategoryIcon(category.name);
+                const { color, bgColor } = getCategoryColor(index);
+
+                return (
+                  <Link key={category._id} href={`/category/${encodeURIComponent(category.name)}`}>
+                    <Card
+                      className="group cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-white hover:bg-gray-50 transform hover:-translate-y-1"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                    <CardContent className="p-6">
+                      <div
+                        className={`w-16 h-16 ${bgColor} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}
+                      >
+                        <IconComponent className="h-8 w-8 text-gray-700" />
+                      </div>
+                      <h3 className="font-bold text-gray-900 text-lg mb-2 group-hover:text-blue-600 transition-colors">
+                        {category.name}
+                      </h3>
+                      <p className="text-gray-600 text-sm mb-3 leading-relaxed">{category.description || 'Explore courses in this category'}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500 font-medium">{category.courseCount}+ courses</span>
+                        <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-200" />
+                      </div>
+                    </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })
+            )}
           </div>
 
           <div className="text-center mt-10">
@@ -257,114 +261,160 @@ export default function ELearningLanding() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
-                {[
-                  {
-                    title: "Complete Web Development Bootcamp",
-                    university: "Harvard University",
-                    category: "Computer Science",
-                    rating: 4.9,
-                    students: "125K+",
-                    duration: "16 weeks",
-                    price: "Free",
-                    trending: true,
-                    color: "from-blue-500 to-blue-600",
-                  },
-                  {
-                    title: "Digital Marketing Mastery",
-                    university: "Stanford University",
-                    category: "Business",
-                    rating: 4.8,
-                    students: "89K+",
-                    duration: "12 weeks",
-                    price: "$149",
-                    trending: true,
-                    color: "from-green-500 to-green-600",
-                  },
-                  {
-                    title: "Machine Learning Fundamentals",
-                    university: "MIT",
-                    category: "Data Science",
-                    rating: 4.9,
-                    students: "156K+",
-                    duration: "20 weeks",
-                    price: "$299",
-                    trending: true,
-                    color: "from-purple-500 to-purple-600",
-                  },
-                  {
-                    title: "UX/UI Design Principles",
-                    university: "Google",
-                    category: "Design",
-                    rating: 4.7,
-                    students: "67K+",
-                    duration: "8 weeks",
-                    price: "$99",
-                    trending: false,
-                    color: "from-pink-500 to-pink-600",
-                  },
-                ].map((course, index) => (
-                  <Card
-                    key={course.title}
-                    className="group hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 bg-white border-0 overflow-hidden"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="relative">
-                      <div className={`h-48 bg-gradient-to-br ${course.color} relative overflow-hidden`}>
-                        <div className="absolute inset-0 bg-black/20"></div>
-                        <div className="absolute top-4 left-4">
-                          <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm">{course.category}</Badge>
+                {loading ? (
+                  // Loading skeleton for courses
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <Card key={index} className="animate-pulse">
+                      <div className="h-48 bg-gray-200"></div>
+                      <CardContent className="p-6">
+                        <div className="h-6 bg-gray-200 rounded mb-3"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
+                        <div className="flex justify-between items-center">
+                          <div className="h-6 bg-gray-200 rounded w-16"></div>
+                          <div className="h-8 bg-gray-200 rounded w-20"></div>
                         </div>
-                        {course.trending && (
-                          <div className="absolute top-4 right-4">
-                            <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white animate-pulse">
-                              🔥 Trending
-                            </Badge>
-                          </div>
-                        )}
-                        <div className="absolute bottom-4 left-4 text-white">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Avatar className="h-6 w-6">
-                              <AvatarFallback className="text-xs bg-white/20 text-white backdrop-blur-sm">
-                                {course.university.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm font-medium">{course.university}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  trendingCourses.map((course, index) => {
+                    const getCourseColor = (index: number) => {
+                      const colors = [
+                        "from-blue-500 to-blue-600",
+                        "from-green-500 to-green-600", 
+                        "from-purple-500 to-purple-600",
+                        "from-pink-500 to-pink-600"
+                      ];
+                      return colors[index % colors.length];
+                    };
 
-                    <CardContent className="p-6">
-                      <h3 className="font-bold text-gray-900 mb-3 text-lg group-hover:text-blue-600 transition-colors line-clamp-2">
-                        {course.title}
-                      </h3>
+                    const handleEnroll = async (courseId: string) => {
+                      try {
+                        // Check if user is logged in
+                        const token = localStorage.getItem('token')
+                        if (!token) {
+                          alert('Please log in to enroll in courses')
+                          return
+                        }
+                        
+                        // Call the enrollment API
+                        await enrollInCourse(courseId)
+                      } catch (error) {
+                        console.error('Error enrolling:', error)
+                      }
+                    }
 
-                      <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-1">
-                            <Clock className="h-4 w-4" />
-                            <span>{course.duration}</span>
+                    return (
+                      <Card
+                        key={course._id}
+                        className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 bg-white border-0 overflow-hidden"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                      >
+                        <Link href={`/course/${course._id}`}>
+                          <div className="relative">
+                            {course.thumbnail ? (
+                              <div className="h-48 relative overflow-hidden">
+                                <img 
+                                  src={course.thumbnail} 
+                                  alt={course.title}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              <div className="absolute inset-0 bg-black/20"></div>
+                              <div className="absolute top-4 left-4">
+                                <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm">{course.category}</Badge>
+                              </div>
+                              <div className="absolute top-4 right-4">
+                                <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white animate-pulse">
+                                  🔥 Trending
+                                </Badge>
+                              </div>
+                              <div className="absolute bottom-4 left-4 text-white">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback className="text-xs bg-white/20 text-white backdrop-blur-sm">
+                                      {course.institution?.name?.charAt(0) || 'I'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm font-medium">{course.institution?.name || 'Institution'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className={`h-48 bg-gradient-to-br ${getCourseColor(index)} relative overflow-hidden`}>
+                              <div className="absolute inset-0 bg-black/20"></div>
+                              <div className="absolute top-4 left-4">
+                                <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm">{course.category}</Badge>
+                              </div>
+                              <div className="absolute top-4 right-4">
+                                <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white animate-pulse">
+                                  🔥 Trending
+                                </Badge>
+                              </div>
+                              <div className="absolute bottom-4 left-4 text-white">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <Avatar className="h-6 w-6">
+                                    <AvatarFallback className="text-xs bg-white/20 text-white backdrop-blur-sm">
+                                      {course.institution?.name?.charAt(0) || 'I'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="text-sm font-medium">{course.institution?.name || 'Institution'}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                           </div>
-                          <div className="flex items-center space-x-1">
-                            <Users className="h-4 w-4" />
-                            <span>{course.students}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-medium">{course.rating}</span>
-                        </div>
-                      </div>
+                        </Link>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-gray-900">{course.price}</span>
-                        <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200">
-                          Enroll Now
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        <CardContent className="p-6">
+                          <h3 className="font-bold text-gray-900 mb-3 text-lg group-hover:text-blue-600 transition-colors line-clamp-2">
+                            {course.title}
+                          </h3>
+
+                          <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
+                            <div className="flex items-center space-x-4">
+                              <div className="flex items-center space-x-1">
+                                <Clock className="h-4 w-4" />
+                                <span>{course.duration_weeks ? `${course.duration_weeks} weeks` : 'Self-paced'}</span>
+                              </div>
+                              <div className="flex items-center space-x-1">
+                                <Users className="h-4 w-4" />
+                                <span>{course.totalStudent}+</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <span className="font-medium">{course.instructor_id?.rating || 4.5}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <span className="text-2xl font-bold text-gray-900">
+                              {course.price === 0 ? 'Free' : `$${course.price}`}
+                            </span>
+                            <div className="flex space-x-2">
+                              <Link href={`/course/${course._id}`}>
+                                <Button variant="outline" size="sm">
+                                  View Details
+                                </Button>
+                              </Link>
+                              <Button 
+                                size="sm"
+                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  handleEnroll(course._id)
+                                }}
+                              >
+                                Enroll Now
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
               </div>
             </div>
 
