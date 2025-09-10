@@ -1,6 +1,6 @@
 "use client";
 
-import { CreateAssignmentForm } from "@/components/assignments/instructor/CreateAssignmentForm";
+import CreateAssignmentForm from "@/components/assignments/instructor/CreateAssignmentForm";
 import { useParams } from "next/navigation";
 
 export default function NewAssignmentPage() {
