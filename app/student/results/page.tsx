@@ -24,7 +24,7 @@ export default function StudentResultsPage() {
         const enriched = await Promise.all(
           quizAttemptsRes.data.map(async (a) => {
             const quizId = typeof a.quiz_id === 'object'
-              // @ts-expect-error possible populated object
+            // @ts-expect-error error
               ? String(a.quiz_id._id ?? a.quiz_id)
               : a.quiz_id
             const [q, qs] = await Promise.all([

@@ -46,7 +46,7 @@ export default function ExamAttemptPage() {
     setSubmitting(false)
     if (res.ok) {
       toast.success('Exam submitted')
-      router.push('/student/results')
+      router.push(`/student/courses/${exam.course}/grades`)
       localStorage.removeItem(`examAttempt:${id}`)
       setConfirmGuard(false)
     } else {

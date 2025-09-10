@@ -19,6 +19,8 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/use-auth"
+import { useEffect } from "react"
+import { getMyInstructorProfile } from "@/lib/api/instructors"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 
@@ -34,7 +36,7 @@ const navigation = [
     subItems: [
       { name: "All Courses", href: "/instructor/courses" },
       { name: "Create Course", href: "/instructor/courses/new" },
-      { name: "Course Analytics", href: "/instructor/analytics" },
+      // { name: "Course Analytics", href: "/instructor/analytics" },
     ],
   },
   { 
@@ -46,7 +48,7 @@ const navigation = [
       { name: "Assignments", href: "/instructor/assignments" },
       { name: "Exams", href: "/instructor/exams" },
       { name: "Quizzes", href: "/instructor/quizzes" },
-      { name: "Resources", href: "/instructor/resources" },
+      // { name: "Resources", href: "/instructor/resources" },
     ]
   },
   { 
@@ -56,7 +58,7 @@ const navigation = [
     badge: null,
     subItems: [
       { name: "Announcements", href: "/instructor/announcements" },
-      { name: "Discussions", href: "/instructor/discussions" },
+      // { name: "Discussions", href: "/instructor/discussions" },
     ]
   },
   { 
@@ -80,6 +82,18 @@ export default function InstructorSidebar() {
   const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false)
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const { user } = useAuth()
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await getMyInstructorProfile()
+        const url = res?.instructor?.profile_image || null
+        setAvatarUrl(url)
+      } catch {}
+    }
+    load()
+  }, [])
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems((prev) =>
@@ -190,9 +204,14 @@ export default function InstructorSidebar() {
           !isMobile && isDesktopCollapsed && "justify-center"
         )}
       >
-        <div className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-          {user?.name?.substring(0, 2).toUpperCase() || 'NA'}
-        </div>
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={avatarUrl} alt="Profile" className="h-8 w-8 rounded-full object-cover" />
+        ) : (
+          <div className="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+            {user?.name?.substring(0, 2).toUpperCase() || 'NA'}
+          </div>
+        )}
         {(!isDesktopCollapsed || isMobile) && (
           <>
             <div className="flex-1 min-w-0">

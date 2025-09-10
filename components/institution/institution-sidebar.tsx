@@ -14,7 +14,7 @@ import {
   Calendar,
   Bell,
   ChevronDown,
-  Building2,
+
   LogOut,
   ChevronRight,
 } from "lucide-react"
@@ -23,8 +23,8 @@ import { usePathname } from "next/navigation"
 import axios from "axios"
 import { API_URL } from "@/lib/api/courses"
 import Link from "next/link"
+import { getMyInstitutionProfile } from "@/lib/api/institution"
 
-// Removed mocks; using real auth and pathname
 
 const navigation = [
   { name: "Dashboard", href: "/instructor", icon: LayoutDashboard, badge: null },
@@ -33,11 +33,11 @@ const navigation = [
     href: "/instructor/courses",
     icon: BookOpen,
     badge: null,
-    subItems: [
-      { name: "All Courses", href: "/instructor/courses" },
-      { name: "Create Course", href: "/instructor/courses/new" },
-      // { name: "Course Analytics", href: "/instructor/analytics" },
-    ],
+    // subItems: [
+    //   { name: "All Courses", href: "/instructor/courses" },
+    //   { name: "Create Course", href: "/instructor/courses/new"},
+    //   { name: "Course Analytics", href: "/instructor/analytics" },
+    // ],
   },
   { name: "Instructors", href: "/institution/instructors", icon: UserCheck, badge: null },
   { 
@@ -47,7 +47,6 @@ const navigation = [
     badge: null,
     subItems: [
       { name: "Announcements", href: "/instructor/announcements" },
-      { name: "Notifications", href: "/instructor/Notifications" },
     ]
   },
   { 
@@ -72,6 +71,7 @@ export default function InstitutionSidebar() {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
   const { user } = useAuth()
   const [instructors, setInstructors] = useState<Array<{ name: string; email: string; institution?: { id?: string } }>>([])
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchInstructors = async () => {
@@ -90,6 +90,17 @@ export default function InstitutionSidebar() {
     }
     fetchInstructors()
   }, [user])
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const res = await getMyInstitutionProfile()
+        const url = res?.institution?.logo || null
+        setAvatarUrl(url)
+      } catch {}
+    }
+    loadProfile()
+  }, [])
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems((prev) =>
@@ -199,9 +210,14 @@ export default function InstitutionSidebar() {
           !isMobile && isDesktopCollapsed && "justify-center"
         )}
       >
-        <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-          {user?.name?.substring(0, 2).toUpperCase() || 'NA'}
-        </div>
+        {avatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={avatarUrl} alt="Institution" className="h-8 w-8 rounded-full object-cover" />
+        ) : (
+          <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+            {user?.name?.substring(0, 2).toUpperCase() || 'NA'}
+          </div>
+        )}
         {(!isDesktopCollapsed || isMobile) && (
           <>
             <div className="flex-1 min-w-0">

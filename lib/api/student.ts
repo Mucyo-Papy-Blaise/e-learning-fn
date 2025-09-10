@@ -118,7 +118,9 @@ export async function fetchStudentCalendar() {
   const data = response.data;
   // Normalize to an array for consumers expecting a list
   if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.assignments)) return data.assignments;
+  const assignments = Array.isArray(data?.assignments) ? data.assignments : [];
+  const announcements = Array.isArray(data?.announcements) ? data.announcements : [];
+  if (assignments.length || announcements.length) return [...assignments, ...announcements];
   return [];
 }
 
@@ -157,12 +159,40 @@ export async function fetchStudentEnrolledCourses() {
 }
 
 export async function fetchStudentGrades(courseId: string) {
-  const response = await axios.get(`${API_URL}/api/student/grades/${courseId}`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-  return response.data;
+  const candidates = [
+    `${API_URL}/api/student/grades/${courseId}`,
+    `${API_URL}/grades/${courseId}`,
+    `${API_URL}/api/grades/${courseId}`,
+    `${API_URL}/api/student/courses/${courseId}/grades`,
+  ];
+
+  let lastError: any = null;
+  for (const url of candidates) {
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      const data = response.data;
+      if (Array.isArray(data)) return data;
+      if (Array.isArray(data?.grades)) return data.grades;
+      if (Array.isArray(data?.results)) return data.results;
+      if (Array.isArray(data?.data)) return data.data;
+      // If response ok but unexpected shape, continue to next candidate
+    } catch (err: any) {
+      lastError = err;
+      const msg = err?.response?.data?.message || err?.message || '';
+      // Try next candidate on typical routing errors
+      if (err?.response?.status === 404 || /route not found/i.test(msg)) {
+        continue;
+      }
+      // On other errors (e.g., 401), break and rethrow
+      break;
+    }
+  }
+  if (lastError) throw lastError;
+  return [];
 }
 
 export async function fetchStudentSubmissions(courseId?: string) {

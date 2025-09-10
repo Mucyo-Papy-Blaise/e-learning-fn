@@ -4,7 +4,7 @@ import { GraduationCap, Eye, Download } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
-import { fetchStudentGrades } from "@/lib/api/student"
+import { getQuizAttempts, listExams, getOwnExamSubmission, getQuizById, getQuizQuestions } from "@/app/lib/api"
 
 interface GradeRow {
   _id: string
@@ -14,6 +14,8 @@ interface GradeRow {
   status?: string
   due_date?: string
   submitted_at?: string
+  passed?: boolean
+  type?: 'quiz' | 'exam'
 }
 
 export default function CourseGradesPage({ params }: { params: { courseId: string } }) {
@@ -21,15 +23,95 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
   const [gradesData, setGradesData] = useState<GradeRow[]>([])
 
   useEffect(() => {
-    const load = async () => {
+    let mounted = true
+    async function load() {
       try {
-        const data = await fetchStudentGrades(courseId)
-        setGradesData(Array.isArray(data) ? data : [])
+        const [quizAttemptsRes, examsRes] = await Promise.all([
+          getQuizAttempts(),
+          listExams(),
+        ])
+
+        const out: GradeRow[] = []
+
+        if (quizAttemptsRes.ok) {
+          const enriched = await Promise.all(
+            quizAttemptsRes.data.map(async (a: any) => {
+              const quizId = typeof a.quiz_id === 'object'
+                ? String(a.quiz_id._id ?? a.quiz_id)
+                : a.quiz_id
+              const [q, qs] = await Promise.all([
+                getQuizById(quizId as any),
+                getQuizQuestions(quizId as any),
+              ])
+
+              let title: string
+              if (q.ok && (q.data as any)?.title) {
+                title = (q.data as any).title
+              } else if (typeof a.quiz_id === 'object') {
+                // @ts-expect-error possible populated object
+                title = a.quiz_id.title ?? String(a.quiz_id._id ?? a.quiz_id)
+              } else {
+                title = String(a.quiz_id)
+              }
+
+              const max = qs.ok
+                ? qs.data.reduce((acc: number, q: any) => acc + (q.points || 0), 0)
+                : 100
+              const score = typeof a.score === 'number' ? a.score : 0
+
+              return {
+                _id: a._id,
+                type: 'quiz',
+                title,
+                score,
+                max_points: max,
+                status: 'Graded',
+                due_date: undefined,
+                submitted_at: a.completed_at || a.started_at,
+                passed: max
+                  ? (score / max) * 100 >= (q.ok ? (q.data as any).pass_percentage : 50)
+                  : score >= 50,
+              } as GradeRow
+            })
+          )
+          out.push(...(enriched.filter(Boolean) as GradeRow[]))
+        }
+
+        if (examsRes.ok) {
+          const exams = examsRes.data.exams
+          await Promise.all(
+            exams.map(async (e: any) => {
+              const s = await getOwnExamSubmission(e._id)
+              if (s.ok && s.data) {
+                const total = Number(
+                  s.data.totalScore ?? (Number(s.data.autoScore || 0) + Number(s.data.manualScore || 0))
+                )
+                const max = Number(e.totalPoints ?? 100)
+                out.push({
+                  _id: s.data._id,
+                  type: 'exam',
+                  title: e.title,
+                  score: total,
+                  max_points: max,
+                  status: 'Graded',
+                  due_date: undefined,
+                  submitted_at: undefined,
+                  passed: e.passingScore != null ? total >= e.passingScore : total >= 0.5 * max,
+                })
+              }
+            })
+          )
+        }
+
+        if (mounted) {
+          setGradesData(out)
+        }
       } catch {
-        setGradesData([])
+        if (mounted) setGradesData([])
       }
     }
     load()
+    return () => { mounted = false }
   }, [courseId])
 
   const calculateOverallGrade = () => {
@@ -106,6 +188,9 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
                     Assignment
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Outcome
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Score
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -127,6 +212,11 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
                   <tr key={grade._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{grade.title || ''}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={grade.passed ? "text-green-600" : "text-red-600"}>
+                        {grade.passed === undefined ? '' : grade.passed ? 'Passed' : 'Failed'}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-medium text-green-600">
@@ -162,4 +252,4 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
       </main>
     </div>
   )
-} 
+}
