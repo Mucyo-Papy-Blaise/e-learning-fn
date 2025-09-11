@@ -7,13 +7,16 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ArrowRight, Clock, Users, Star } from "lucide-react"
 import { fetchCourses } from "@/lib/api/courses"
+import { fetchPublicInstitutions } from "@/lib/api/institution"
 
 export default function LandingTrending() {
   const [courses, setCourses] = useState<any[]>([])
+  const [institutions, setInstitutions] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+  const [loadingInst, setLoadingInst] = useState<boolean>(true)
 
   useEffect(() => {
-    const load = async () => {
+    const loadCourses = async () => {
       try {
         const all = await fetchCourses("all")
         const sorted = [...(all as any[])].sort((a, b) => (b?.students || 0) - (a?.students || 0))
@@ -22,7 +25,16 @@ export default function LandingTrending() {
         setLoading(false)
       }
     }
-    load()
+    const loadInstitutions = async () => {
+      try {
+        const list = await fetchPublicInstitutions()
+        setInstitutions(Array.isArray(list) ? list.slice(0, 20) : [])
+      } finally {
+        setLoadingInst(false)
+      }
+    }
+    loadCourses()
+    loadInstitutions()
   }, [])
 
   return (
@@ -84,7 +96,38 @@ export default function LandingTrending() {
             </div>
           </div>
 
-          {/* Placeholder for right column content (institutions) - keep original layout responsibility in page */}
+          {/* Institutions sidebar */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24">
+              <div className="mb-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  World-Class <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Institutions</span>
+                </h3>
+                <p className="text-gray-600 text-sm">Top universities and companies</p>
+              </div>
+              <div className="relative h-96 overflow-hidden bg-white rounded-2xl shadow-lg">
+                <div className="flex flex-col animate-scroll-vertical space-y-4 p-4">
+                  {(loadingInst ? Array.from({ length: 10 }) : institutions).map((ins: any, index: number) => (
+                    <div key={index} className="flex-shrink-0">
+                      <div className="bg-gray-50 rounded-xl p-3 hover:bg-gray-100 transition-all duration-200 flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-blue-100 flex items-center justify-center">
+                          {ins?.logo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={ins.logo} alt={ins.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-blue-700 font-bold text-xs">{(ins?.name || 'IN').substring(0,2).toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-gray-900 text-sm truncate">{ins?.name || 'Institution'}</h4>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
