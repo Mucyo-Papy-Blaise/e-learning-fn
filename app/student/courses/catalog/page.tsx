@@ -6,6 +6,8 @@ import { fetchCourses } from "@/lib/api/courses"
 import { enrollInCourse } from "@/lib/api/courses"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { toast } from "react-toastify"
+import Link from "next/link"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 interface Course {
   _id: string
@@ -24,6 +26,7 @@ export default function CourseCatalogPage() {
   const [loading, setLoading] = useState(true)
   const [enrolling, setEnrolling] = useState<string | null>(null)
   const { user, isAuthenticated } = useAuth()
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   useEffect(() => {
     loadCourses()
@@ -45,7 +48,7 @@ export default function CourseCatalogPage() {
 
   const handleEnroll = async (courseId: string) => {
     if (!isAuthenticated) {
-      toast.error("Please log in to enroll in courses")
+      setShowAuthModal(true)
       return
     }
     
@@ -222,6 +225,21 @@ export default function CourseCatalogPage() {
           </div>
         </div>
       </main>
+
+      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Log in required</DialogTitle>
+            <DialogDescription>
+              You need an account to enroll in courses.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Link href="/login" className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Log in</Link>
+            <Link href="/register" className="inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Create account</Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
