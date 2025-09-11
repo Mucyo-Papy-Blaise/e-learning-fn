@@ -19,7 +19,12 @@ export default function LandingTrending() {
     const loadCourses = async () => {
       try {
         const all = await fetchCourses("all")
-        const sorted = [...(all as any[])].sort((a, b) => (b?.students || 0) - (a?.students || 0))
+        const normalized = (all as any[]).map((c) => ({
+          ...c,
+          students: (c as any).students ?? (c as any).totalStudent ?? 0,
+          instructorName: (c as any)?.instructor_id?.user_id?.name || (c as any)?.instructor?.name || 'Instructor',
+        }))
+        const sorted = [...normalized].sort((a, b) => (b?.students || 0) - (a?.students || 0))
         setCourses(sorted.slice(0, 4))
       } finally {
         setLoading(false)
@@ -28,7 +33,12 @@ export default function LandingTrending() {
     const loadInstitutions = async () => {
       try {
         const list = await fetchPublicInstitutions()
-        setInstitutions(Array.isArray(list) ? list.slice(0, 20) : [])
+        const normalized = Array.isArray(list) ? list.map((i: any) => ({
+          _id: i?._id || i?.id,
+          name: i?.name,
+          logo: i?.logo,
+        })) : []
+        setInstitutions(normalized.slice(0, 20))
       } finally {
         setLoadingInst(false)
       }
@@ -59,7 +69,13 @@ export default function LandingTrending() {
               {(loading ? Array.from({ length: 4 }) : courses).map((course: any, index: number) => (
                 <Card key={index} className="group hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 bg-white border-0 overflow-hidden" style={{ animationDelay: `${index * 100}ms` }}>
                   <div className="relative">
-                    <div className={`h-48 bg-gradient-to-br from-blue-500 to-blue-600 relative overflow-hidden`}>
+                    <div className={`h-48 relative overflow-hidden`}>
+                      {course?.thumbnail ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600" />
+                      )}
                       <div className="absolute inset-0 bg-black/20"></div>
                       <div className="absolute top-4 left-4">
                         <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm">{course?.category || 'General'}</Badge>
@@ -72,7 +88,7 @@ export default function LandingTrending() {
                       <div className="absolute bottom-4 left-4 text-white">
                         <div className="flex items-center space-x-2 mb-2">
                           <Avatar className="h-6 w-6"><AvatarFallback className="text-xs bg-white/20 text-white backdrop-blur-sm">{(course?.title || 'C').charAt(0)}</AvatarFallback></Avatar>
-                          <span className="text-sm font-medium">{course?.instructor?.name || 'Instructor'}</span>
+                          <span className="text-sm font-medium">{course?.instructorName}</span>
                         </div>
                       </div>
                     </div>
@@ -87,7 +103,7 @@ export default function LandingTrending() {
                       <div className="flex items-center space-x-1"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /><span className="font-medium">{(course as any)?.rating || '4.8'}</span></div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-gray-900">{typeof course?.price === 'number' ? `$${course.price}` : (course?.price || 'Free')}</span>
+                      <span className="text-2xl font-bold text-gray-900">{typeof course?.price === 'number' ? `${course.price}` : (course?.price || 'Free')}</span>
                       <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200">Enroll Now</Button>
                     </div>
                   </CardContent>
