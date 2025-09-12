@@ -56,12 +56,10 @@ export default function ELearningLanding() {
           <div className="grid gap-8 md:grid-cols-4">
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-lg bg-[var(--coursera-blue)] flex items-center justify-center">
                   <GraduationCap className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  EduVerse
-                </span>
+                <span className="text-xl font-bold text-white">EduVerse</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Connecting learners with world-class education from leading institutions worldwide.

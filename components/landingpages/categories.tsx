@@ -34,13 +34,11 @@ export default function LandingCategories() {
     <section id="categories" className="py-20 bg-gray-50">
       <div className="container px-6 md:px-8 lg:px-32">
         <div className="text-center space-y-4 mb-14">
-          <h2 className="text-4xl md:text-5xl font-semibold text-gray-900">
+          <h2 className="text-3xl md:text-4xl font-semibold text-gray-900">
             Browse by{" "}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Category
-            </span>
+            <span className="text-[var(--coursera-blue)]">Category</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-gray-600 text-xl">
+          <p className="max-w-2xl mx-auto text-gray-600 text-base md:text-lg">
             Choose from hundreds of courses in the most popular topics
           </p>
         </div>

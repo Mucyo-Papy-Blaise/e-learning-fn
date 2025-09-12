@@ -54,10 +54,10 @@ export default function LandingTrending() {
           <div className="lg:col-span-3">
             <div className="flex items-center justify-between mb-12">
               <div>
-                <h2 className="text-4xl md:text-5xl font-semibold text-gray-900 mb-4">
+                <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">
                   Trending <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Courses</span>
                 </h2>
-                <p className="text-gray-600 text-xl">Most popular courses this month</p>
+                <p className="text-gray-600 text-base md:text-lg">Most popular courses this month</p>
               </div>
               <Button variant="outline" className="hidden md:flex bg-transparent hover:bg-[var(--coursera-blue-contrast)] border-blue-200 text-[var(--coursera-blue)]">
                 View All Courses
@@ -94,7 +94,7 @@ export default function LandingTrending() {
                     </div>
                   </div>
                   <CardContent className="p-6">
-                    <h3 className="font-semibold text-gray-900 mb-3 text-xl group-hover:text-blue-600 transition-colors line-clamp-2">{course?.title || 'Course'}</h3>
+                    <h3 className="font-semibold text-gray-900 mb-2 text-lg md:text-xl group-hover:text-[var(--coursera-blue)] transition-colors line-clamp-2">{course?.title || 'Course'}</h3>
                     <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-1"><Clock className="h-4 w-4" /><span>{course?.duration_weeks ? `${course.duration_weeks} weeks` : '—'}</span></div>

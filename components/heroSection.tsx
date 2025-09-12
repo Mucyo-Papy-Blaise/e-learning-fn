@@ -199,14 +199,14 @@ export default function HeroSection() {
               <div className="max-w-3xl">
                 <h1
                   key={currentSlide}
-                  className="text-4xl xl:text-6xl 2xl:text-7xl font-semibold text-white leading-[1.1] mb-6 xl:mb-8 animate-in fade-in slide-in-from-right-4 duration-1000 tracking-tight"
+                  className="text-3xl xl:text-5xl 2xl:text-6xl font-semibold text-white leading-[1.15] mb-4 xl:mb-6 animate-in fade-in slide-in-from-right-4 duration-1000 tracking-tight"
                 >
                   {currentSlideData.title}
                 </h1>
 
                 <p
                   key={`${currentSlide}-subtitle`}
-                  className="text-xl xl:text-2xl text-gray-200 leading-relaxed max-w-2xl animate-in fade-in slide-in-from-right-4 duration-1000 delay-200"
+                  className="text-base xl:text-lg text-gray-200 leading-relaxed max-w-2xl animate-in fade-in slide-in-from-right-4 duration-1000 delay-200"
                 >
                   {currentSlideData.subtitle}
                 </p>
@@ -322,14 +322,14 @@ export default function HeroSection() {
             <div className="w-full">
               <h1
                 key={currentSlide}
-                className="text-3xl sm:text-4xl md:text-5xl font-semibold text-white leading-[1.1] mb-6 animate-in fade-in slide-in-from-right-4 duration-1000 tracking-tight"
+                className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white leading-[1.15] mb-4 animate-in fade-in slide-in-from-right-4 duration-1000 tracking-tight"
               >
                 {currentSlideData.title}
               </h1>
 
               <p
                 key={`${currentSlide}-subtitle`}
-                className="text-lg sm:text-xl text-gray-200 leading-relaxed animate-in fade-in slide-in-from-right-4 duration-1000 delay-200"
+                className="text-base sm:text-lg text-gray-200 leading-relaxed animate-in fade-in slide-in-from-right-4 duration-1000 delay-200"
               >
                 {currentSlideData.subtitle}
               </p>
