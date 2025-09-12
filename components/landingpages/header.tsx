@@ -41,11 +41,11 @@ export default function LandingHeader() {
         <div className="hidden lg:flex items-center space-x-3">
           <Button
             variant="ghost"
-            className="text-gray-700 hover:text-purple-600 font-medium transition-colors"
+            className="text-gray-700 hover:text-[var(--coursera-blue)] font-medium transition-colors"
           >
             <Link href="/login">Sign In</Link>
           </Button>
-          <Button className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-5 py-2 rounded-lg shadow-sm transition-transform duration-200 hover:scale-105">
+          <Button className="text-white font-semibold px-5 py-2 rounded-lg shadow-sm transition-transform duration-200 hover:scale-105 brand-btn-primary">
             Get Started
           </Button>
         </div>
@@ -54,7 +54,7 @@ export default function LandingHeader() {
         <div className="flex items-center space-x-3 lg:hidden">
           <Button
             variant="ghost"
-            className="text-gray-700 hover:text-purple-600 font-medium"
+            className="text-gray-700 hover:text-[var(--coursera-blue)] font-medium"
           >
             <Link href="/login">Sign In</Link>
           </Button>

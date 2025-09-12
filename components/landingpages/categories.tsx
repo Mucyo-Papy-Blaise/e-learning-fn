@@ -78,7 +78,7 @@ export default function LandingCategories() {
                     </span>
                     <Link
                       href={`/category/${encodeURIComponent(category.name)}`}
-                      className="text-sm font-medium text-blue-700 hover:text-blue-800 flex items-center gap-1"
+                      className="text-sm font-medium brand-link flex items-center gap-1"
                     >
                       View All Courses
                       <ArrowRight className="h-4 w-4" />

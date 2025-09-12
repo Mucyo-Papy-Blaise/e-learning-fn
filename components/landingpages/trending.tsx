@@ -59,7 +59,7 @@ export default function LandingTrending() {
                 </h2>
                 <p className="text-gray-600 text-xl">Most popular courses this month</p>
               </div>
-              <Button variant="outline" className="hidden md:flex bg-transparent hover:bg-blue-50 border-blue-200 text-blue-700">
+              <Button variant="outline" className="hidden md:flex bg-transparent hover:bg-[var(--coursera-blue-contrast)] border-blue-200 text-[var(--coursera-blue)]">
                 View All Courses
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -104,7 +104,7 @@ export default function LandingTrending() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-2xl font-semibold text-gray-900">{typeof course?.price === 'number' ? `${course.price}` : (course?.price || 'Free')}</span>
-                      <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 rounded-lg">Enroll Now</Button>
+                      <Button className="transform hover:scale-105 transition-all duration-200 rounded-lg brand-btn-primary">Enroll Now</Button>
                     </div>
                   </CardContent>
                 </Card>
