@@ -20,11 +20,11 @@ import SecuritySettings from "./institutionSecurity";
 export default function InstitutionProfile() {
   const [personalData, setPersonalData] = useState({
     name: "",
+    bio: "",
+    location: "",
+    website: "",
     email: "",
     phone: "",
-    bio: "",
-    password: "",
-    confirmPassword: "",
   });
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -49,16 +49,18 @@ export default function InstitutionProfile() {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const res: InstitutionProfileResponse = await getMyInstitutionProfile();
-        const institution = res?.institution;
+        const res: any = await getMyInstitutionProfile();
+        const institution = res?.institution || res?.data;
 
         if (institution) {
           setPersonalData((prev) => ({
             ...prev,
             name: institution.name || "",
+            bio: institution.bio || "",
+            location: institution.location || "",
+            website: institution.website || "",
             email: institution.contact_email || "",
             phone: institution.contact_phone || "",
-            bio: institution.bio || "",
           }));
 
           if (institution.logo) setProfileImage(institution.logo);
@@ -75,23 +77,16 @@ export default function InstitutionProfile() {
 
   // Save updated profile
   const handleSave = async () => {
-    if (
-      personalData.password &&
-      personalData.password !== personalData.confirmPassword
-    ) {
-      toast.error("Passwords do not match!");
-      return;
-    }
-
     try {
       const form = new FormData();
 
       if (file) form.append("logo", file);
-      if (personalData.name) form.append("name", personalData.name);
-      if (personalData.bio) form.append("bio", personalData.bio);
-      if (personalData.phone) form.append("contact_phone", personalData.phone);
-      if (personalData.email) form.append("contact_email", personalData.email);
-      if (personalData.password) form.append("password", personalData.password);
+      if (personalData.name !== undefined) form.append("name", personalData.name);
+      if (personalData.bio !== undefined) form.append("bio", personalData.bio);
+      if (personalData.location !== undefined) form.append("location", personalData.location);
+      if (personalData.website !== undefined) form.append("website", personalData.website);
+      if (personalData.phone !== undefined) form.append("contact_phone", personalData.phone);
+      if (personalData.email !== undefined) form.append("contact_email", personalData.email);
 
       await updateMyInstitutionProfile(form);
       toast.success("Profile updated successfully!");
@@ -130,7 +125,7 @@ export default function InstitutionProfile() {
       <Button
         onClick={handleSave}
         disabled={loading}
-        className="mt-4 w-full md:w-auto"
+        className="mt-4 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white"
       >
         {loading ? "Saving..." : "Save Changes"}
       </Button>

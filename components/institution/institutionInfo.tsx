@@ -9,6 +9,8 @@ interface CompanyInfoProps {
   personalData: {
     name: string;
     bio: string;
+    location?: string;
+    website?: string;
   };
   profileImage: string | null;
   onChange: (field: string, value: string) => void;
@@ -62,6 +64,25 @@ export default function CompanyInfo({
             value={personalData.bio}
             onChange={(e) => onChange("bio", e.target.value)}
             placeholder="Short description about institution"
+          />
+        </div>
+
+        <div>
+          <Label>Location</Label>
+          <Input
+            value={personalData.location || ""}
+            onChange={(e) => onChange("location", e.target.value)}
+            placeholder="City, Country"
+          />
+        </div>
+
+        <div>
+          <Label>Website</Label>
+          <Input
+            type="url"
+            value={personalData.website || ""}
+            onChange={(e) => onChange("website", e.target.value)}
+            placeholder="https://example.com"
           />
         </div>
       </CardContent>

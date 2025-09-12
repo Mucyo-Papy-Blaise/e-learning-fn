@@ -32,3 +32,12 @@ export async function updateMyInstitutionProfile(form: FormData): Promise<{ mess
   return res.data;
 }
 
+export async function fetchPublicInstitutions(): Promise<any[]> {
+  const res = await fetch(`${API_URL}/api/institutions`);
+  const data = await res.json();
+  if (Array.isArray(data)) return data;
+  if (Array.isArray((data as any)?.institutions)) return (data as any).institutions;
+  if (Array.isArray((data as any)?.data?.institutions)) return (data as any).data.institutions;
+  return [];
+}
+

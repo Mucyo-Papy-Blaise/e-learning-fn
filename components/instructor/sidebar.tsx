@@ -24,7 +24,6 @@ import { getMyInstructorProfile } from "@/lib/api/instructors"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 
-// Removed mocks; using real auth data and current pathname
 
 const navigation = [
   { name: "Dashboard", href: "/instructor", icon: LayoutDashboard, badge: null },

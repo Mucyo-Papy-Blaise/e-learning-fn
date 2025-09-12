@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { IEnrollment } from "@/types/education";
 import { useEducation } from "@/context/educationContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import { fetchStudentDashboard, fetchStudentNotifications, fetchStudentCalendar } from "@/lib/api/student";
 
@@ -163,9 +164,14 @@ function DashboardOverview() {
                 </p>
               </div>
               <div className="mt-4 lg:mt-0">
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <Clock className="w-4 h-4" />
-                  <span>Last login: Today at 9:32 AM</span>
+                <div className="flex items-center space-x-3">
+                  <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
+                    <Clock className="w-4 h-4" />
+                    <span>Last login: Today at 9:32 AM</span>
+                  </div>
+                  <Link href="/" className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                    Go to Home
+                  </Link>
                 </div>
               </div>
             </div>
