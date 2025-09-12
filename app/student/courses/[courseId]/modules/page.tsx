@@ -14,7 +14,6 @@ import {
   ClipboardList,
 } from "lucide-react"
 import Link from "next/link"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { fetchModulesByCourseId } from "@/lib/api/courses"
@@ -40,6 +39,18 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
     setOpenModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }))
   }
 
+  const expandAll = () => {
+    const allOpen: Record<string, boolean> = {}
+    for (const m of courseModules) {
+      allOpen[m.id] = true
+    }
+    setOpenModules(allOpen)
+  }
+
+  const collapseAll = () => {
+    setOpenModules({})
+  }
+
   return (
     <div className="flex flex-1 flex-col">
       <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-white px-4 md:px-6">
@@ -50,7 +61,10 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
           <span className="text-gray-400">›</span> Modules
         </h1>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" className="h-8 text-sm bg-transparent border-gray-300">
+          <Button variant="outline" className="h-8 text-sm bg-transparent border-gray-300" onClick={expandAll}>
+            Expand All
+          </Button>
+          <Button variant="outline" className="h-8 text-sm bg-transparent border-gray-300" onClick={collapseAll}>
             Collapse All
           </Button>
           <Button variant="outline" className="h-8 text-sm bg-transparent border-gray-300">
