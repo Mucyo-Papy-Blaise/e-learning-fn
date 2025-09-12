@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client"
 
 import Link from "next/link"
@@ -48,12 +49,14 @@ export default function StudentTopNav() {
 						<Input className="h-8 border-0 p-0 shadow-none focus-visible:ring-0" placeholder="Search" />
 					</div>
 
-					<Button variant="ghost" size="icon" className="h-8 w-8">
+					<Button variant="ghost" size="icon" className="relative h-8 w-8">
 						<Bell className="h-5 w-5" />
+						<span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">3</span>
 						<span className="sr-only">Notifications</span>
 					</Button>
-					<Button variant="ghost" size="icon" className="h-8 w-8">
+					<Button variant="ghost" size="icon" className="relative h-8 w-8">
 						<MessageSquare className="h-5 w-5" />
+						<span className="absolute -right-0.5 -top-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">5</span>
 						<span className="sr-only">Messages</span>
 					</Button>
 

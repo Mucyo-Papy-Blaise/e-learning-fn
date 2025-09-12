@@ -4,6 +4,7 @@ import { cookies } from "next/headers"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { MainSidebar } from "@/components/student/main-sidebar"
 import StudentTopNav from "@/components/student/student-top-nav"
+import MobileBottomNav from "@/components/student/mobile-bottom-nav"
 // Removed duplicate ToastContainer to avoid react-toastify runtime errors
 
 export default async function StudentLayout({
@@ -19,7 +20,8 @@ export default async function StudentLayout({
       <MainSidebar />
       <SidebarInset className="bg-content-background text-content-foreground">
         <StudentTopNav />
-        {children}
+        <div className="pb-14 sm:pb-0">{children}</div>
+        <MobileBottomNav />
       </SidebarInset>
     </SidebarProvider>
   )
