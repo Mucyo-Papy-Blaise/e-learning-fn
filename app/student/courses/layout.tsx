@@ -23,10 +23,12 @@ import {
   HelpCircle,
   Briefcase,
   Menu,
+  PanelLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function CoursesLayout({
   children,
@@ -204,20 +206,19 @@ export default function CoursesLayout({
             </div>
           </aside>
 
-          {/* Mobile sheet trigger - always visible on course pages */}
-          <div className="md:hidden">
+          {/* Professional unified mobile header: left = global student sidebar, right = course menu */}
+          <div className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-2 border-b bg-white px-3 py-2">
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="h-9 w-9" />
+              <span className="text-sm font-medium text-gray-800">Course</span>
+            </div>
             <Sheet>
-              <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-                <div className="mx-auto flex w-full items-center justify-between px-3 py-2">
-                  <div className="text-sm font-medium text-gray-700">Course Workspace</div>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" className="h-9 px-3">
-                      <Menu className="h-4 w-4" />
-                      <span className="ml-2 text-sm">Menu</span>
-                    </Button>
-                  </SheetTrigger>
-                </div>
-              </div>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="h-9 px-3">
+                  <Menu className="h-4 w-4" />
+                  <span className="ml-2 text-sm">Menu</span>
+                </Button>
+              </SheetTrigger>
               <SheetContent side="left" className="p-0 w-80 max-w-[85vw]">
                 <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
                   <h2 className="text-xs font-semibold text-gray-900">Communicating_for_Impact</h2>
@@ -234,8 +235,11 @@ export default function CoursesLayout({
 
       {/* Main Content Area */}
       <main className="flex flex-1 flex-col bg-white">
-        {/* Global action bar for all /student/courses pages */}
-        <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+        {/* Global action bar for all /student/courses pages (hidden on small when course header shown) */}
+        <div className={cn(
+          "sticky top-0 z-10 border-b border-gray-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60",
+          isSpecificCoursePage ? "hidden md:block" : "block"
+        )}>
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
             <div className="text-sm font-medium text-gray-700">
               {isSpecificCoursePage ? "Course Workspace" : "My Courses"}
