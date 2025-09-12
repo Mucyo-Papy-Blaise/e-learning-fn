@@ -44,42 +44,42 @@ export default function LandingCategories() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="border-0 bg-white rounded-xl shadow-sm">
-                <CardContent className="p-5 space-y-3">
-                  <div className="h-3 w-14 bg-gray-200 rounded" />
+              <Card key={i} className="border-0 bg-white rounded-lg shadow-sm">
+                <CardContent className="p-4 space-y-2">
+                  <div className="h-3 w-12 bg-gray-200 rounded" />
                   <div className="h-4 w-2/3 bg-gray-200 rounded" />
-                  <div className="h-3 w-1/3 bg-gray-200 rounded" />
+                  <div className="h-3 w-1/4 bg-gray-200 rounded" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {categories.map((category) => (
               <Card
                 key={category.name}
-                className="bg-white border-0 rounded-xl shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5"
+                className="bg-white border-0 rounded-lg shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
               >
-                <CardContent className="p-5 space-y-3">
+                <CardContent className="p-4 space-y-2">
 
                   {/* Title */}
-                  <h3 className="font-medium text-gray-900 text-lg">
+                  <h3 className="font-medium text-gray-900 text-base">
                     {category.name}
                   </h3>
 
                   {/* Bottom row */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-xs text-gray-600">
                       {category.count} courses
                     </span>
                     <Link
                       href={`/category/${encodeURIComponent(category.name)}`}
-                      className="text-xs font-medium brand-link flex items-center gap-1"
+                      className="text-[11px] font-medium brand-link flex items-center gap-1"
                     >
-                      View All Courses
-                      <ArrowRight className="h-4 w-4" />
+                      View All
+                      <ArrowRight className="h-3 w-3" />
                     </Link>
                   </div>
                 </CardContent>

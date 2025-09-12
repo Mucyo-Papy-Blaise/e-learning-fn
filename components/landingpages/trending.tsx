@@ -65,11 +65,11 @@ export default function LandingTrending() {
               </Button>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {(loading ? Array.from({ length: 4 }) : courses).map((course: any, index: number) => (
-                <Card key={index} className="group hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 bg-white border-0 overflow-hidden rounded-xl" style={{ animationDelay: `${index * 100}ms` }}>
+                <Card key={index} className="group hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:-translate-y-0.5 bg-white border-0 overflow-hidden rounded-lg" style={{ animationDelay: `${index * 100}ms` }}>
                   <div className="relative">
-                    <div className={`h-40 relative overflow-hidden`}>
+                    <div className={`h-36 relative overflow-hidden`}>
                       {course?.thumbnail ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
@@ -93,8 +93,8 @@ export default function LandingTrending() {
                       </div>
                     </div>
                   </div>
-                  <CardContent className="p-6">
-                    <h3 className="font-semibold text-gray-900 mb-2 text-lg md:text-xl group-hover:text-[var(--coursera-blue)] transition-colors line-clamp-2">{course?.title || 'Course'}</h3>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2 text-base md:text-lg group-hover:text-[var(--coursera-blue)] transition-colors line-clamp-2">{course?.title || 'Course'}</h3>
                     <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-1"><Clock className="h-4 w-4" /><span>{course?.duration_weeks ? `${course.duration_weeks} weeks` : '—'}</span></div>
@@ -103,8 +103,8 @@ export default function LandingTrending() {
                       <div className="flex items-center space-x-1"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /><span className="font-medium">{(course as any)?.rating || '4.8'}</span></div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-semibold text-gray-900">{typeof course?.price === 'number' ? `${course.price}` : (course?.price || 'Free')}</span>
-                      <Button className="transform hover:scale-105 transition-all duration-200 rounded-lg brand-btn-primary">Enroll Now</Button>
+                      <span className="text-xl font-semibold text-gray-900">{typeof course?.price === 'number' ? `${course.price}` : (course?.price || 'Free')}</span>
+                      <Button size="sm" className="transform hover:scale-105 transition-all duration-200 rounded-md brand-btn-primary">Enroll Now</Button>
                     </div>
                   </CardContent>
                 </Card>

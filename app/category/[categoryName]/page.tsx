@@ -53,13 +53,10 @@ export default function CategoryPage() {
   const getCourseColor = (index: number) => {
     const colors = [
       "from-blue-500 to-blue-600",
-      "from-green-500 to-green-600", 
-      "from-purple-500 to-purple-600",
-      "from-pink-500 to-pink-600",
-      "from-orange-500 to-orange-600",
-      "from-teal-500 to-teal-600",
+      "from-sky-500 to-sky-600",
       "from-indigo-500 to-indigo-600",
-      "from-red-500 to-red-600"
+      "from-cyan-500 to-cyan-600",
+      "from-blue-600 to-blue-700"
     ];
     return colors[index % colors.length];
   }
@@ -152,15 +149,15 @@ export default function CategoryPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {courses.map((course, index) => (
                 <Card
                   key={course._id}
-                  className="group hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 bg-white border-0 overflow-hidden"
+                  className="group hover:shadow-md transition-all duration-300 cursor-pointer transform hover:-translate-y-0.5 bg-white border-0 overflow-hidden rounded-lg"
                 >
                   <div className="relative">
                     {course.thumbnail ? (
-                      <div className="h-48 relative overflow-hidden">
+                      <div className="h-40 relative overflow-hidden">
                         <img 
                           src={course.thumbnail} 
                           alt={course.title}
@@ -186,7 +183,7 @@ export default function CategoryPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className={`h-48 bg-gradient-to-br ${getCourseColor(index)} relative overflow-hidden`}>
+                      <div className={`h-40 bg-gradient-to-br ${getCourseColor(index)} relative overflow-hidden`}>
                         <div className="absolute inset-0 bg-black/20"></div>
                         <div className="absolute top-4 left-4">
                           <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm">
@@ -209,8 +206,8 @@ export default function CategoryPage() {
                     )}
                   </div>
 
-                  <CardContent className="p-6">
-                    <h3 className="font-bold text-gray-900 mb-3 text-lg group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2 text-base group-hover:text-[var(--coursera-blue)] transition-colors line-clamp-2">
                       {course.title}
                     </h3>
 
@@ -232,7 +229,7 @@ export default function CategoryPage() {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-gray-900">
+                      <span className="text-xl font-semibold text-gray-900">
                         {course.price === 0 ? 'Free' : `$${course.price}`}
                       </span>
                       <div className="flex space-x-2">
@@ -243,7 +240,7 @@ export default function CategoryPage() {
                         </Link>
                         <Button 
                           size="sm"
-                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                          className="brand-btn-primary"
                           onClick={() => handleEnroll(course._id)}
                         >
                           Enroll
