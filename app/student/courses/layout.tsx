@@ -39,6 +39,7 @@ export default function CoursesLayout({
   const isCourseListPage = pathname === "/student/courses";
   const isSpecificCoursePage =
     courseId && pathname.startsWith(`/student/courses/${courseId}`);
+  const isCourseHomePage = Boolean(courseId) && pathname.includes(`/student/courses/${courseId}/home`);
 
   const SidebarNav = (
     <nav className="space-y-1">
@@ -204,31 +205,33 @@ export default function CoursesLayout({
             </div>
           </aside>
 
-          {/* Mobile sheet trigger */}
-          <div className="md:hidden">
-            <Sheet>
-              <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-                <div className="mx-auto flex w-full items-center justify-between px-3 py-2">
-                  <div className="text-sm font-medium text-gray-700">Course Workspace</div>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" className="h-9 px-3">
-                      <Menu className="h-4 w-4" />
-                      <span className="ml-2 text-sm">Menu</span>
-                    </Button>
-                  </SheetTrigger>
+          {/* Mobile sheet trigger - hidden on course home page */}
+          {!isCourseHomePage && (
+            <div className="md:hidden">
+              <Sheet>
+                <div className="sticky top-0 z-20 border-b border-gray-200 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+                  <div className="mx-auto flex w-full items-center justify-between px-3 py-2">
+                    <div className="text-sm font-medium text-gray-700">Course Workspace</div>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" className="h-9 px-3">
+                        <Menu className="h-4 w-4" />
+                        <span className="ml-2 text-sm">Menu</span>
+                      </Button>
+                    </SheetTrigger>
+                  </div>
                 </div>
-              </div>
-              <SheetContent side="left" className="p-0 w-80 max-w-[85vw]">
-                <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
-                  <h2 className="text-xs font-semibold text-gray-900">Communicating_for_Impact</h2>
-                </div>
-                <div className="p-4">
-                  <p className="text-xs font-bold text-gray-600 mb-4">2025 May Term</p>
-                  {SidebarNav}
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+                <SheetContent side="left" className="p-0 w-80 max-w-[85vw]">
+                  <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
+                    <h2 className="text-xs font-semibold text-gray-900">Communicating_for_Impact</h2>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs font-bold text-gray-600 mb-4">2025 May Term</p>
+                    {SidebarNav}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          )}
         </>
       )}
 
