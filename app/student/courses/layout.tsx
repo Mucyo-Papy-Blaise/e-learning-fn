@@ -38,10 +38,10 @@ export default function CoursesLayout({
     courseId && pathname.startsWith(`/student/courses/${courseId}`);
 
   return (
-    <div className="flex flex-1">
+    <div className="flex flex-1 min-h-screen">
       {/* Course-Specific Sidebar - Only show when a specific course is selected */}
       {isSpecificCoursePage && (
-        <aside className="w-64 flex-shrink-0 border-r border-gray-200 bg-white">
+        <aside className="hidden md:block w-64 flex-shrink-0 border-r border-gray-200 bg-white">
           <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
             <h2 className="text-xs font-semibold text-gray-900">
               Communicating_for_Impact
@@ -225,13 +225,13 @@ export default function CoursesLayout({
       <main className="flex flex-1 flex-col bg-white">
         {/* Global action bar for all /student/courses pages */}
         <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
             <div className="text-sm font-medium text-gray-700">
               {isSpecificCoursePage ? "Course Workspace" : "My Courses"}
             </div>
             <Link
               href="/student/courses/catalog"
-              className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
+              className="inline-flex items-center rounded-md bg-blue-600 px-3 sm:px-4 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700"
             >
               Browse Courses
             </Link>

@@ -94,12 +94,12 @@ export default function CoursesPage() {
 
   return (
     <div className="flex flex-1 flex-col bg-gray-50 min-h-screen">
-      <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-white px-6 shadow-sm">
+      <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-white px-4 sm:px-6 shadow-sm">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-100 rounded-lg">
             <BookOpen className="h-5 w-5 text-blue-600" />
           </div>
-          <h1 className="text-xl font-semibold text-gray-900">My Courses</h1>
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-900">My Courses</h1>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <button className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors duration-200">
@@ -110,15 +110,15 @@ export default function CoursesPage() {
       </header>
 
       <main className="flex flex-1 flex-col">
-        <div className="max-w-4xl mx-auto w-full p-6">
+        <div className="max-w-6xl mx-auto w-full p-4 sm:p-6">
           {/* Header Section */}
-          <div className="mb-8">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Learning Journey</h2>
+          <div className="mb-6 sm:mb-8">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Your Learning Journey</h2>
               <p className="text-gray-600 mb-4">
                 Access all your enrolled courses and continue your learning progress.
               </p>
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Link 
                   href="/student/courses/catalog" 
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
@@ -139,13 +139,13 @@ export default function CoursesPage() {
 
           {/* Search and Course List */}
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 px-1 sm:px-0">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                 Enrolled Courses ({filteredCourses.length})
               </h3>
               
               {/* Search Bar */}
-              <div className="relative max-w-sm w-full sm:w-auto">
+              <div className="relative w-full sm:w-80">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-4 w-4 text-gray-400" />
                 </div>
@@ -167,35 +167,33 @@ export default function CoursesPage() {
               </div>
             </div>
             
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredCourses.map((course) => (
                 <Link key={course._id} href={`/student/courses/${course._id}/home`} className="block group">
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-blue-200 transition-all duration-200">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-blue-600 group-hover:text-blue-700 mb-2 line-clamp-2">
-                          {course.title}
-                        </h4>
-                        
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            <span>{course.difficulty_level}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{course.duration_weeks} weeks</span>
-                          </div>
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200 h-full">
+                    <div className="flex flex-col h-full">
+                      <h4 className="text-base sm:text-lg font-semibold text-blue-600 group-hover:text-blue-700 mb-2 line-clamp-2">
+                        {course.title}
+                      </h4>
+                      
+                      <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-600 mb-3">
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4" />
+                          <span>{course.difficulty_level}</span>
                         </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-500">Click to access course content</span>
-                          <div className="flex items-center text-blue-600 text-sm font-medium group-hover:text-blue-700">
-                            Continue Learning
-                            <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>{course.duration_weeks} weeks</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-auto flex items-center justify-between">
+                        <span className="text-xs sm:text-sm text-gray-500">Click to access course content</span>
+                        <div className="flex items-center text-blue-600 text-xs sm:text-sm font-medium group-hover:text-blue-700">
+                          Continue Learning
+                          <svg className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
                         </div>
                       </div>
                     </div>
