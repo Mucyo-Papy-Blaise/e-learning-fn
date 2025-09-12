@@ -206,17 +206,13 @@ export default function CoursesLayout({
             </div>
           </aside>
 
-          {/* Professional unified mobile header: left = global student sidebar, right = course menu */}
-          <div className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-2 border-b bg-white px-3 py-2">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="h-9 w-9" />
-              <span className="text-sm font-medium text-gray-800">Course</span>
-            </div>
+          {/* Compact mobile course menu trigger (below global top nav) */}
+          <div className="md:hidden sticky top-0 z-30 flex items-center justify-end border-b bg-white px-2 py-1">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="h-9 px-3">
+                <Button variant="outline" className="h-8 px-2">
                   <Menu className="h-4 w-4" />
-                  <span className="ml-2 text-sm">Menu</span>
+                  <span className="ml-2 text-xs">Course Menu</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-80 max-w-[85vw]">
@@ -238,7 +234,7 @@ export default function CoursesLayout({
         {/* Global action bar for all /student/courses pages (hidden on small when course header shown) */}
         <div className={cn(
           "sticky top-0 z-10 border-b border-gray-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60",
-          isSpecificCoursePage ? "hidden md:block" : "block"
+          isSpecificCoursePage ? "hidden md:block" : "hidden sm:block"
         )}>
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-3 sm:px-4 py-2 sm:py-3">
             <div className="text-sm font-medium text-gray-700">
