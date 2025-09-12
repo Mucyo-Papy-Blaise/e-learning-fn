@@ -44,28 +44,28 @@ export default function LandingCategories() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="border-0 bg-white rounded-2xl shadow-sm">
-                <CardContent className="p-7 space-y-3">
-                  <div className="h-4 w-16 bg-gray-200 rounded" />
-                  <div className="h-5 w-2/3 bg-gray-200 rounded" />
-                  <div className="h-4 w-1/3 bg-gray-200 rounded" />
+              <Card key={i} className="border-0 bg-white rounded-xl shadow-sm">
+                <CardContent className="p-5 space-y-3">
+                  <div className="h-3 w-14 bg-gray-200 rounded" />
+                  <div className="h-4 w-2/3 bg-gray-200 rounded" />
+                  <div className="h-3 w-1/3 bg-gray-200 rounded" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {categories.map((category) => (
               <Card
                 key={category.name}
-                className="bg-white border-0 rounded-2xl shadow-sm hover:shadow-xl transition-all hover:-translate-y-1"
+                className="bg-white border-0 rounded-xl shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5"
               >
-                <CardContent className="p-7 space-y-4">
+                <CardContent className="p-5 space-y-3">
 
                   {/* Title */}
-                  <h3 className="font-medium text-gray-900 text-xl">
+                  <h3 className="font-medium text-gray-900 text-lg">
                     {category.name}
                   </h3>
 
@@ -76,7 +76,7 @@ export default function LandingCategories() {
                     </span>
                     <Link
                       href={`/category/${encodeURIComponent(category.name)}`}
-                      className="text-sm font-medium brand-link flex items-center gap-1"
+                      className="text-xs font-medium brand-link flex items-center gap-1"
                     >
                       View All Courses
                       <ArrowRight className="h-4 w-4" />

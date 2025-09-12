@@ -55,7 +55,7 @@ export default function LandingTrending() {
             <div className="flex items-center justify-between mb-12">
               <div>
                 <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4">
-                  Trending <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Courses</span>
+                  Trending <span className="text-[var(--coursera-blue)]">Courses</span>
                 </h2>
                 <p className="text-gray-600 text-base md:text-lg">Most popular courses this month</p>
               </div>
@@ -65,11 +65,11 @@ export default function LandingTrending() {
               </Button>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 gap-6">
               {(loading ? Array.from({ length: 4 }) : courses).map((course: any, index: number) => (
-                <Card key={index} className="group hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-2 bg-white border-0 overflow-hidden rounded-2xl" style={{ animationDelay: `${index * 100}ms` }}>
+                <Card key={index} className="group hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 bg-white border-0 overflow-hidden rounded-xl" style={{ animationDelay: `${index * 100}ms` }}>
                   <div className="relative">
-                    <div className={`h-48 relative overflow-hidden`}>
+                    <div className={`h-40 relative overflow-hidden`}>
                       {course?.thumbnail ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover" />
@@ -117,7 +117,7 @@ export default function LandingTrending() {
             <div className="sticky top-24">
               <div className="mb-6">
                 <h3 className="text-2xl font-semibold text-gray-900 mb-2">
-                  World-Class <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Institutions</span>
+                  World-Class <span className="text-[var(--coursera-blue)]">Institutions</span>
                 </h3>
                 <p className="text-gray-600 text-sm">Top universities and companies</p>
               </div>
