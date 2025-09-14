@@ -41,14 +41,16 @@ export default function CourseForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type, checked } = e.target as HTMLInputElement & HTMLTextAreaElement & HTMLSelectElement;
-    setFormState((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+) => {
+  const target = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+  const { name, value, type } = target;
+
+  setFormState((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? (target as HTMLInputElement).checked : value,
+  }));
+};
 
   const handleThumbnail = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;

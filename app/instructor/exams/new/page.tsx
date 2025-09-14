@@ -87,12 +87,7 @@ export default function CreateExamPage() {
       setCourses(response.data.courses || response.data || []);
     } catch (error) {
       console.error('Failed to fetch courses:', error);
-      toast({
-        
-        title: "Error",
-        description: "Failed to load courses",
-        variant: "destructive",
-      });
+    toast.error(error instanceof Error ? error.message : 'Failed to load courses');
     }
   };
 
@@ -129,62 +124,39 @@ export default function CreateExamPage() {
   };
 
   const validateForm = (): boolean => {
-    if (!formData.title.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Exam title is required",
-        variant: "destructive",
-      });
-      return false;
-    }
+  if (!formData.title.trim()) {
+    toast.error("Exam title is required");
+    return false;
+  }
 
-    if (!formData.course) {
-      toast({
-        title: "Validation Error",
-        description: "Please select a course",
-        variant: "destructive",
-      });
-      return false;
-    }
+  if (!formData.course) {
+    toast.error("Please select a course");
+    return false;
+  }
 
-    if (!formData.examContent.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Exam content is required",
-        variant: "destructive",
-      });
-      return false;
-    }
+  if (!formData.examContent.trim()) {
+    toast.error("Exam content is required");
+    return false;
+  }
 
-    if (!formData.startDate || !formData.endDate) {
-      toast({
-        title: "Validation Error",
-        description: "Start and end dates are required",
-        variant: "destructive",
-      });
-      return false;
-    }
+  if (!formData.startDate || !formData.endDate) {
+    toast.error("Start and end dates are required");
+    return false;
+  }
 
-    if (new Date(formData.startDate) >= new Date(formData.endDate)) {
-      toast({
-        title: "Validation Error",
-        description: "End date must be after start date",
-        variant: "destructive",
-      });
-      return false;
-    }
+  if (new Date(formData.startDate) >= new Date(formData.endDate)) {
+    toast.error("End date must be after start date");
+    return false;
+  }
 
-    if (formData.duration <= 0) {
-      toast({
-        title: "Validation Error",
-        description: "Duration must be greater than 0",
-        variant: "destructive",
-      });
-      return false;
-    }
+  if (formData.duration <= 0) {
+    toast.error("Duration must be greater than 0");
+    return false;
+  }
 
-    return true;
-  };
+  return true;
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,20 +182,12 @@ export default function CreateExamPage() {
 
       const res = await createExam(payload as any);
       if (!res.ok) throw new Error(res.message);
-      
-      toast({
-        title: "Success",
-        description: "Exam created successfully!",
-      });
+      toast.success("Exam created successfully!")
       
       router.push('/instructor/exams');
     } catch (error: any) {
       console.error('Error creating exam:', error);
-      toast({
-        title: "Error",
-        description: error.response?.data?.message || "Failed to create exam",
-        variant: "destructive",
-      });
+      toast.error(error instanceof Error ? error.message : 'Failed to create an exam');
     } finally {
       setLoading(false);
     }

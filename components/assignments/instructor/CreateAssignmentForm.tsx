@@ -45,6 +45,8 @@ interface AssignmentFormProps {
   isEditing?: boolean;
   assignmentId?: string;
   initialData?: Assignment;
+  moduleId?: string; 
+  courseId?: string;
 }
 
 export default function AssignmentForm({

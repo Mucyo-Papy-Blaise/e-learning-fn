@@ -9,13 +9,10 @@ import {
   Star,
   Clock,
   ArrowLeft,
-  GraduationCap,
   BookOpen,
-  Calendar,
   Award,
   CheckCircle,
   Play,
-  Download,
   Share2,
   Heart,
 } from "lucide-react"
@@ -99,7 +96,7 @@ export default function CourseDetailPage() {
         <div className="text-center">
           <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Course not found</h3>
-          <p className="text-gray-600 mb-4">The course you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-4">The course you{"'"}re looking for doesn{"'"}t exist.</p>
           <Link href="/">
             <Button>Back to Home</Button>
           </Link>
@@ -188,7 +185,7 @@ export default function CourseDetailPage() {
             {/* Course Details */}
             <Card className="mb-6">
               <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">What you'll learn</h3>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">What you{"'"}ll learn</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   {course.prerequisites && course.prerequisites.length > 0 ? (
                     course.prerequisites.map((prereq, index) => (
@@ -332,7 +329,7 @@ export default function CourseDetailPage() {
                 </div>
 
                 <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">What's included</h4>
+                  <h4 className="font-semibold text-gray-900 mb-3">What{"'"}s included</h4>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />

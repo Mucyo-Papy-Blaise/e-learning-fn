@@ -9,10 +9,7 @@ import {
   Star,
   Clock,
   ArrowLeft,
-  GraduationCap,
   BookOpen,
-  Search,
-  Filter,
   SortAsc,
 } from "lucide-react"
 import Link from "next/link"
