@@ -48,7 +48,6 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
               if (q.ok && (q.data as any)?.title) {
                 title = (q.data as any).title
               } else if (typeof a.quiz_id === 'object') {
-                // @ts-expect-error possible populated object
                 title = a.quiz_id.title ?? String(a.quiz_id._id ?? a.quiz_id)
               } else {
                 title = String(a.quiz_id)

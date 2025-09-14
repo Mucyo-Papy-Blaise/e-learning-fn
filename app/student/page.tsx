@@ -31,6 +31,7 @@ function DashboardOverview() {
       const data = await fetchStudentDashboard();
       if (data && Array.isArray(data)) {
         setDashboard(data);
+        // @ts-expect-error error
         if (data?.stats) setStats(data.stats);
       } else if (data?.enrollments && Array.isArray(data.enrollments)) {
         setDashboard(data.enrollments);

@@ -20,7 +20,7 @@ export default function LoginPage() {
           {/* Content overlay */}
           <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white h-full">
             <div className="space-y-4 max-w-md">
-              <h1 className="text-5xl font-bold leading-tight">
+              <h1 className="text-5xl font-bold leading-tight text-white">
                 One more step
                 <br />
                 <span className="text-4xl font-light">Creating Memories</span>

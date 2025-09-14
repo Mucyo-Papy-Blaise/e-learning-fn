@@ -1,5 +1,5 @@
-// components/institutionCourseModal.tsx
 "use client";
+
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useEducation } from "@/context/educationContext";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 export const InstitutionCoursesModal = ({
   open,
@@ -20,6 +20,17 @@ export const InstitutionCoursesModal = ({
     useEducation();
 
   if (!selectedInstitution) return null;
+
+  const handleEnroll = async (courseId: string, courseTitle: string) => {
+    try {
+      await enrollInCourse(courseId);
+      toast.success(`You have enrolled in ${courseTitle}.`);
+    } catch (error) {
+      toast.error(
+        `Could not enroll in ${courseTitle}. Please try again.`
+      );
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -46,7 +57,9 @@ export const InstitutionCoursesModal = ({
                     {c.title}
                   </h3>
                   <div className="prose max-w-none text-sm text-gray-700">
-                    <div dangerouslySetInnerHTML={{ __html: c.description || "" }} />
+                    <div
+                      dangerouslySetInnerHTML={{ __html: c.description || "" }}
+                    />
                   </div>
                   <p className="text-sm text-gray-500">
                     Level: {c.difficulty_level}
@@ -56,22 +69,7 @@ export const InstitutionCoursesModal = ({
                   </p>
                 </div>
                 <button
-                  onClick={async () => {
-                    try {
-                      await enrollInCourse(c._id);
-                      toast({
-                        title: "Enrollment Successful",
-                        description: `You have enrolled in ${c.title}.`,
-                        variant: "default",
-                      });
-                    } catch (error) {
-                      toast({
-                        title: "Enrollment Failed",
-                        description: `Could not enroll in ${c.title}. Please try again.`,
-                        variant: "destructive",
-                      });
-                    }
-                  }}
+                  onClick={() => handleEnroll(c._id, c.title)}
                   className="mt-2 bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700"
                 >
                   Enroll

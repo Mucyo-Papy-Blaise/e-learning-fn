@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AuthState, User, LoginCredentials, RegisterData } from '@/lib/types/auth';
 import { toast } from 'react-toastify'; 
-import axios from 'axios';
 
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL 
