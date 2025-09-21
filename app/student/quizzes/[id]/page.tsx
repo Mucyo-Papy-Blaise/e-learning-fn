@@ -17,7 +17,7 @@ export default function QuizAttemptPage() {
   const [quiz, setQuiz] = useState<Quiz | null>(null)
   const [questions, setQuestions] = useState<QuizQuestion[]>([])
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null)
-  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [submitting, setSubmitting] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [confirmGuard, setConfirmGuard] = useState(false)
@@ -34,7 +34,13 @@ export default function QuizAttemptPage() {
       if (raw) {
         try {
           const saved = JSON.parse(raw) as { attemptId?: string; answers?: Record<string,string>; endTime?: number }
-          if (saved.answers) setAnswers(saved.answers)
+          if (saved.answers) {
+            // Convert Record<string, string> to Record<string, string[]>
+            const converted: Record<string, string[]> = Object.fromEntries(
+              Object.entries(saved.answers).map(([k, v]) => [k, Array.isArray(v) ? v : [v]])
+            )
+            setAnswers(converted)
+          }
           if (saved.endTime && saved.endTime > Date.now()) {
             setTimeLeft(Math.max(0, Math.floor((saved.endTime - Date.now())/1000)))
           }
@@ -90,7 +96,11 @@ export default function QuizAttemptPage() {
   const handleSubmit = async () => {
     if (!attempt) return
     setSubmitting(true)
-    const res = await submitQuizAttempt(attempt._id, answers)
+    // Convert answers to Record<string, string> by joining arrays
+    const formattedAnswers: Record<string, string> = Object.fromEntries(
+      Object.entries(answers).map(([key, value]) => [key, Array.isArray(value) ? value.join(',') : value])
+    )
+    const res = await submitQuizAttempt(attempt._id, formattedAnswers)
     setSubmitting(false)
     if (res.ok) {
       toast.success('Quiz submitted')
@@ -140,7 +150,7 @@ export default function QuizAttemptPage() {
     toast.success('Draft saved')
   }
 
-  const onAnswersChange = (next: Record<string, string>) => {
+  const onAnswersChange = (next: Record<string, string[]>) => {
     setAnswers(next)
     const raw = localStorage.getItem(`quizAttempt:${id}`)
     let payload: any = { answers: next }
