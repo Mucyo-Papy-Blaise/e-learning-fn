@@ -11,6 +11,7 @@ import type {
   QuizGradingSummary,
   QuizQuestion,
   UUID,
+  ExamSubmitOrViewResponse,
 } from '@/lib/types/assessments';
 
 // Generic request wrapper to return ApiResult<T>
@@ -95,12 +96,12 @@ export function getExamQuestions(examId: UUID, includeAnswers: boolean = false):
   return request<ExamQuestion[]>(() => axiosInstance.get(`/api/exams/${examId}/questions`, { params }));
 }
 
-export function submitExam(examId: UUID, payload: { courseId: UUID; answers: Record<UUID, string> }): Promise<ApiResult<{ message: string; autoGrading: { autoScore: number; autoMaxScore: number; manualMaxScore: number; totalMaxScore: number }; submission: ExamSubmission }>> {
-  return request(() => axiosInstance.post(`/api/exams/submit/${examId}`, payload));
+export function submitExam(examId: UUID, payload: { courseId: UUID; answers: Record<UUID, string[]> }): Promise<ApiResult<ExamSubmitOrViewResponse>> {
+  return request<ExamSubmitOrViewResponse>(() => axiosInstance.post(`/api/exams/submit/${examId}`, payload));
 }
 
-export function getOwnExamSubmission(examId: UUID): Promise<ApiResult<ExamSubmission | null>> {
-  return request<ExamSubmission | null>(() => axiosInstance.get(`/api/exams/submission/${examId}`));
+export function getOwnExamSubmission(examId: UUID): Promise<ApiResult<ExamSubmitOrViewResponse>> {
+  return request<ExamSubmitOrViewResponse>(() => axiosInstance.get(`/api/exams/submission/${examId}`));
 }
 
 // Instructor: manage exams and grading

@@ -72,24 +72,18 @@ export default function StudentResultsPage() {
         await Promise.all(
           exams.map(async (e) => {
             const s = await getOwnExamSubmission(e._id)
-            if (s.ok && s.data) {
-              const total = Number(
-                s.data.totalScore ??
-                  (Number(s.data.autoScore || 0) +
-                    Number(s.data.manualScore || 0))
-              )
-              const max = Number(e.totalPoints ?? 100)
+            if (s.ok && (s.data as any)?.submission && (s.data as any)?.resultSummary) {
+              const summary = (s.data as any).resultSummary
+              const total = Number(summary.score)
+              const max = Number(summary.maxScore ?? e.totalPoints ?? 100)
               out.push({
-                id: s.data._id,
+                id: (s.data as any).submission._id,
                 type: 'exam',
                 title: e.title,
                 score: total,
                 maxScore: max,
                 percentage: max ? (total / max) * 100 : 0,
-                passed:
-                  e.passingScore != null
-                    ? total >= e.passingScore
-                    : total >= 0.5 * max,
+                passed: Boolean(summary.passed),
                 date: undefined,
               })
             }

@@ -173,7 +173,9 @@ export default function AssignmentPage() {
               ) : (
                 <SubmissionForm
                   assignmentId={assignment._id}
-                  requiresFile={assignment.submissionType === "file"} // ✅ adapted
+                  requiresFile={assignment.submissionType === "file"}
+                  allowsText={assignment.submissionType === "text" || assignment.submissionType === "multiple"}
+                  allowsFile={assignment.submissionType === "file" || assignment.submissionType === "multiple"}
                   onSubmit={() => handleSubmissionSuccess(assignment._id)}
                 />
               )}

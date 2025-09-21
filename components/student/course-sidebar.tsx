@@ -29,28 +29,31 @@ export default function CourseSidebar({
   onBack,
 }: CourseSidebarProps) {
   return (
-    <div className="bg-white border-r border-gray-200 shadow-sm w-56 flex flex-col">
-      <div className="flex items-center justify-between p-2 border-b border-gray-200 bg-white">
-        <h2 className="text-sm font-semibold text-gray-900">{course.title}</h2>
+    <div className="bg-white border-r border-gray-200 shadow-sm w-full sm:w-56 lg:w-64 flex flex-col h-full">
+      <div className="flex items-center justify-between p-2 sm:p-3 border-b border-gray-200 bg-white flex-shrink-0">
+        <h2 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-900 truncate pr-2">
+          {course.title}
+        </h2>
         <button
           onClick={onBack}
-          className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0 touch-manipulation"
+          aria-label="Go back"
         >
-          <ChevronLast />
+          <ChevronLast className="h-4 w-4 sm:h-5 sm:w-5" />
         </button>
       </div>
-      <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+      <nav className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-1 sm:space-y-2">
         {navItems.map((item) => (
           <button
             key={item.key}
             onClick={() => onNavChange(item.key)}
-            className={`w-full text-left px-3 py-2 rounded transition-colors ${
+            className={`w-full text-left px-2 sm:px-3 py-2 sm:py-2.5 rounded-md sm:rounded-lg transition-colors duration-200 touch-manipulation ${
               active === item.key
-                ? "bg-blue-100 text-blue-900 font-semibold"
-                : "hover:bg-gray-50 text-gray-700"
+                ? "bg-blue-100 text-blue-900 font-semibold border-l-2 sm:border-l-4 border-blue-500"
+                : "hover:bg-gray-50 text-gray-700 hover:text-gray-900"
             }`}
           >
-            {item.label}
+            <span className="text-xs sm:text-sm lg:text-base">{item.label}</span>
           </button>
         ))}
       </nav>

@@ -14,7 +14,7 @@ export default function ExamAttemptPage() {
   const id = params?.id as string
   const [exam, setExam] = useState<Exam | null>(null)
   const [questions, setQuestions] = useState<ExamQuestion[]>([])
-  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [submitting, setSubmitting] = useState(false)
   const [timeLeft, setTimeLeft] = useState<number | null>(null)
   const [started, setStarted] = useState(false)
@@ -32,11 +32,11 @@ export default function ExamAttemptPage() {
     return () => { mounted = false }
   }, [id])
 
-  const simpleQuestions = useMemo(() => questions.map(q => ({
+  const simpleQuestions = useMemo(() => questions.filter(q => q.type === 'multiple_choice').map(q => ({
     id: q._id,
-    type: q.type,
+    type: 'multiple_choice' as const,
     question: q.question,
-    options: q.type === 'multiple_choice' ? (q as any).options : undefined,
+    options: (q as any).options,
   })), [questions])
 
   const handleSubmit = async () => {
@@ -71,7 +71,7 @@ export default function ExamAttemptPage() {
     const raw = localStorage.getItem(`examAttempt:${id}`)
     if (!raw) return
     try {
-      const saved = JSON.parse(raw) as { answers?: Record<string,string>; endTime?: number }
+      const saved = JSON.parse(raw) as { answers?: Record<string,string[]>; endTime?: number }
       if (saved.answers) setAnswers(saved.answers)
       if (saved.endTime && saved.endTime > Date.now()) {
         setStarted(true)

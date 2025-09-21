@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { getQuizAttempts, listExams, getOwnExamSubmission, getQuizById, getQuizQuestions } from "@/app/lib/api"
+import { fetchStudentGrades } from "@/lib/api/student"
 
 interface GradeRow {
   _id: string
@@ -26,6 +27,18 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
     let mounted = true
     async function load() {
       try {
+        // Try the new API first
+        try {
+          const gradesData = await fetchStudentGrades(courseId)
+          if (mounted) {
+            setGradesData(gradesData)
+            return
+          }
+        } catch (error) {
+          console.log('New grades API not available, falling back to legacy method')
+        }
+
+        // Fallback to legacy method
         const [quizAttemptsRes, examsRes] = await Promise.all([
           getQuizAttempts(),
           listExams(),
@@ -81,13 +94,12 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
           await Promise.all(
             exams.map(async (e: any) => {
               const s = await getOwnExamSubmission(e._id)
-              if (s.ok && s.data) {
-                const total = Number(
-                  s.data.totalScore ?? (Number(s.data.autoScore || 0) + Number(s.data.manualScore || 0))
-                )
-                const max = Number(e.totalPoints ?? 100)
+              if (s.ok && (s.data as any)?.submission && (s.data as any)?.resultSummary) {
+                const summary = (s.data as any).resultSummary
+                const total = Number(summary.score)
+                const max = Number(summary.maxScore ?? e.totalPoints ?? 100)
                 out.push({
-                  _id: s.data._id,
+                  _id: (s.data as any).submission._id,
                   type: 'exam',
                   title: e.title,
                   score: total,
@@ -95,7 +107,7 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
                   status: 'Graded',
                   due_date: undefined,
                   submitted_at: undefined,
-                  passed: e.passingScore != null ? total >= e.passingScore : total >= 0.5 * max,
+                  passed: Boolean(summary.passed),
                 })
               }
             })

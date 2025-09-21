@@ -60,21 +60,14 @@ export default function ExamSubmissionsPage() {
                 <TableRow>
                   <TableHead>Student</TableHead>
                   <TableHead>Auto Score</TableHead>
-                  <TableHead>Manual Score</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead></TableHead>
+                  <TableHead>Total Score</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {subs.filter(s => s.examId === id).map(s => (
                   <TableRow key={s._id}>
                     <TableCell className="font-medium">{s.studentId}</TableCell>
-                    <TableCell>{s.autoScore ?? 0}</TableCell>
-                    <TableCell>{s.manualScore ?? 0}</TableCell>
-                    <TableCell>{(s.autoScore ?? 0) + (s.manualScore ?? 0)}</TableCell>
-                    <TableCell>
-                      <button className="text-primary underline" onClick={() => router.push(`/instructor/exams/${id}/grade/${s._id}`)}>Grade</button>
-                    </TableCell>
+                    <TableCell>{(s.totalScore != null ? s.totalScore : (s.autoScore ?? 0) + (s.manualScore ?? 0))}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

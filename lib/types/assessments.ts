@@ -65,7 +65,8 @@ export interface ExamQuestionBase {
 export interface ExamQuestionMCQ extends ExamQuestionBase {
   type: 'multiple_choice';
   options: string[];
-  correct_answer?: string; // hidden from students
+  // For instructor/staff fetch with includeAnswers=true
+  correct_answers?: string[]; // hidden from students by default
 }
 
 export interface ExamQuestionWritten extends ExamQuestionBase {
@@ -89,6 +90,36 @@ export interface ExamSubmission {
     pointsAwarded?: number;
     feedback?: string;
   }>;
+}
+
+// New submit/submission response shapes from backend summary
+export interface ExamVisibility {
+  canShowResults: boolean;
+  canReview: boolean;
+  showCorrectAnswers: boolean;
+}
+
+export interface ExamResultSummary {
+  score: number;
+  maxScore: number;
+  percentage: number;
+  passed: boolean;
+  status: string;
+}
+
+export interface ExamPerQuestionResult {
+  questionId: UUID;
+  type: 'multiple_choice';
+  pointsAwarded: number;
+  pointsPossible: number;
+  isCorrect: boolean;
+}
+
+export interface ExamSubmitOrViewResponse {
+  resultSummary: ExamResultSummary;
+  visibility: ExamVisibility;
+  results?: ExamPerQuestionResult[];
+  submission: ExamSubmission;
 }
 
 export interface StudentGrade {
