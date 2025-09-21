@@ -7,73 +7,56 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { 
   Plus, 
   Trash2, 
   Save, 
   ArrowLeft, 
   Clock, 
-  Calendar,
-  FileText,
-  Upload,
-  File,
-  CheckCircle2
+  Calendar, 
+  FileText
 } from "lucide-react";
 // Use react-toastify consistently to avoid provider conflicts
 import { toast } from "react-toastify";
 import axiosInstance from "@/lib/axios";
-import { createExam } from "@/app/lib/api";
+import { createExam, createExamQuestion } from "@/app/lib/api";
 
 interface ExamFormData {
   title: string;
   course: string;
   description: string;
   instructions: string;
-  examContent: string;
-  attachments: File[];
   startDate: string;
   endDate: string;
   duration: number;
   passingScore: number;
-  maxAttempts: number;
-  allowFileSubmission: boolean;
-  allowTextSubmission: boolean;
-  submissionInstructions: string;
-  gradingCriteria: string;
   totalPoints: number;
-  isRandomized: boolean;
-  showResults: boolean;
-  allowReview: boolean;
   status: 'draft' | 'published';
 }
+
+type NewMCQ = {
+  question: string;
+  options: string[];
+  correct_answer: string;
+  points: number;
+};
 
 export default function CreateExamPage() {
   const router = useRouter();
   // toast imported from react-toastify
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
-  const [modules, setModules] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<NewMCQ[]>([]);
   const [formData, setFormData] = useState<ExamFormData>({
     title: '',
     course: '',
     description: '',
     instructions: '',
-    examContent: '',
-    attachments: [],
     startDate: '',
     endDate: '',
     duration: 120,
     passingScore: 70,
-    maxAttempts: 1,
-    allowFileSubmission: true,
-    allowTextSubmission: true,
-    submissionInstructions: '',
-    gradingCriteria: '',
     totalPoints: 100,
-    isRandomized: false,
-    showResults: true,
-    allowReview: true,
     status: 'draft'
   });
 
@@ -100,28 +83,7 @@ export default function CreateExamPage() {
 
   const handleCourseChange = async (courseId: string) => {
     handleInputChange('course', courseId)
-    try {
-      const res = await axiosInstance.get(`/api/courses/${courseId}/modules`)
-      setModules(res.data || [])
-    } catch (e) {
-      setModules([])
-    }
   }
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setFormData(prev => ({
-      ...prev,
-      attachments: [...prev.attachments, ...files]
-    }));
-  };
-
-  const removeFile = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      attachments: prev.attachments.filter((_, i) => i !== index)
-    }));
-  };
 
   const validateForm = (): boolean => {
   if (!formData.title.trim()) {
@@ -131,11 +93,6 @@ export default function CreateExamPage() {
 
   if (!formData.course) {
     toast.error("Please select a course");
-    return false;
-  }
-
-  if (!formData.examContent.trim()) {
-    toast.error("Exam content is required");
     return false;
   }
 
@@ -154,6 +111,27 @@ export default function CreateExamPage() {
     return false;
   }
 
+  // Validate MCQ questions
+  for (let i = 0; i < questions.length; i++) {
+    const q = questions[i]
+    if (!q.question.trim()) {
+      toast.error(`Question ${i + 1}: question text is required`)
+      return false
+    }
+    if (!Array.isArray(q.options) || q.options.length < 2) {
+      toast.error(`Question ${i + 1}: provide at least 2 options`)
+      return false
+    }
+    if (!q.options.includes(q.correct_answer)) {
+      toast.error(`Question ${i + 1}: correct answer must be one of the options`)
+      return false
+    }
+    if (q.points <= 0) {
+      toast.error(`Question ${i + 1}: points must be greater than 0`)
+      return false
+    }
+  }
+
   return true;
 };
 
@@ -166,13 +144,11 @@ export default function CreateExamPage() {
     try {
       setLoading(true);
 
-      // Send JSON body to backend (no multipart)
       const payload = {
         title: formData.title,
         course: formData.course,
         description: formData.description,
         instructions: formData.instructions,
-        examContent: formData.examContent,
         startDate: formData.startDate,
         endDate: formData.endDate,
         duration: formData.duration,
@@ -182,8 +158,21 @@ export default function CreateExamPage() {
 
       const res = await createExam(payload as any);
       if (!res.ok) throw new Error(res.message);
+
+      const examId = (res.data as any).exam?._id || (res.data as any).exam?.id || (res.data as any)._id
+      if (!examId) throw new Error('Failed to get exam id');
+
+      if (questions.length > 0) {
+        await Promise.all(questions.map((q, idx) => createExamQuestion(examId, {
+          question: q.question,
+          options: q.options,
+          correct_answer: q.correct_answer,
+          points: q.points,
+          order: idx + 1,
+        } as any)))
+      }
+
       toast.success("Exam created successfully!")
-      
       router.push('/instructor/exams');
     } catch (error: any) {
       console.error('Error creating exam:', error);
@@ -209,10 +198,10 @@ export default function CreateExamPage() {
             </Button>
             <div>
               <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-600 dark:from-slate-100 dark:to-slate-400 bg-clip-text text-transparent">
-                Create New Exam
+                Create New Exam (MCQ Only)
               </h1>
               <p className="text-muted-foreground">
-                Design a comprehensive text-based exam for your students
+                Create an exam with multiple choice questions only
               </p>
             </div>
           </div>
@@ -283,82 +272,63 @@ export default function CreateExamPage() {
             </CardContent>
           </Card>
 
-          {/* Exam Content */}
+          {/* MCQ Builder */}
           <Card className="shadow-lg border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Exam Content
+                Questions (Multiple Choice Only)
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="examContent">Exam Content *</Label>
-                <Textarea
-                  id="examContent"
-                  placeholder="Write or paste your exam content here. You can include questions, instructions, and any other content students need to see."
-                  value={formData.examContent}
-                  onChange={(e) => handleInputChange('examContent', e.target.value)}
-                  rows={12}
-                  className="font-mono text-sm"
-                  required
-                />
-                <p className="text-sm text-muted-foreground">
-                  Write your complete exam here. Students will see this content when they take the exam.
-                </p>
+              <div className="flex justify-end">
+                <Button type="button" variant="secondary" onClick={() => setQuestions(qs => ([...qs, { question: 'New question', options: ['Option 1', 'Option 2'], correct_answer: 'Option 1', points: 1 }]))}>
+                  <Plus className="h-4 w-4 mr-2" /> Add Question
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                <Label>Attachments</Label>
-                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center">
-                  <Upload className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                    Upload exam files (PDF, Word, images, etc.)
-                  </p>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="file-upload"
-                    accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                  />
-                  <Label htmlFor="file-upload" className="cursor-pointer">
-                    <Button type="button" variant="outline" className="mt-2">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Choose Files
-                    </Button>
-                  </Label>
-                </div>
-
-                {/* Display uploaded files */}
-                {formData.attachments.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Uploaded Files:</Label>
+              <div className="space-y-4">
+                {questions.map((q, qi) => (
+                  <div key={qi} className="p-4 bg-white dark:bg-slate-900 rounded-lg border space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium">Question {qi + 1}</div>
+                      <Button type="button" variant="ghost" className="text-red-600" onClick={() => setQuestions(prev => prev.filter((_, i) => i !== qi))}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <div className="space-y-2">
-                      {formData.attachments.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded">
-                          <div className="flex items-center gap-2">
-                            <File className="h-4 w-4 text-slate-500" />
-                            <span className="text-sm">{file.name}</span>
-                            <Badge variant="secondary" className="text-xs">
-                              {(file.size / 1024 / 1024).toFixed(2)} MB
-                            </Badge>
+                      <Label>Question</Label>
+                      <Textarea value={q.question} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, question: e.target.value } : x))} />
+                    </div>
+                    <div className="space-y-3">
+                      <div className="grid md:grid-cols-2 gap-3">
+                        {q.options.map((opt, oi) => (
+                          <div key={oi} className="space-y-1">
+                            <Label>Option {oi + 1}</Label>
+                            <div className="flex gap-2">
+                              <Input value={opt} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, options: x.options.map((o, j) => j === oi ? e.target.value : o) } : x))} />
+                              <Button type="button" variant="outline" onClick={() => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, options: x.options.filter((_, j) => j !== oi), correct_answer: x.correct_answer === x.options[oi] ? (x.options.filter((_, j) => j !== oi)[0] ?? '') : x.correct_answer } : x))}>Remove</Button>
+                            </div>
                           </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeFile(index)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                      <Button type="button" variant="secondary" onClick={() => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, options: [...x.options, `Option ${x.options.length + 1}`] } : x))}>Add Option</Button>
+                      <div className="space-y-2">
+                        <Label>Correct answer</Label>
+                        <select className="w-full px-3 py-2 border rounded" value={q.correct_answer} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, correct_answer: e.target.value } : x))}>
+                          {q.options.map((o, i) => (
+                            <option key={i} value={o}>{o}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <div>
+                        <Label>Points</Label>
+                        <Input type="number" min="1" value={q.points} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, points: parseInt(e.target.value || '0', 10) } : x))} />
+                      </div>
                     </div>
                   </div>
-                )}
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -422,17 +392,6 @@ export default function CreateExamPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="maxAttempts">Maximum Attempts</Label>
-                  <Input
-                    id="maxAttempts"
-                    type="number"
-                    min="1"
-                    value={formData.maxAttempts}
-                    onChange={(e) => handleInputChange('maxAttempts', parseInt(e.target.value))}
-                  />
-                </div>
-                
-                <div className="space-y-2">
                   <Label htmlFor="totalPoints">Total Points</Label>
                   <Input
                     id="totalPoints"
@@ -442,54 +401,6 @@ export default function CreateExamPage() {
                     onChange={(e) => handleInputChange('totalPoints', parseInt(e.target.value))}
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Submission Options</Label>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="allowTextSubmission"
-                      checked={formData.allowTextSubmission}
-                      onChange={(e) => handleInputChange('allowTextSubmission', e.target.checked)}
-                      className="rounded"
-                    />
-                    <Label htmlFor="allowTextSubmission" className="text-sm">Allow text submission</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="allowFileSubmission"
-                      checked={formData.allowFileSubmission}
-                      onChange={(e) => handleInputChange('allowFileSubmission', e.target.checked)}
-                      className="rounded"
-                    />
-                    <Label htmlFor="allowFileSubmission" className="text-sm">Allow file submission</Label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="submissionInstructions">Submission Instructions</Label>
-                <Textarea
-                  id="submissionInstructions"
-                  placeholder="Instructions for how students should submit their answers"
-                  value={formData.submissionInstructions}
-                  onChange={(e) => handleInputChange('submissionInstructions', e.target.value)}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="gradingCriteria">Grading Criteria</Label>
-                <Textarea
-                  id="gradingCriteria"
-                  placeholder="Explain how the exam will be graded"
-                  value={formData.gradingCriteria}
-                  onChange={(e) => handleInputChange('gradingCriteria', e.target.value)}
-                  rows={3}
-                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

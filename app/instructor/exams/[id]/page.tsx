@@ -48,18 +48,38 @@ export default function InstructorExamDetailPage() {
 
   const addMCQ = async () => {
     if (!id) return
-    const res = await createExamQuestion(id, { type: 'multiple_choice', question: 'New MCQ', options: ['A','B','C','D'], correct_answer: 'A', points: 1, order: questions.length + 1 })
-    if (res.ok) setQuestions(qs => [...qs, res.data]); else toast.error(res.message)
-  }
-  const addWritten = async () => {
-    if (!id) return
-    const res = await createExamQuestion(id, { type: 'written', question: 'New written question', points: 5, order: questions.length + 1 })
+    // MCQ-only: backend expects no type field
+    const defaultOptions = ['Option 1', 'Option 2']
+    const res = await createExamQuestion(id, { question: 'New multiple choice question', options: defaultOptions, correct_answer: defaultOptions[0], points: 1, order: questions.length + 1 })
     if (res.ok) setQuestions(qs => [...qs, res.data]); else toast.error(res.message)
   }
 
   const saveQuestion = async (q: ExamQuestion) => {
-    const res = await updateExamQuestion(q._id, q as any)
-    if (res.ok) toast.success('Question saved'); else toast.error(res.message)
+    // Validate MCQ
+    if (q.type === 'multiple_choice') {
+      const opts = (q as any).options || []
+      const ans = (q as any).correct_answer
+      if (!Array.isArray(opts) || opts.length < 2) {
+        toast.error('Provide at least 2 options')
+        return
+      }
+      if (!opts.includes(ans)) {
+        toast.error('Correct answer must be one of the options')
+        return
+      }
+      const payload: any = {
+        question: q.question,
+        options: opts,
+        correct_answer: ans,
+        points: q.points,
+        order: q.order,
+      }
+      const res = await updateExamQuestion(q._id, payload)
+      if (res.ok) toast.success('Question saved'); else toast.error(res.message)
+      return
+    }
+    // For non-MCQ, hide in UI; but in case present, do nothing
+    toast.error('Only multiple choice questions are supported')
   }
 
   const removeQuestion = async (qid: string) => {
@@ -141,12 +161,11 @@ export default function InstructorExamDetailPage() {
           <h2 className="text-xl font-semibold">Questions</h2>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={addMCQ}>Add MCQ</Button>
-            <Button variant="secondary" onClick={addWritten}>Add Written</Button>
           </div>
         </div>
 
         <div className="space-y-4">
-          {questions.map((q) => (
+          {questions.filter(q => q.type === 'multiple_choice').map((q) => (
             <Card key={q._id} className="bg-white">
               <CardContent className="p-4 space-y-3">
                 <div>
@@ -154,16 +173,27 @@ export default function InstructorExamDetailPage() {
                   <Textarea value={q.question} onChange={(e) => setQuestions(prev => prev.map(x => x._id === q._id ? { ...x, question: e.target.value } : x))} />
                 </div>
                 {q.type === 'multiple_choice' && (
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {(q as any).options?.map((o: string, i: number) => (
-                      <div key={i}>
-                        <Label>Option {i + 1}</Label>
-                        <Input value={o} onChange={(e) => setQuestions(prev => prev.map(x => x._id === q._id ? { ...x, options: (x as any).options.map((opt: string, j: number) => j === i ? e.target.value : opt) } : x))} />
-                      </div>
-                    ))}
+                  <div className="space-y-3">
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {(q as any).options?.map((o: string, i: number) => (
+                        <div key={i} className="space-y-1">
+                          <Label>Option {i + 1}</Label>
+                          <div className="flex gap-2">
+                            <Input value={o} onChange={(e) => setQuestions(prev => prev.map(x => x._id === q._id ? { ...x, options: (x as any).options.map((opt: string, j: number) => j === i ? e.target.value : opt) } : x))} />
+                            <Button variant="outline" onClick={() => setQuestions(prev => prev.map(x => x._id === q._id ? { ...x, options: (x as any).options.filter((_: string, j: number) => j !== i) } as any : x))}>Remove</Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <Button variant="secondary" onClick={() => setQuestions(prev => prev.map(x => x._id === q._id ? { ...x, options: [ ...(x as any).options ?? [], `Option ${(x as any).options?.length ? (x as any).options.length + 1 : 1}` ] } as any : x))}>Add Option</Button>
                     <div className="md:col-span-2">
                       <Label>Correct answer</Label>
-                      <Input value={(q as any).correct_answer || ''} onChange={(e) => setQuestions(prev => prev.map(x => x._id === q._id ? { ...x, correct_answer: e.target.value } as any : x))} />
+                      <select className="w-full px-3 py-2 border rounded" value={(q as any).correct_answer || ''} onChange={(e) => setQuestions(prev => prev.map(x => x._id === q._id ? { ...x, correct_answer: e.target.value } as any : x))}>
+                        <option value="" disabled>Select correct answer</option>
+                        {(q as any).options?.map((o: string, i: number) => (
+                          <option key={i} value={o}>{o}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 )}

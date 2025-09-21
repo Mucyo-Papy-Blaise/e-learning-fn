@@ -91,6 +91,36 @@ export interface ExamSubmission {
   }>;
 }
 
+// New submit/submission response shapes from backend summary
+export interface ExamVisibility {
+  canShowResults: boolean;
+  canReview: boolean;
+  showCorrectAnswers: boolean;
+}
+
+export interface ExamResultSummary {
+  score: number;
+  maxScore: number;
+  percentage: number;
+  passed: boolean;
+  status: string;
+}
+
+export interface ExamPerQuestionResult {
+  questionId: UUID;
+  type: 'multiple_choice';
+  pointsAwarded: number;
+  pointsPossible: number;
+  isCorrect: boolean;
+}
+
+export interface ExamSubmitOrViewResponse {
+  resultSummary: ExamResultSummary;
+  visibility: ExamVisibility;
+  results?: ExamPerQuestionResult[];
+  submission: ExamSubmission;
+}
+
 export interface StudentGrade {
   studentId: UUID;
   courseId: UUID;
