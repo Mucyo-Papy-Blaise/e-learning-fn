@@ -96,7 +96,7 @@ export function getExamQuestions(examId: UUID, includeAnswers: boolean = false):
   return request<ExamQuestion[]>(() => axiosInstance.get(`/api/exams/${examId}/questions`, { params }));
 }
 
-export function submitExam(examId: UUID, payload: { courseId: UUID; answers: Record<UUID, string> }): Promise<ApiResult<ExamSubmitOrViewResponse>> {
+export function submitExam(examId: UUID, payload: { courseId: UUID; answers: Record<UUID, string[]> }): Promise<ApiResult<ExamSubmitOrViewResponse>> {
   return request<ExamSubmitOrViewResponse>(() => axiosInstance.post(`/api/exams/submit/${examId}`, payload));
 }
 

@@ -48,9 +48,9 @@ export default function InstructorExamDetailPage() {
 
   const addMCQ = async () => {
     if (!id) return
-    // MCQ-only: backend expects no type field
+    // MCQ-only: backend expects no type field, supports multi-correct via correct_answers
     const defaultOptions = ['Option 1', 'Option 2']
-    const res = await createExamQuestion(id, { question: 'New multiple choice question', options: defaultOptions, correct_answer: defaultOptions[0], points: 1, order: questions.length + 1 })
+    const res = await createExamQuestion(id, { question: 'New multiple choice question', options: defaultOptions, correct_answers: [defaultOptions[0]], points: 1, order: questions.length + 1 })
     if (res.ok) setQuestions(qs => [...qs, res.data]); else toast.error(res.message)
   }
 
@@ -58,19 +58,23 @@ export default function InstructorExamDetailPage() {
     // Validate MCQ
     if (q.type === 'multiple_choice') {
       const opts = (q as any).options || []
-      const ans = (q as any).correct_answer
+      const answers: string[] = (q as any).correct_answers || []
       if (!Array.isArray(opts) || opts.length < 2) {
         toast.error('Provide at least 2 options')
         return
       }
-      if (!opts.includes(ans)) {
-        toast.error('Correct answer must be one of the options')
+      if (!Array.isArray(answers) || answers.length < 1) {
+        toast.error('Provide at least one correct answer')
+        return
+      }
+      if (!answers.every(a => opts.includes(a))) {
+        toast.error('All correct answers must be among the options')
         return
       }
       const payload: any = {
         question: q.question,
         options: opts,
-        correct_answer: ans,
+        correct_answers: answers,
         points: q.points,
         order: q.order,
       }

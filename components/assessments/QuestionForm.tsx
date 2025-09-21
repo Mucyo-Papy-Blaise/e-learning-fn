@@ -1,26 +1,28 @@
 'use client'
 import { Fragment } from 'react'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export type SimpleQuestion = {
   id: string
-  type: 'multiple_choice' | 'written'
+  type: 'multiple_choice'
   question: string
   options?: string[]
 }
 
 type Props = {
   questions: SimpleQuestion[]
-  value: Record<string, string>
-  onChange: (next: Record<string, string>) => void
+  value: Record<string, string[]>
+  onChange: (next: Record<string, string[]>) => void
   disabled?: boolean
 }
 
 export default function QuestionForm({ questions, value, onChange, disabled }: Props) {
-  const setAnswer = (qid: string, ans: string) => {
-    const next = { ...value, [qid]: ans }
+  const toggleAnswer = (qid: string, opt: string) => {
+    const current = value[qid] ?? []
+    const exists = current.includes(opt)
+    const nextForQ = exists ? current.filter(o => o !== opt) : [...current, opt]
+    const next = { ...value, [qid]: nextForQ }
     onChange(next)
   }
   return (
@@ -28,29 +30,14 @@ export default function QuestionForm({ questions, value, onChange, disabled }: P
       {questions.map((q, idx) => (
         <div key={q.id} className="rounded-lg border bg-white p-4">
           <div className="font-medium mb-3">{idx + 1}. {q.question}</div>
-          {q.type === 'multiple_choice' ? (
-            <RadioGroup
-              value={value[q.id] ?? ''}
-              onValueChange={(v) => setAnswer(q.id, v)}
-              className="space-y-2"
-              disabled={disabled}
-            >
-              {q.options?.map((opt, i) => (
-                <div key={i} className="flex items-center space-x-2">
-                  <RadioGroupItem id={`${q.id}-${i}`} value={opt} />
-                  <Label htmlFor={`${q.id}-${i}`}>{opt}</Label>
-                </div>
-              ))}
-            </RadioGroup>
-          ) : (
-            <Textarea
-              value={value[q.id] ?? ''}
-              onChange={(e) => setAnswer(q.id, e.target.value)}
-              disabled={disabled}
-              placeholder="Type your answer here..."
-              className="min-h-24"
-            />
-          )}
+          <div className="space-y-2">
+            {q.options?.map((opt, i) => (
+              <div key={i} className="flex items-center space-x-2">
+                <Checkbox id={`${q.id}-${i}`} checked={(value[q.id] ?? []).includes(opt)} onCheckedChange={() => toggleAnswer(q.id, opt)} disabled={disabled} />
+                <Label htmlFor={`${q.id}-${i}`}>{opt}</Label>
+              </div>
+            ))}
+          </div>
         </div>
       ))}
     </div>

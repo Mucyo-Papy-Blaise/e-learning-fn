@@ -37,7 +37,7 @@ interface ExamFormData {
 type NewMCQ = {
   question: string;
   options: string[];
-  correct_answer: string;
+  correct_answers: string[];
   points: number;
 };
 
@@ -166,7 +166,7 @@ export default function CreateExamPage() {
         await Promise.all(questions.map((q, idx) => createExamQuestion(examId, {
           question: q.question,
           options: q.options,
-          correct_answer: q.correct_answer,
+          correct_answers: q.correct_answers,
           points: q.points,
           order: idx + 1,
         } as any)))
@@ -282,7 +282,7 @@ export default function CreateExamPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex justify-end">
-                <Button type="button" variant="secondary" onClick={() => setQuestions(qs => ([...qs, { question: 'New question', options: ['Option 1', 'Option 2'], correct_answer: 'Option 1', points: 1 }]))}>
+                <Button type="button" variant="secondary" onClick={() => setQuestions(qs => ([...qs, { question: 'New question', options: ['Option 1', 'Option 2'], correct_answers: ['Option 1'], points: 1 }]))}>
                   <Plus className="h-4 w-4 mr-2" /> Add Question
                 </Button>
               </div>
@@ -306,19 +306,35 @@ export default function CreateExamPage() {
                             <Label>Option {oi + 1}</Label>
                             <div className="flex gap-2">
                               <Input value={opt} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, options: x.options.map((o, j) => j === oi ? e.target.value : o) } : x))} />
-                              <Button type="button" variant="outline" onClick={() => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, options: x.options.filter((_, j) => j !== oi), correct_answer: x.correct_answer === x.options[oi] ? (x.options.filter((_, j) => j !== oi)[0] ?? '') : x.correct_answer } : x))}>Remove</Button>
+                              <Button type="button" variant="outline" onClick={() => setQuestions(prev => prev.map((x, i) => {
+                                if (i !== qi) return x
+                                const nextOptions = x.options.filter((_, j) => j !== oi)
+                                const nextCorrect = (x.correct_answers || []).filter(ans => ans !== x.options[oi]).filter(ans => nextOptions.includes(ans))
+                                return { ...x, options: nextOptions, correct_answers: nextCorrect }
+                              }))}>Remove</Button>
                             </div>
                           </div>
                         ))}
                       </div>
                       <Button type="button" variant="secondary" onClick={() => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, options: [...x.options, `Option ${x.options.length + 1}`] } : x))}>Add Option</Button>
                       <div className="space-y-2">
-                        <Label>Correct answer</Label>
-                        <select className="w-full px-3 py-2 border rounded" value={q.correct_answer} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, correct_answer: e.target.value } : x))}>
-                          {q.options.map((o, i) => (
-                            <option key={i} value={o}>{o}</option>
-                          ))}
-                        </select>
+                        <Label>Correct answers (select one or more)</Label>
+                        <div className="grid md:grid-cols-2 gap-2">
+                          {q.options.map((o, i) => {
+                            const checked = (q.correct_answers || []).includes(o)
+                            return (
+                              <label key={i} className="flex items-center gap-2">
+                                <input type="checkbox" checked={checked} onChange={(e) => setQuestions(prev => prev.map((x, idx) => {
+                                  if (idx !== qi) return x
+                                  const set = new Set<string>(x.correct_answers || [])
+                                  if (e.target.checked) { set.add(o) } else { set.delete(o) }
+                                  return { ...x, correct_answers: Array.from(set) }
+                                }))} />
+                                <span>{o}</span>
+                              </label>
+                            )
+                          })}
+                        </div>
                       </div>
                     </div>
                     <div className="grid md:grid-cols-3 gap-3">

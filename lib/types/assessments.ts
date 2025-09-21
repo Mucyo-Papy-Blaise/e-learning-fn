@@ -65,7 +65,8 @@ export interface ExamQuestionBase {
 export interface ExamQuestionMCQ extends ExamQuestionBase {
   type: 'multiple_choice';
   options: string[];
-  correct_answer?: string; // hidden from students
+  // For instructor/staff fetch with includeAnswers=true
+  correct_answers?: string[]; // hidden from students by default
 }
 
 export interface ExamQuestionWritten extends ExamQuestionBase {
