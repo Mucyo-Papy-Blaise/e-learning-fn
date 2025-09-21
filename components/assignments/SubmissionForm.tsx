@@ -13,17 +13,34 @@ import TiptapEditor from "@/components/ui/TipTap.Editor";
 const submissionSchema = z.object({
   content: z.string().min(1, "Submission content is required"),
   file: z.instanceof(File).optional(),
+}).refine((data) => {
+  // If no content and no file, show error
+  if (!data.content.trim() && !data.file) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Either text content or file upload is required",
+  path: ["content"]
 });
 
 type SubmissionFormData = z.infer<typeof submissionSchema>;
 
 interface SubmissionFormProps {
   assignmentId: string;
-  requiresFile: boolean;
+  requiresFile?: boolean;
+  allowsText?: boolean;
+  allowsFile?: boolean;
   onSubmit: () => void;
 }
 
-export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: SubmissionFormProps) {
+export function SubmissionForm({ 
+  assignmentId, 
+  requiresFile = false, 
+  allowsText = true, 
+  allowsFile = true, 
+  onSubmit 
+}: SubmissionFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,7 +58,10 @@ export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: Submiss
     try {
       const token = localStorage.getItem("token");
       const formData = new FormData();
-      formData.append("content", data.content);
+      
+      // Always append content (even if empty, backend can handle it)
+      formData.append("content", data.content || "");
+      
       if (data.file) {
         formData.append("file", data.file);
       }
@@ -50,13 +70,14 @@ export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: Submiss
       const response = await fetch(`${API_URL}/api/assignments/${assignmentId}/submit`, {
         method: "POST",
         headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          "Authorization": `Bearer ${token}`,
         },
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit assignment");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to submit assignment");
       }
 
       toast({
@@ -64,10 +85,10 @@ export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: Submiss
         description: "Assignment submitted successfully",
       });
       onSubmit();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to submit assignment",
+        description: error.message || "Failed to submit assignment",
         variant: "destructive",
       });
     } finally {
@@ -77,26 +98,34 @@ export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: Submiss
 
   return (
     <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
-      <div>
-        <Controller
-          name="content"
-          control={control}
-          render={({ field: { onChange, value } }) => (
-            <TiptapEditor
-              name="submission-content"
-              content={value || ""}
-              onChange={onChange}
-              placeholder="Enter your submission here..."
-            />
-          )}
-        />
-        {errors.content && (
-          <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
-        )}
-      </div>
-
-      {requiresFile && (
+      {allowsText && (
         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Text Response {requiresFile ? "(Optional)" : "*"}
+          </label>
+          <Controller
+            name="content"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <TiptapEditor
+                name="submission-content"
+                content={value || ""}
+                onChange={onChange}
+                placeholder="Enter your submission here..."
+              />
+            )}
+          />
+          {errors.content && (
+            <p className="text-red-500 text-sm mt-1">{errors.content.message}</p>
+          )}
+        </div>
+      )}
+
+      {allowsFile && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            File Upload {requiresFile ? "*" : "(Optional)"}
+          </label>
           <Controller
             name="file"
             control={control}
@@ -104,6 +133,7 @@ export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: Submiss
               <Input
                 type="file"
                 onChange={(e) => onChange(e.target.files?.[0])}
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
                 {...field}
               />
             )}
@@ -111,6 +141,9 @@ export function SubmissionForm({ assignmentId, requiresFile, onSubmit }: Submiss
           {errors.file && (
             <p className="text-red-500 text-sm mt-1">{errors.file.message}</p>
           )}
+          <p className="text-xs text-gray-500 mt-1">
+            Supported formats: PDF, DOC, DOCX, TXT, JPG, JPEG, PNG, GIF
+          </p>
         </div>
       )}
 

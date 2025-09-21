@@ -43,7 +43,6 @@ type NewMCQ = {
 
 export default function CreateExamPage() {
   const router = useRouter();
-  // toast imported from react-toastify
   const [loading, setLoading] = useState(false);
   const [courses, setCourses] = useState<any[]>([]);
   const [questions, setQuestions] = useState<NewMCQ[]>([]);
@@ -70,7 +69,7 @@ export default function CreateExamPage() {
       setCourses(response.data.courses || response.data || []);
     } catch (error) {
       console.error('Failed to fetch courses:', error);
-    toast.error(error instanceof Error ? error.message : 'Failed to load courses');
+      toast.error(error instanceof Error ? error.message : 'Failed to load courses');
     }
   };
 
@@ -79,66 +78,207 @@ export default function CreateExamPage() {
       ...prev,
       [field]: value
     }));
-  };  1
+  };
 
   const handleCourseChange = async (courseId: string) => {
-    handleInputChange('course', courseId)
-  }
+    handleInputChange('course', courseId);
+  };
+
+  // Fixed MCQ handlers
+  const addNewQuestion = () => {
+    setQuestions(prev => ([
+      ...prev, 
+      { 
+        question: 'New question', 
+        options: ['Option 1', 'Option 2'], 
+        correct_answers: ['Option 1'], 
+        points: 1 
+      }
+    ]));
+  };
+
+  const removeQuestion = (questionIndex: number) => {
+    setQuestions(prev => prev.filter((_, i) => i !== questionIndex));
+  };
+
+  const updateQuestion = (questionIndex: number, field: keyof NewMCQ, value: any) => {
+    setQuestions(prev => prev.map((question, i) => 
+      i === questionIndex ? { ...question, [field]: value } : question
+    ));
+  };
+
+  const updateQuestionOption = (questionIndex: number, optionIndex: number, newValue: string) => {
+    setQuestions(prev => prev.map((question, qIdx) => {
+      if (qIdx !== questionIndex) return question;
+      
+      const oldValue = question.options[optionIndex];
+      const newOptions = question.options.map((opt, oIdx) => 
+        oIdx === optionIndex ? newValue : opt
+      );
+      
+      // Update correct_answers to replace old option value with new one
+      const newCorrectAnswers = (question.correct_answers || []).map(answer => 
+        answer === oldValue ? newValue : answer
+      ).filter(answer => newOptions.includes(answer)); // Ensure all correct answers are valid
+      
+      return {
+        ...question,
+        options: newOptions,
+        correct_answers: newCorrectAnswers
+      };
+    }));
+  };
+
+  const removeQuestionOption = (questionIndex: number, optionIndex: number) => {
+    setQuestions(prev => prev.map((question, qIdx) => {
+      if (qIdx !== questionIndex) return question;
+      
+      const optionToRemove = question.options[optionIndex];
+      const newOptions = question.options.filter((_, oIdx) => oIdx !== optionIndex);
+      
+      // Remove the deleted option from correct_answers and ensure all remaining
+      // correct answers are still valid
+      const newCorrectAnswers = (question.correct_answers || [])
+        .filter(answer => answer !== optionToRemove)
+        .filter(answer => newOptions.includes(answer));
+      
+      return {
+        ...question,
+        options: newOptions,
+        correct_answers: newCorrectAnswers
+      };
+    }));
+  };
+
+  const addQuestionOption = (questionIndex: number) => {
+    setQuestions(prev => prev.map((question, qIdx) => {
+      if (qIdx !== questionIndex) return question;
+      
+      return {
+        ...question,
+        options: [...question.options, `Option ${question.options.length + 1}`]
+      };
+    }));
+  };
+
+  const updateCorrectAnswers = (questionIndex: number, option: string, isChecked: boolean) => {
+    setQuestions(prev => prev.map((question, qIdx) => {
+      if (qIdx !== questionIndex) return question;
+      
+      const currentCorrectAnswers = question.correct_answers || [];
+      let newCorrectAnswers;
+      
+      if (isChecked) {
+        // Only add if it exists in options and isn't already selected
+        if (question.options.includes(option) && !currentCorrectAnswers.includes(option)) {
+          newCorrectAnswers = [...currentCorrectAnswers, option];
+        } else {
+          newCorrectAnswers = currentCorrectAnswers;
+        }
+      } else {
+        newCorrectAnswers = currentCorrectAnswers.filter(answer => answer !== option);
+      }
+      
+      // Final validation: ensure all correct answers are in options
+      newCorrectAnswers = newCorrectAnswers.filter(answer => question.options.includes(answer));
+      
+      return {
+        ...question,
+        correct_answers: newCorrectAnswers
+      };
+    }));
+  };
 
   const validateForm = (): boolean => {
-  if (!formData.title.trim()) {
-    toast.error("Exam title is required");
-    return false;
-  }
-
-  if (!formData.course) {
-    toast.error("Please select a course");
-    return false;
-  }
-
-  if (!formData.startDate || !formData.endDate) {
-    toast.error("Start and end dates are required");
-    return false;
-  }
-
-  if (new Date(formData.startDate) >= new Date(formData.endDate)) {
-    toast.error("End date must be after start date");
-    return false;
-  }
-
-  if (formData.duration <= 0) {
-    toast.error("Duration must be greater than 0");
-    return false;
-  }
-
-  // Validate MCQ questions
-  for (let i = 0; i < questions.length; i++) {
-    const q = questions[i]
-    if (!q.question.trim()) {
-      toast.error(`Question ${i + 1}: question text is required`)
-      return false
+    if (!formData.title.trim()) {
+      toast.error("Exam title is required");
+      return false;
     }
-    if (!Array.isArray(q.options) || q.options.length < 2) {
-      toast.error(`Question ${i + 1}: provide at least 2 options`)
-      return false
-    }
-    if (!Array.isArray(q.correct_answers) || q.correct_answers.length < 1) {
-      toast.error(`Question ${i + 1}: select at least one correct answer`)
-      return false
-    }
-    if (!q.correct_answers.every(a => q.options.includes(a))) {
-      toast.error(`Question ${i + 1}: all correct answers must be among the options`)
-      return false
-    }
-    if (q.points <= 0) {
-      toast.error(`Question ${i + 1}: points must be greater than 0`)
-      return false
-    }
-  }
 
-  return true;
-};
+    if (!formData.course) {
+      toast.error("Please select a course");
+      return false;
+    }
 
+    if (!formData.startDate || !formData.endDate) {
+      toast.error("Start and end dates are required");
+      return false;
+    }
+
+    if (new Date(formData.startDate) >= new Date(formData.endDate)) {
+      toast.error("End date must be after start date");
+      return false;
+    }
+
+    if (formData.duration <= 0) {
+      toast.error("Duration must be greater than 0");
+      return false;
+    }
+
+    // Validate MCQ questions with state cleanup
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      
+      if (!q.question.trim()) {
+        toast.error(`Question ${i + 1}: Question text is required`);
+        return false;
+      }
+      
+      if (!Array.isArray(q.options) || q.options.length < 2) {
+        toast.error(`Question ${i + 1}: Provide at least 2 options`);
+        return false;
+      }
+      
+      // Check for empty or duplicate options
+      const trimmedOptions = q.options.map(opt => opt.trim()).filter(opt => opt);
+      if (trimmedOptions.length !== q.options.length) {
+        toast.error(`Question ${i + 1}: All options must have text`);
+        return false;
+      }
+      
+      // Check for duplicate options
+      const uniqueOptions = new Set(trimmedOptions);
+      if (uniqueOptions.size !== trimmedOptions.length) {
+        toast.error(`Question ${i + 1}: All options must be unique`);
+        return false;
+      }
+      
+      if (!Array.isArray(q.correct_answers) || q.correct_answers.length < 1) {
+        toast.error(`Question ${i + 1}: Select at least one correct answer`);
+        return false;
+      }
+      
+      // Clean up correct answers before validation
+      const validCorrectAnswers = q.correct_answers.filter(answer => 
+        q.options.includes(answer) && answer.trim()
+      );
+      
+      if (validCorrectAnswers.length === 0) {
+        // Auto-fix: clean up the state and show error
+        setQuestions(prev => prev.map((question, qIdx) => 
+          qIdx === i ? { ...question, correct_answers: [] } : question
+        ));
+        toast.error(`Question ${i + 1}: Please reselect correct answers after modifying options`);
+        return false;
+      }
+      
+      // Update state with cleaned correct answers if needed
+      if (validCorrectAnswers.length !== q.correct_answers.length) {
+        setQuestions(prev => prev.map((question, qIdx) => 
+          qIdx === i ? { ...question, correct_answers: validCorrectAnswers } : question
+        ));
+        toast.error(`Question ${i + 1}: Some selected answers were invalid and have been removed. Please verify your selections.`);
+        return false;
+      }
+      
+      if (q.points <= 0) {
+        toast.error(`Question ${i + 1}: Points must be greater than 0`);
+        return false;
+      }
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -163,7 +303,7 @@ export default function CreateExamPage() {
       const res = await createExam(payload as any);
       if (!res.ok) throw new Error(res.message);
 
-      const examId = (res.data as any).exam?._id || (res.data as any).exam?.id || (res.data as any)._id
+      const examId = (res.data as any).exam?._id || (res.data as any).exam?.id || (res.data as any)._id;
       if (!examId) throw new Error('Failed to get exam id');
 
       if (questions.length > 0) {
@@ -173,10 +313,10 @@ export default function CreateExamPage() {
           correct_answers: q.correct_answers,
           points: q.points,
           order: idx + 1,
-        } as any)))
+        } as any)));
       }
 
-      toast.success("Exam created successfully!")
+      toast.success("Exam created successfully!");
       router.push('/instructor/exams');
     } catch (error: any) {
       console.error('Error creating exam:', error);
@@ -286,7 +426,7 @@ export default function CreateExamPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex justify-end">
-                <Button type="button" variant="secondary" onClick={() => setQuestions(qs => ([...qs, { question: 'New question', options: ['Option 1', 'Option 2'], correct_answers: ['Option 1'], points: 1 }]))}>
+                <Button type="button" variant="secondary" onClick={addNewQuestion}>
                   <Plus className="h-4 w-4 mr-2" /> Add Question
                 </Button>
               </div>
@@ -295,56 +435,88 @@ export default function CreateExamPage() {
                   <div key={qi} className="p-4 bg-white dark:bg-slate-900 rounded-lg border space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="font-medium">Question {qi + 1}</div>
-                      <Button type="button" variant="ghost" className="text-red-600" onClick={() => setQuestions(prev => prev.filter((_, i) => i !== qi))}>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        className="text-red-600" 
+                        onClick={() => removeQuestion(qi)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
+                    
                     <div className="space-y-2">
                       <Label>Question</Label>
-                      <Textarea value={q.question} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, question: e.target.value } : x))} />
+                      <Textarea 
+                        value={q.question} 
+                        onChange={(e) => updateQuestion(qi, 'question', e.target.value)} 
+                      />
                     </div>
+                    
                     <div className="space-y-3">
                       <div className="grid md:grid-cols-2 gap-3">
                         {q.options.map((opt, oi) => (
                           <div key={oi} className="space-y-1">
                             <Label>Option {oi + 1}</Label>
                             <div className="flex gap-2">
-                              <Input value={opt} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, options: x.options.map((o, j) => j === oi ? e.target.value : o) } : x))} />
-                              <Button type="button" variant="outline" onClick={() => setQuestions(prev => prev.map((x, i) => {
-                                if (i !== qi) return x
-                                const nextOptions = x.options.filter((_, j) => j !== oi)
-                                const nextCorrect = (x.correct_answers || []).filter(ans => ans !== x.options[oi]).filter(ans => nextOptions.includes(ans))
-                                return { ...x, options: nextOptions, correct_answers: nextCorrect }
-                              }))}>Remove</Button>
+                              <Input 
+                                value={opt} 
+                                onChange={(e) => updateQuestionOption(qi, oi, e.target.value)} 
+                              />
+                              {q.options.length > 2 && (
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  onClick={() => removeQuestionOption(qi, oi)}
+                                >
+                                  Remove
+                                </Button>
+                              )}
                             </div>
                           </div>
                         ))}
                       </div>
-                      <Button type="button" variant="secondary" onClick={() => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, options: [...x.options, `Option ${x.options.length + 1}`] } : x))}>Add Option</Button>
+                      
+                      <Button 
+                        type="button" 
+                        variant="secondary" 
+                        onClick={() => addQuestionOption(qi)}
+                      >
+                        Add Option
+                      </Button>
+                      
                       <div className="space-y-2">
                         <Label>Correct answers (select one or more)</Label>
                         <div className="grid md:grid-cols-2 gap-2">
-                          {q.options.map((o, i) => {
-                            const checked = (q.correct_answers || []).includes(o)
+                          {q.options.map((option, optionIndex) => {
+                            const checked = (q.correct_answers || []).includes(option) && option.trim() !== '';
                             return (
-                              <label key={i} className="flex items-center gap-2">
-                                <input type="checkbox" checked={checked} onChange={(e) => setQuestions(prev => prev.map((x, idx) => {
-                                  if (idx !== qi) return x
-                                  const set = new Set<string>(x.correct_answers || [])
-                                  if (e.target.checked) { set.add(o) } else { set.delete(o) }
-                                  return { ...x, correct_answers: Array.from(set) }
-                                }))} />
-                                <span>{o}</span>
+                              <label key={`${qi}-${optionIndex}-${option}`} className="flex items-center gap-2">
+                                <input 
+                                  type="checkbox" 
+                                  checked={checked} 
+                                  onChange={(e) => updateCorrectAnswers(qi, option, e.target.checked)}
+                                />
+                                <span className="truncate">{option || `Option ${optionIndex + 1}`}</span>
                               </label>
-                            )
+                            );
                           })}
                         </div>
+                        {q.correct_answers && q.correct_answers.length === 0 && (
+                          <p className="text-sm text-red-600">⚠️ Please select at least one correct answer</p>
+                        )}
                       </div>
                     </div>
+                    
                     <div className="grid md:grid-cols-3 gap-3">
                       <div>
                         <Label>Points</Label>
-                        <Input type="number" min="1" value={q.points} onChange={(e) => setQuestions(prev => prev.map((x, i) => i === qi ? { ...x, points: parseInt(e.target.value || '0', 10) } : x))} />
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          value={q.points} 
+                          onChange={(e) => updateQuestion(qi, 'points', parseInt(e.target.value || '0', 10))} 
+                        />
                       </div>
                     </div>
                   </div>

@@ -250,6 +250,21 @@ export default function AssignmentForm({
       return;
     }
 
+    // Validate date logic
+    const dueDate = new Date(formData.dueDate);
+    const availableAfter = formData.availableAfter ? new Date(formData.availableAfter) : null;
+    const now = new Date();
+
+    if (availableAfter && dueDate <= availableAfter) {
+      toast.error("Due date must be after the 'Available After' date");
+      return;
+    }
+
+    if (isEditing && dueDate <= now) {
+      toast.error("Due date must be in the future for rescheduling");
+      return;
+    }
+
     setLoading(true);
     try {
       const formDataToSend = new FormData();

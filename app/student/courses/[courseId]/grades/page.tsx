@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { getQuizAttempts, listExams, getOwnExamSubmission, getQuizById, getQuizQuestions } from "@/app/lib/api"
+import { fetchStudentGrades } from "@/lib/api/student"
 
 interface GradeRow {
   _id: string
@@ -26,6 +27,18 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
     let mounted = true
     async function load() {
       try {
+        // Try the new API first
+        try {
+          const gradesData = await fetchStudentGrades(courseId)
+          if (mounted) {
+            setGradesData(gradesData)
+            return
+          }
+        } catch (error) {
+          console.log('New grades API not available, falling back to legacy method')
+        }
+
+        // Fallback to legacy method
         const [quizAttemptsRes, examsRes] = await Promise.all([
           getQuizAttempts(),
           listExams(),

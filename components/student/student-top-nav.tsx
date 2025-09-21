@@ -63,33 +63,44 @@ export default function StudentTopNav() {
 
   return (
     <div className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="mx-auto flex h-12 w-full max-w-6xl items-center gap-2 px-2 sm:h-14 sm:gap-3 sm:px-3">
+      <div className="mx-auto flex h-12 w-full max-w-6xl items-center gap-1 px-2 sm:h-14 sm:gap-3 sm:px-3">
         {/* Left section */}
-        <div className="flex items-center gap-2">
-          <SidebarTrigger className="h-8 w-8" />
-          <span className="hidden text-sm font-medium text-gray-800 sm:inline">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <SidebarTrigger className="h-8 w-8 sm:h-9 sm:w-9" />
+          <span className="hidden text-sm font-medium text-gray-800 sm:inline lg:text-base">
             {title}
           </span>
         </div>
 
+        {/* Center section - Mobile search */}
+        <div className="flex-1 mx-2 sm:hidden">
+          <div className="flex items-center gap-2 rounded-md border bg-white px-2 py-1">
+            <Search className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <Input
+              className="h-6 border-0 p-0 shadow-none focus-visible:ring-0 text-sm"
+              placeholder="Search"
+            />
+          </div>
+        </div>
+
         {/* Right section */}
-        <div className="ml-auto flex items-center gap-1 sm:gap-2">
-          {/* Search box */}
-          <div className="hidden min-w-[220px] items-center gap-2 rounded-md border bg-white px-2 sm:flex">
-            <Search className="h-4 w-4 text-gray-500" />
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Desktop search box */}
+          <div className="hidden sm:flex min-w-[200px] lg:min-w-[240px] items-center gap-2 rounded-md border bg-white px-2">
+            <Search className="h-4 w-4 text-gray-500 flex-shrink-0" />
             <Input
               className="h-8 border-0 p-0 shadow-none focus-visible:ring-0"
-              placeholder="Search"
+              placeholder="Search courses..."
             />
           </div>
 
           {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="inline-flex items-center rounded-full outline-none ring-0 focus-visible:ring-2 focus-visible:ring-blue-300">
-                <Avatar className="h-8 w-8">
+              <button className="inline-flex items-center rounded-full outline-none ring-0 focus-visible:ring-2 focus-visible:ring-blue-300 transition-all duration-200 hover:scale-105">
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
                   <AvatarImage src={avatarUrl || undefined} alt="Profile" />
-                  <AvatarFallback>ST</AvatarFallback>
+                  <AvatarFallback className="text-xs sm:text-sm">ST</AvatarFallback>
                 </Avatar>
               </button>
             </DropdownMenuTrigger>

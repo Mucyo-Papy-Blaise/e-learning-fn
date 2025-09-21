@@ -20,7 +20,7 @@ export default async function StudentLayout({
       <MainSidebar />
       <SidebarInset className="bg-content-background text-content-foreground">
         <StudentTopNav />
-        <div className="pb-14 sm:pb-0">{children}</div>
+        <div className="pb-14 lg:pb-0 min-h-screen">{children}</div>
         <MobileBottomNav />
       </SidebarInset>
     </SidebarProvider>
