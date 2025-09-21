@@ -122,8 +122,12 @@ export default function CreateExamPage() {
       toast.error(`Question ${i + 1}: provide at least 2 options`)
       return false
     }
-    if (!q.options.includes(q.correct_answer)) {
-      toast.error(`Question ${i + 1}: correct answer must be one of the options`)
+    if (!Array.isArray(q.correct_answers) || q.correct_answers.length < 1) {
+      toast.error(`Question ${i + 1}: select at least one correct answer`)
+      return false
+    }
+    if (!q.correct_answers.every(a => q.options.includes(a))) {
+      toast.error(`Question ${i + 1}: all correct answers must be among the options`)
       return false
     }
     if (q.points <= 0) {
