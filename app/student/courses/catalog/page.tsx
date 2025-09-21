@@ -56,7 +56,7 @@ export default function CourseCatalogPage() {
       setEnrolling(courseId)
       await enrollInCourse(courseId)
       toast.success("Successfully enrolled in course!")
-      // Optionally refresh the course list or update UI state
+
     } catch (error) {
       console.error("Failed to enroll:", error)
       toast.error("Failed to enroll in course")

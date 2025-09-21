@@ -46,7 +46,7 @@ export default function LandingHeader() {
             <Link href="/login">Sign In</Link>
           </Button>
           <Button className="text-white font-semibold px-5 py-2 rounded-lg shadow-sm transition-transform duration-200 hover:scale-105 brand-btn-primary">
-            Get Started
+            <Link href="/register">Get Started</Link>
           </Button>
         </div>
 

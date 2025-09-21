@@ -269,7 +269,7 @@ const ProfileSettings: React.FC = () => {
               {loading && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               )}
-              Save Changes
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         )}

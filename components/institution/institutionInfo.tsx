@@ -12,6 +12,7 @@ interface CompanyInfoProps {
     location?: string;
     website?: string;
   };
+  emailReadOnly?: boolean;
   profileImage: string | null;
   onChange: (field: string, value: string) => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

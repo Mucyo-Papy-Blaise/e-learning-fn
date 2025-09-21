@@ -71,7 +71,7 @@
                     onOpenChange={(isOpen) => handleOpenChange(lesson._id, isOpen)}
                   >
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="bg-blue-700">
+                      <Button variant="outline" size="sm" className="bg-blue-700 text-white hover:bg-blue-400">
                         <Plus className="h-4 w-4 mr-2" />
                         Add Resource
                       </Button>

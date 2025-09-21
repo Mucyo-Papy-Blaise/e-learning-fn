@@ -7,8 +7,6 @@ export type InstitutionProfile = {
   bio?: string;
   location?: string;
   website?: string;
-  contact_email?: string;
-  contact_phone?: string;
   logo?: string;
   user_id?: {
     _id: string;

@@ -62,12 +62,12 @@ export const DashboardOverview = () => {
     { title: "Assignments Pending", value: 0, icon: Award },
   ]
 
-  const recentActivities = [
-    { action: "New course published", course: "Advanced AI Ethics", time: "2 hours ago", type: "course" },
-    { action: "Student batch completed", course: "Data Science Fundamentals", time: "4 hours ago", type: "completion" },
-    { action: "Instructor added", course: "Machine Learning Basics", time: "1 day ago", type: "instructor" },
-    { action: "Course updated", course: "Cybersecurity Essentials", time: "2 days ago", type: "update" },
-  ]
+  // const recentActivities = [
+  //   { action: "New course published", course: "Advanced AI Ethics", time: "2 hours ago", type: "course" },
+  //   { action: "Student batch completed", course: "Data Science Fundamentals", time: "4 hours ago", type: "completion" },
+  //   { action: "Instructor added", course: "Machine Learning Basics", time: "1 day ago", type: "instructor" },
+  //   { action: "Course updated", course: "Cybersecurity Essentials", time: "2 days ago", type: "update" },
+  // ]
 
   if (loading) {
     return (
@@ -127,7 +127,7 @@ export const DashboardOverview = () => {
           <CardHeader>
             <CardTitle className="text-lg">Recent Activity</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          {/* <CardContent className="space-y-3">
             {recentActivities.map((activity, index) => (
               <div key={index} className="flex items-start gap-3">
                 <div className="p-2 bg-gray-100 rounded-md">
@@ -139,7 +139,7 @@ export const DashboardOverview = () => {
                 </div>
               </div>
             ))}
-          </CardContent>
+          </CardContent> */}
         </Card>
       </div>
     </div>

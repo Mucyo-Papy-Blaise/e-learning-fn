@@ -257,24 +257,6 @@ export default function CreateExamPage() {
                     ))}
                   </select>
                 </div>
-                {/* <div className="space-y-2">
-                  <Label htmlFor="module">Module *</Label>
-                  <select
-                    id="module"
-                    value={(formData as any).module_id || ''}
-                    onChange={(e) => (setFormData(prev => ({ ...prev, ...( { module_id: e.target.value } as any) })))}
-                    className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800"
-                    disabled={!formData.course}
-                    required
-                  >
-                    <option value="">Select a module</option>
-                    {modules.map((m) => (
-                      <option key={m._id} value={m._id}>
-                        {m.title}
-                      </option>
-                    ))}
-                  </select>
-                </div> */}
               </div>
 
               <div className="space-y-2">

@@ -72,7 +72,7 @@ export default function InstitutionSidebar() {
   const { user } = useAuth()
   const [instructors, setInstructors] = useState<Array<{ name: string; email: string; institution?: { id?: string } }>>([])
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-
+  
   useEffect(() => {
     const fetchInstructors = async () => {
       try {

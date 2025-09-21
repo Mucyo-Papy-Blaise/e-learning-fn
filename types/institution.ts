@@ -3,8 +3,6 @@ export interface InstitutionProfile {
   name: string;
   logo?: string;
   bio?: string;
-  contact_email?: string;
-  contact_phone?: string;
 }
 
 export interface InstitutionProfileResponse {

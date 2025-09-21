@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import TiptapEditor from "@/components/ui/TipTap.Editor";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Course {
   _id: string;
@@ -64,6 +65,8 @@ export default function AssignmentForm({
   const [selectedModule, setSelectedModule] = useState<string>("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState<any[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState<boolean>(true)
+  const [loadingModules, setLoadingModules] = useState<boolean>(false)
 
   const [formData, setFormData] = useState({
     title: "",
@@ -81,6 +84,7 @@ export default function AssignmentForm({
   // Load courses on mount
   useEffect(() => {
     const loadCourses = async () => {
+      setLoadingCourses(true);
       try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/instructor/courses`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -91,6 +95,8 @@ export default function AssignmentForm({
         console.error("Failed to load courses:", error);
         toast.error("Failed to load courses");
         setCourses([]);
+      }finally{
+        setLoadingCourses(false)
       }
     };
     loadCourses();
@@ -167,7 +173,7 @@ export default function AssignmentForm({
     if (!preselectedModuleId) setSelectedModule("");
     setModules([]);
     if (!courseId) return;
-
+    setLoadingModules(true);
     try {
       const resp = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/courses/${courseId}/modules`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -180,6 +186,8 @@ export default function AssignmentForm({
       console.error("Failed to load modules:", err);
       toast.error("Failed to load modules");
       setModules([]);
+    }finally{
+      setLoadingModules(false)
     }
   };
 
@@ -320,37 +328,50 @@ export default function AssignmentForm({
             <CardTitle>Course & Module</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="course">Course *</Label>
-              <Select value={selectedCourse} onValueChange={(v) => fetchModulesForCourse(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a course" />
-                </SelectTrigger>
-                <SelectContent>
-                  {courses.map((course) => (
-                    <SelectItem key={course._id} value={course._id}>
-                      {course.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label htmlFor="course">Course *</Label>
+            <Select value={selectedCourse} onValueChange={(v) => fetchModulesForCourse(v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a course" />
+              </SelectTrigger>
+              <SelectContent>
+                {loadingCourses
+                  ? [...Array(3)].map((_, i) => (
+                      <div key={i} className="p-2">
+                        <Skeleton className="h-4 w-40" />
+                      </div>
+                    ))
+                  : courses.map((course) => (
+                      <SelectItem key={course._id} value={course._id}>
+                        {course.title}
+                      </SelectItem>
+                    ))}
+              </SelectContent>
+            </Select>
+        </div>
 
-            <div>
-              <Label htmlFor="module">Module *</Label>
-              <Select value={selectedModule} onValueChange={setSelectedModule} disabled={!selectedCourse}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a module" />
-                </SelectTrigger>
-                <SelectContent>
-                  {modules.map((module) => (
-                    <SelectItem key={module._id} value={module._id}>
-                      {module.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+{/* Module */}
+<div>
+  <Label htmlFor="module">Module *</Label>
+  <Select value={selectedModule} onValueChange={setSelectedModule} disabled={!selectedCourse}>
+    <SelectTrigger>
+      <SelectValue placeholder="Select a module" />
+    </SelectTrigger>
+    <SelectContent>
+      {loadingModules
+        ? [...Array(3)].map((_, i) => (
+            <div key={i} className="p-2">
+              <Skeleton className="h-4 w-36" />
             </div>
+          ))
+        : modules.map((module) => (
+            <SelectItem key={module._id} value={module._id}>
+              {module.title}
+            </SelectItem>
+          ))}
+    </SelectContent>
+  </Select>
+</div>
           </CardContent>
         </Card>
 

@@ -134,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       toast.success("Registration successful. Please verify your email.");
+      window.location.href = '/login'; 
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Registration failed');
     }

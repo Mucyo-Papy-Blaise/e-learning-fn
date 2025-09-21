@@ -6,7 +6,7 @@ import { Providers } from '@/app/provider';
 
 const notoSans = Noto_Sans({
   subsets: ['latin'],
-  weight: ['400', '700'], // ✅ specify weights you want
+  weight: ['400', '700'],
 });
 
 export const metadata: Metadata = {

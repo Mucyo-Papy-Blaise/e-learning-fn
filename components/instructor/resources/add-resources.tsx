@@ -132,7 +132,7 @@ export const AddResourceForm = ({ lessonId, onSuccess }: { lessonId: string, onS
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isLoading} className='bg-blue-700'>
+        <Button type="submit" disabled={isLoading} className='bg-blue-700 text-white'>
           {isLoading ? "Adding..." : "Add Resource"}
         </Button>
       </form>
