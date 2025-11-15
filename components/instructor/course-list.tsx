@@ -23,7 +23,7 @@ const {user,loading} = useAuth()
 
   useEffect(()=>{
      if(!loading && user){
-       if (user.role === 'instructor') {
+       if (user.role === 'instructor' || user.role === 'institution') {
          loadInstructorCourses();
        } else if (user.institution?.id) {
          loadCourses(user.institution.id);

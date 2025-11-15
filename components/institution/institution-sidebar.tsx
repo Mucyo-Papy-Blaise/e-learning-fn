@@ -27,10 +27,10 @@ import { getMyInstitutionProfile } from "@/lib/api/institution"
 
 
 const navigation = [
-  { name: "Dashboard", href: "/instructor", icon: LayoutDashboard, badge: null },
+  { name: "Dashboard", href: "/institution", icon: LayoutDashboard, badge: null },
   {
     name: "Course Management",
-    href: "/instructor/courses",
+    href: "/institution/courses",
     icon: BookOpen,
     badge: null,
     // subItems: [
@@ -42,16 +42,16 @@ const navigation = [
   { name: "Instructors", href: "/institution/instructors", icon: UserCheck, badge: null },
   { 
     name: "Communication", 
-    href: "/instructor/announcements", 
+    href: "/institution/announcements", 
     icon: Bell, 
     badge: null,
     subItems: [
-      { name: "Announcements", href: "/instructor/announcements" },
+      { name: "Announcements", href: "/institution/announcements" },
     ]
   },
   { 
     name: "Student Management", 
-    href: "/instructor/students", 
+    href: "/institution/students", 
     icon: Users, 
     badge: null,
     // subItems: [

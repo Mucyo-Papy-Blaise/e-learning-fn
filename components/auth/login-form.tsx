@@ -111,7 +111,7 @@ export function LoginForm() {
             </div>
           ) : (
             <div className="flex items-center justify-center space-x-2">
-              <span>Create Account</span>
+              <span>Sign In</span>
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </div>
           )}

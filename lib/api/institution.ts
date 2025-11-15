@@ -39,3 +39,14 @@ export async function fetchPublicInstitutions(): Promise<any[]> {
   return [];
 }
 
+export async function fetchInstitutionById(id: string) {
+  const res = await axiosInstance.get(`${API_URL}/api/institutions/${id}`);
+  return res.data;
+}
+
+
+export async function fetchCoursesByInstitution(id: string) {
+  const res = await axiosInstance.get(`${API_URL}/api/institutions/${id}/courses`);
+  return res.data; 
+}
+

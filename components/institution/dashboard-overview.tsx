@@ -77,9 +77,9 @@ export default function InstitutionDashboardOverview() {
   ]
 
   const performanceMetrics = [
-    { title: "Course Completion Rate", value: `${dashboard?.completionRate || 0}%`, change: "+5.2%" },
-    { title: "New Registrations", value: dashboard?.newRegistrations || 0, change: "+12.4%" },
-    { title: "Student Satisfaction", value: "4.8/5", change: "+0.3" },
+    { title: "Course Completion Rate", value: `${dashboard?.completionRate || 0}%`, change: "0.0%" },
+    { title: "New Registrations", value: dashboard?.newRegistrations || 0, change: "0.0%" },
+    // { title: "Student Satisfaction", value: "4.8/5", change: "+0.3" },
   ]
 
   
@@ -106,7 +106,7 @@ export default function InstitutionDashboardOverview() {
           <p className="text-sm text-gray-600">Overview of your educational institution</p>
         </div>
         <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-          <Link href="/institution/instructor/new" className="flex gap-2 items-center">
+          <Link href="/institution/instructors/new" className="flex gap-2 items-center">
           <Plus className="h-4 w-4" />
           Add Instructor
           </Link>
@@ -195,7 +195,7 @@ export default function InstitutionDashboardOverview() {
       </div>
 
       {/* Department Overview */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      {/* <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Department Overview</h2>
           <button className="text-gray-400 hover:text-gray-600">
@@ -257,7 +257,7 @@ export default function InstitutionDashboardOverview() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
