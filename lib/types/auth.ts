@@ -18,7 +18,7 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
-  _id: string
+  _id: string;
   image: string;
   email: string;
   password: string;

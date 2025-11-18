@@ -109,11 +109,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_USER', payload: data.user });
       toast.success("Logged in successfully");
       if (data.user.role === 'student') {
-        window.location.href='/student';  // Redirect to student page
+        window.location.href='/student'; 
       } else if (data.user.role === 'institution' ) {
-        window.location.href='/institution';  // Redirect to Institution page
+        window.location.href='/institution'; 
       }else{
-        window.location.href = '/instructor' //Redirect to instructor page
+        window.location.href = '/instructor'
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');

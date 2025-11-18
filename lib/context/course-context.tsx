@@ -23,7 +23,20 @@ interface CourseState {
 interface CourseContextType extends CourseState {
   loadCourses: (id: string) => Promise<void>;
   loadInstructorCourses: () => Promise<void>;
-  createCourse: (formData:FormData) => Promise<void>;
+  createCourse: (data: {
+    title: string;
+    description: string;
+    price: string;
+    category: string;
+    difficulty_level: string;
+    status: string;
+    prerequisites: string;
+    start_date?: string;
+    end_date?: string;
+    is_certified: boolean;
+    duration_weeks: string;
+    thumbnail?: File | null;
+  }) => Promise<void>;
   loadCourse: (courseId: string) => Promise<void>;
   loadModules: (courseId: string) => Promise<void>;
   createModule: (courseId: string,title:string,description:string,duration_hours:number) => Promise<void>;
@@ -196,15 +209,23 @@ export function CourseProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const createCourse = async (formData: FormData) => {
+  const createCourse = async (data: {
+    title: string;
+    description: string;
+    price: string;
+    category: string;
+    difficulty_level: string;
+    status: string;
+    prerequisites: string;
+    start_date?: string;
+    end_date?: string;
+    is_certified: boolean;
+    duration_weeks: string;
+    thumbnail?: File | null;
+  }) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const response =await courseApi.createCourse(formData)
-      if (!response.ok) {
-        throw new Error('Failed to create course');
-      }
-
-      const newCourse = await response.json();
+      const newCourse = await courseApi.createCourse(data);
       dispatch({ type: 'SET_COURSES', payload: [...state.courses, newCourse] });
       toast({
         title: "Success",

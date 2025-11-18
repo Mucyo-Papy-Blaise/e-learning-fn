@@ -138,20 +138,58 @@ export async function fetchResourcesByLessonId(lessonId: string): Promise<Resour
   }
 }
 
-export async function createCourse(formData: FormData) {
-  try {
-    const response = await axios.post(`${API_URL}/api/courses`, formData,{
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-    showToast('Course created successfully', 'success');
-    return response.data;
-  } catch (error) {
-    showToast('Failed to create course', 'error');
-    throw error;
+export async function createCourse(data: {
+  title: string;
+  description: string;
+  price: string;
+  category: string;
+  difficulty_level: string;
+  status: string;
+  prerequisites: string;
+  start_date?: string;
+  end_date?: string;
+  is_certified: boolean;
+  duration_weeks: string;
+  thumbnail?: File | null;
+}) {
+  const formData = new FormData();
 
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+  formData.append("price", String(Number(data.price) || 0));
+  formData.append("category", data.category);
+  formData.append("difficulty_level", data.difficulty_level);
+  formData.append("status", data.status);
+
+  if (data.prerequisites.trim()) {
+    formData.append(
+      "prerequisites",
+      JSON.stringify(
+        data.prerequisites
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      )
+    );
   }
+
+  if (data.start_date) formData.append("start_date", data.start_date);
+  if (data.end_date) formData.append("end_date", data.end_date);
+
+  formData.append("is_certified", String(Boolean(data.is_certified)));
+  formData.append("duration_weeks", String(Number(data.duration_weeks) || 0));
+
+  if (data.thumbnail instanceof File) {
+    formData.append("thumbnail", data.thumbnail);
+  }
+
+  const response = await axios.post(`${API_URL}/api/courses`, formData, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+
+  return response.data;
 }
 
 export async function createModule(course_id: string, title: string, description: string, duration_hours: number) {
@@ -276,6 +314,7 @@ export async function deleteCourse(courseId: string) {
     throw error;
   }
 }
+
 
 // Publish course
 export async function publishCourse(courseId: string) {

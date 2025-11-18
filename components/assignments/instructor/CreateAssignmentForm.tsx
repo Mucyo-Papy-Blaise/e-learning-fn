@@ -132,6 +132,7 @@ export default function AssignmentForm({
     };
 
     loadAssignment();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assignmentId, isEditing, initialData, router]);
 
   const populateFormData = (assignment: Assignment) => {

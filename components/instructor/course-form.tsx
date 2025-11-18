@@ -3,22 +3,8 @@
 import { useState } from "react";
 import { BookOpen, Loader, Award, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
-
-interface CourseFormState {
-  title: string;
-  description: string;
-  price: string;
-  category: string;
-  difficulty_level: "beginner" | "intermediate" | "advanced";
-  status: "draft" | "published";
-  prerequisites: string;
-  start_date: string;
-  end_date: string;
-  is_certified: boolean;
-  duration_weeks: string;
-}
+import { CourseFormState } from "@/types/course.types";
+import { createCourse } from "@/lib/api/courses";
 
 export default function CourseForm() {
   const { toast } = useToast();
@@ -58,78 +44,54 @@ export default function CourseForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    try {
-      const token = localStorage.getItem("token");
-      const body = new FormData();
-      body.append("title", formState.title);
-      body.append("description", formState.description);
-      body.append("price", String(Number(formState.price) || 0));
-      body.append("category", formState.category);
-      body.append("difficulty_level", formState.difficulty_level);
-      body.append("status", formState.status);
-      if (formState.prerequisites.trim()) {
-        // Backend expects prerequisites[]; send as JSON string or repeated field; use JSON string
-        body.append("prerequisites", JSON.stringify(
-          formState.prerequisites
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean)
-        ));
-      }
-      if (formState.start_date) body.append("start_date", formState.start_date);
-      if (formState.end_date) body.append("end_date", formState.end_date);
-      body.append("is_certified", String(Boolean(formState.is_certified)));
-      body.append("duration_weeks", String(Number(formState.duration_weeks) || 0));
-      if (thumbnailFile) body.append("thumbnail", thumbnailFile);
+  try {
+    await createCourse({
+      title: formState.title,
+      description: formState.description,
+      price: formState.price,
+      category: formState.category,
+      difficulty_level: formState.difficulty_level,
+      status: formState.status,
+      prerequisites: formState.prerequisites,
+      start_date: formState.start_date,
+      end_date: formState.end_date,
+      is_certified: formState.is_certified,
+      duration_weeks: formState.duration_weeks,
+      thumbnail: thumbnailFile,
+    });
 
-      const res = await fetch(`${API_URL}/api/courses`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body,
-      });
+    toast({
+      title: "Success",
+      description: "Course created successfully!",
+    });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        toast({
-          title: "Failed",
-          description: err.message || "Failed to create course.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Course created successfully!",
-        });
-        setFormState({
-          title: "",
-          description: "",
-          price: "",
-          category: "",
-          difficulty_level: "beginner",
-          status: "draft",
-          prerequisites: "",
-          start_date: "",
-          end_date: "",
-          is_certified: false,
-          duration_weeks: "",
-        });
-        setThumbnailFile(null);
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    setFormState({
+      title: "",
+      description: "",
+      price: "",
+      category: "",
+      difficulty_level: "beginner",
+      status: "draft",
+      prerequisites: "",
+      start_date: "",
+      end_date: "",
+      is_certified: false,
+      duration_weeks: "",
+    });
+    setThumbnailFile(null);
+  } catch (error) {
+    toast({
+      title: "Failed",
+      description: "Could not create course.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-xl p-8">

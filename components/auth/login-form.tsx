@@ -31,12 +31,7 @@ export function LoginForm() {
     <div className="w-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Create an account</h1>
-        <p className="text-slate-400">Already have an account? 
-          <Link href="/login" className="text-blue-400 hover:text-blue-300 ml-1 underline">
-            Sign in here
-          </Link>
-        </p>
+        <h1 className="text-3xl font-bold text-white mb-2">Login into account</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

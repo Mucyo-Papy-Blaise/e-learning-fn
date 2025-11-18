@@ -4,30 +4,8 @@ import React, { useState, ChangeEvent, KeyboardEvent, useEffect } from 'react';
 import { Camera, Plus, X, User, Mail, Phone, Lock, Briefcase, FileText, ExternalLink, Shield } from 'lucide-react';
 import { getMyInstructorProfile, updateInstructorAccount, updateMyInstructorProfile } from "@/lib/api/instructors";
 import { toast } from 'react-toastify';
+import { SocialLinks, PersonalData, SecurityData, TabType } from '@/types/profile.types';
 
-interface SocialLinks {
-  linkedin: string;
-  twitter: string;
-  github: string;
-}
-
-interface PersonalData {
-  name: string;
-  email: string;
-  phone: string;
-  profession_name: string;
-  bio: string;
-  expertise: string[];
-  social_links: SocialLinks;
-}
-
-interface SecurityData {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
-type TabType = 'personal' | 'security';
 
 const EditInstructorProfile = () => {
   const [activeTab, setActiveTab] = useState<TabType>('personal');

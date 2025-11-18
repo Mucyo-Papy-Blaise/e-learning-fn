@@ -24,14 +24,8 @@ import {
 } from "@/components/ui/select"
 import { uploadResource } from '@/lib/api/resources'
 import { toast } from 'react-toastify'
+import { formSchema } from '@/types/schemas/file.schema'
 
-const formSchema = z.object({
-  title: z.string().min(2, {
-    message: "Title must be at least 2 characters.",
-  }),
-  resource_type: z.enum(['pdf', 'doc', 'video', 'audio', 'other']),
-  file: z.instanceof(File),
-})
 
 export const AddResourceForm = ({ lessonId, onSuccess }: { lessonId: string, onSuccess: () => void })=> {
   const [isLoading, setIsLoading] = useState(false)

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
-import { fetchInstructorDashboard } from "@/lib/api/instructor"
+import { fetchInstructorDashboard } from "@/lib/api/instructors"
 import {
   BookOpen,
   Users,
