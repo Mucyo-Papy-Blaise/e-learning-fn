@@ -1,8 +1,8 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Calendar as UiCalendar } from '@/components/ui/calendar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { fetchStudentCalendar } from '@/lib/api/student'
+import { useStudentCalendar } from '@/lib/hooks/student'
 
 type CalendarItem = {
   id?: string
@@ -15,20 +15,12 @@ type CalendarItem = {
 }
 
 export default function StudentCalendarPage() {
-  const [items, setItems] = useState<CalendarItem[]>([])
+  const { data: calendarData = [] } = useStudentCalendar()
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await fetchStudentCalendar()
-        setItems(Array.isArray(data) ? data : [])
-      } catch {
-        setItems([])
-      }
-    }
-    load()
-  }, [])
+  const items = useMemo(() => {
+    return Array.isArray(calendarData) ? calendarData : []
+  }, [calendarData])
 
   const itemsByDay = useMemo(() => {
     const map = new Map<string, CalendarItem[]>()

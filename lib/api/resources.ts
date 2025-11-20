@@ -1,14 +1,11 @@
-import axios from 'axios';
-
-export const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { API_URL, getAuthHeaders } from './config';
 
 export async function fetchResourcesByLessonId(lessonId: string) {
-  const response = await axios.get(`${API_URL}/api/resources/${lessonId}`, {
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`,
-    },
+  const response = await fetch(`${API_URL}/api/resources/${lessonId}`, {
+    headers: getAuthHeaders(),
   });
-  return response.data;
+  if (!response.ok) throw new Error('Failed to fetch resources');
+  return response.json();
 }
 
 export async function uploadResource(

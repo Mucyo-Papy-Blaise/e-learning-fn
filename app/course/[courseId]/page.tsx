@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   Users,
   Star,
-  Clock,
   ArrowLeft,
   BookOpen,
   Award,

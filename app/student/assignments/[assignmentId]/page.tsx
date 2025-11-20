@@ -1,108 +1,20 @@
 'use client'
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import axios from "axios"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, AlertCircle } from 'lucide-react';
-import { toast } from "react-toastify"; // react-toastify
 import { SubmissionForm } from "@/components/assignments/SubmissionForm";
+import { useAssignment, useMyAssignmentSubmission } from "@/lib/hooks/assignments";
 
-interface Assignment {
-  _id: string;
-  course_id: { _id: string; title: string };
-  module_id: { _id: string; title: string };
-  title: string;
-  description: string;
-  dueDate: string;              
-  availableAfter: string;
-  points: number;
-  submissionType: string;
-  allowedAttempts: number;
-  status: string;
-  isAnonymous: boolean;
-  peerReviewEnabled: boolean;
-  plagiarismCheckEnabled: boolean;
-  instructions: string;
-  attachments: string[];
-  rubric: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Submission {
-  _id: string;
-  content: string;
-  file_url?: string;
-  score?: number;
-  feedback?: string;
-  status: 'pending' | 'graded' | 'late';
-  submitted_at: string;
-}
 
 export default function AssignmentPage() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL 
   const { assignmentId } = useParams() as { assignmentId: string };
-  const [assignment, setAssignment] = useState<Assignment | null>(null);
-  const [submission, setSubmission] = useState<Submission | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: assignment, isLoading, error } = useAssignment(assignmentId);
+  const { data: submission } = useMyAssignmentSubmission(assignment?._id);
 
-  const fetchData = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  if (isLoading) return <div>Loading...</div>;
+  if (error || !assignment) return <div>Assignment not found</div>;
 
-      const assignmentRes = await axios.get(`${API_URL}/api/assignments/${assignmentId}`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      setAssignment(assignmentRes.data);
-
-      const submissionRes = await axios.get(`${API_URL}/api/assignments/${assignmentRes.data._id}/submissions/me`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-
-      const subs = Array.isArray(submissionRes.data)
-        ? submissionRes.data
-        : Array.isArray(submissionRes.data?.submissions)
-          ? submissionRes.data.submissions
-          : [];
-
-      if (subs && subs.length > 0) {
-        setSubmission(subs[0]);
-      }
-    } catch (error) {
-      toast.error("Failed to load assignment or submission");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assignmentId]);
-
-  const handleSubmissionSuccess = async (assignment_id: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const submissionRes = await axios.get(`${API_URL}/api/assignments/${assignment_id}/submissions/me`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      const subs = Array.isArray(submissionRes.data)
-        ? submissionRes.data
-        : Array.isArray(submissionRes.data?.submissions)
-          ? submissionRes.data.submissions
-          : [];
-      if (subs && subs.length > 0) {
-        setSubmission(subs[0]);
-      }
-    } catch {
-      // silent
-    }
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (!assignment) return <div>Assignment not found</div>;
-
-  const dueDate = new Date(assignment.dueDate); // ✅ corrected key
+  const dueDate = new Date(assignment.dueDate); 
   const isOverdue = dueDate < new Date();
 
   return (
@@ -176,7 +88,7 @@ export default function AssignmentPage() {
                   requiresFile={assignment.submissionType === "file"}
                   allowsText={assignment.submissionType === "text" || assignment.submissionType === "multiple"}
                   allowsFile={assignment.submissionType === "file" || assignment.submissionType === "multiple"}
-                  onSubmit={() => handleSubmissionSuccess(assignment._id)}
+                  onSubmit={() => {}}
                 />
               )}
             </CardContent>
@@ -189,7 +101,7 @@ export default function AssignmentPage() {
               <CardTitle className="text-blue-700">Rubric</CardTitle>
             </CardHeader>
             <CardContent>
-              {assignment.rubric.split("\n").map((line, index) => (
+              {assignment.rubric.split("\n").map((line: any, index: any) => (
                 <p key={index}>{line}</p>
               ))}
             </CardContent>

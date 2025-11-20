@@ -1,8 +1,7 @@
 "use client"
 
-import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
-import { API_URL } from '@/lib/api/student';
+import React, { useMemo, useState } from 'react';
+import { useResourcesByCourse } from '@/lib/hooks/resources/useResourcesByCourse';
 import { 
   Download, 
   Eye, 
@@ -36,44 +35,24 @@ export default function ResourcesPage({ params }: { params: { courseId: string }
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
-  const [resources, setResources] = useState<FileResource[]>([]);
-
-  // Load resources by fetching modules -> lessons -> resources
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const modulesRes = await fetch(`${API_URL}/api/courses/${courseId}/modules`);
-        const modules = await modulesRes.json();
-        const lessons: any[] = (modules || []).flatMap((m: any) => m.lessons || []);
-        // Fetch resources for each lesson in parallel
-        const resourceLists = await Promise.all(
-          lessons.map(async (lesson: any) => {
-            try {
-              const res = await fetch(`${API_URL}/api/resources/${lesson._id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-              });
-              const data = await res.json();
-              return (Array.isArray(data) ? data : []).map((r: any) => ({
-                id: String(r._id),
-                name: r.title || r.file_url?.split('/')?.pop() || 'Resource',
-                type: (r.resource_type || 'other') as FileResource['type'],
-                size: r.file_size || 0,
-                uploadedBy: r.lesson_id?.module_id?.course_id?.instructor_id?.name || 'Instructor',
-                uploadedAt: r.created_at || new Date().toISOString(),
-                course: '',
-                category: 'reference',
-                url: r.file_url || '#',
-              } as FileResource));
-            } catch { return []; }
-          })
-        );
-        setResources(resourceLists.flat());
-      } catch {
-        setResources([]);
-      }
-    };
-    load();
-  }, [courseId]);
+  
+  // Load all resources for the course
+  const { data: resourcesData = [], isLoading } = useResourcesByCourse(courseId);
+  
+  // Transform resources to FileResource format
+  const resources = useMemo(() => {
+    return (resourcesData || []).map((r: any) => ({
+      id: String(r._id),
+      name: r.title || r.file_url?.split('/')?.pop() || 'Resource',
+      type: (r.resource_type || 'other') as FileResource['type'],
+      size: r.file_size || 0,
+      uploadedBy: 'Instructor',
+      uploadedAt: r.created_at || new Date().toISOString(),
+      course: '',
+      category: 'reference' as const,
+      url: r.file_url || '#',
+    } as FileResource));
+  }, [resourcesData]);
 
   const getFileIcon = (type: string) => {
     switch (type) {
