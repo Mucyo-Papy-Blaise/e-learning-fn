@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Clock, Award, BookMarked, X, Search, Bell, Calendar, CheckCircle, AlertCircle, MessageSquare, Megaphone, Target, PlayCircle, FileText, Users, TrendingUp, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { IEnrollment } from "@/types/education";
 import { useEducation } from "@/context/educationContext";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,7 @@ function DashboardOverview() {
   const { data: dashboardData, isLoading, error } = useStudentDashboard();
   const { data: notificationsData } = useStudentNotifications();
   const { data: calendarData } = useStudentCalendar();
+  const [modalOpen ,setModalOpen] = useState(false);
 
   // Normalize dashboard data
   const dashboard = useMemo(() => {
@@ -118,7 +119,7 @@ function DashboardOverview() {
           <h3 className="text-xl font-bold text-gray-900 mb-3">
             Oops! Something went wrong
           </h3>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className="text-gray-600 mb-6">{error instanceof Error ? error.message : String(error)}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors duration-200 font-medium"

@@ -1,4 +1,5 @@
 import { API_URL, getAuthHeaders } from './config';
+import axiosInstance from '../axios';
 
 export async function fetchResourcesByLessonId(lessonId: string) {
   const response = await fetch(`${API_URL}/api/resources/${lessonId}`, {
@@ -20,7 +21,7 @@ export async function uploadResource(
   formData.append('file', file);
   formData.append('lesson_id', lessonId);
 
-  const response = await axios.post(`${API_URL}/api/resources`, formData, {
+  const response = await axiosInstance.post(`${API_URL}/api/resources`, formData, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('token')}`,
     },

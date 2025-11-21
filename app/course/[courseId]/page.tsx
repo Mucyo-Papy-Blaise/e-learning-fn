@@ -174,9 +174,18 @@ export default function CourseDetailPage() {
             <Card className="mb-6">
               <CardContent className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">About this course</h2>
-                <div 
-                  className="prose max-w-none"
-                  dangerouslySetInnerHTML={{ __html: course.description }}
+                <div
+                  className="prose prose-xl max-w-none 
+                    prose-headings:text-gray-900 prose-headings:font-bold
+                    prose-p:text-gray-700 prose-p:leading-relaxed
+                    prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-gray-900 prose-strong:font-semibold
+                    prose-ul:text-gray-700 prose-ol:text-gray-700
+                    prose-blockquote:border-l-primary prose-blockquote:bg-purple-50/50 prose-blockquote:py-2
+                    prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded"
+                  dangerouslySetInnerHTML={{
+                    __html: course.description || '<p class="text-gray-500 italic text-center py-8">No content available</p>',
+                  }}
                 />
               </CardContent>
             </Card>

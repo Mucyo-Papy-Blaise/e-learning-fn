@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import TiptapEditor from "@/components/ui/TipTap.Editor"
-import { FileText, Upload, Send, ArrowLeft, Calendar, Clock, Award } from "lucide-react"
+import { TiptapEditor } from "@/components/ui/editor"
+import { FileText, Send, ArrowLeft, Calendar, Clock, Award } from "lucide-react"
 import { toast } from "react-toastify"
 import { useAssignment, useMyAssignmentSubmission, useSubmitAssignment } from "@/lib/hooks/assignments"
-import { Assignment, AssignmentSubmission } from "@/types/shared/assignment.types"
 
 export default function SubmitAssignmentPage() {
   const router = useRouter()

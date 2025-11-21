@@ -87,32 +87,20 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
 
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6 lg:flex-row">
         <div className="flex flex-1 flex-col gap-6">
-          {courseModules.map((module, index) => (
-            <div key={module.id} className="rounded-md border border-gray-200 bg-white shadow-sm">
-              <div 
-                className="flex w-full items-center justify-between p-4 text-left font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
-                onClick={() => toggleModule(module.id)}
-              >
-                <div className="flex items-center gap-2">
-                  {openModules[module.id] ? (
-                    <ChevronDown className="h-4 w-4 transition-transform" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 transition-transform" />
-                  )}
+          {courseModules.map((module, index) => {
+            const moduleKey = `${module.id}-${index}`;
+            return (
+              <div key={moduleKey} className="rounded-md border border-gray-200 bg-white shadow-sm">
+                <div
+                  className="flex w-full items-center p-4 text-left font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
+                  onClick={() => toggleModule(moduleKey)}
+                >
+                  {openModules[moduleKey] ? <ChevronDown /> : <ChevronRight />}
                   <span>{module.title}</span>
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  {module.prerequisites && <span className="text-xs">Prerequisites: {module.prerequisites}</span>}
-                  {module.id === "course-evaluation" && (
-                    <Button variant="outline" className="h-7 text-xs bg-transparent border-gray-300">
-                      Complete One Item
-                    </Button>
-                  )}
-                </div>
-              </div>
-              
-              {openModules[module.id] && (
-                <div className="border-t border-gray-200 bg-gray-50 p-4">
+            
+                {openModules[moduleKey] && (
+                  <div className="border-t border-gray-200 bg-gray-50 p-4">
                   <div className="space-y-2">
                     {(module.items || module.lessons || []).map((item: any, itemIndex: number) => (
                       <div 
@@ -137,9 +125,10 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Right sidebar for "To Do" and "Recent Feedback" */}

@@ -39,7 +39,17 @@ export default function AssignmentPage() {
               <div className="prose max-w-none dark:prose-invert">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Assignment Description</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: assignment.description || '' }} />
+                  <div className="prose max-w-none
+                    prose-headings:text-gray-900 prose-headings:font-bold
+                    prose-p:text-gray-700 prose-p:leading-relaxed
+                    prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-gray-900 prose-strong:font-semibold
+                    prose-ul:text-gray-700 prose-ol:text-gray-700
+                    prose-blockquote:border-l-primary prose-blockquote:bg-purple-50/50 prose-blockquote:py-2
+                    prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded
+                  " 
+                  dangerouslySetInnerHTML={{ __html: assignment.description || '' }} 
+                  />
                 </div>
               </div>
 
@@ -56,8 +66,18 @@ export default function AssignmentPage() {
                     <CardTitle>Your Submission</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="prose max-w-none dark:prose-invert">
-                      <div dangerouslySetInnerHTML={{ __html: submission.content }} />
+                    <div className="prose max-w-none dark:prose-invert
+                      prose-headings:text-gray-900 prose-headings:font-bold
+                      prose-p:text-gray-700 prose-p:leading-relaxed
+                      prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                      prose-strong:text-gray-900 prose-strong:font-semibold
+                      prose-ul:text-gray-700 prose-ol:text-gray-700
+                      prose-blockquote:border-l-primary prose-blockquote:bg-purple-50/50 prose-blockquote:py-2
+                      prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded
+                    ">
+                      <div dangerouslySetInnerHTML={{ __html: submission.content }} 
+                      
+                      />
                     </div>
                     {submission.file_url && (
                       <a

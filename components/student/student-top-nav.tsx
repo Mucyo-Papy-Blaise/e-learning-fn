@@ -5,7 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Search } from "lucide-react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState, useEffect } from "react"
 import {
@@ -17,8 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-// ✅ Make sure this path is correct for your project
+import { useAuth } from "@/lib/hooks/use-auth"
 import { getMyStudentProfile } from "@/lib/api/student"
 
 function getTitleFromPath(pathname: string): string {
@@ -38,33 +36,46 @@ function getTitleFromPath(pathname: string): string {
 export default function StudentTopNav() {
   const pathname = usePathname()
   const title = getTitleFromPath(pathname)
+
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [name, setName] = useState<string>("")
+  const [email, setEmail] = useState<string>("")
+
+  const { logout } = useAuth()
 
   useEffect(() => {
     const load = async () => {
       try {
         const res = await getMyStudentProfile()
 
-        // Adjust field depending on API
-        let url = res?.student?.profile_image || res?.student?.avatarUrl || null
+        let url =
+          res?.student?.profile_image ||
+          res?.student?.avatarUrl ||
+          null
 
-        // If backend sends relative path, prepend API URL
+        let name = res?.student?.user_id?.name || "Student"
+        let email = res?.student?.user_id?.email || ""
+
         if (url && url.startsWith("/")) {
           url = `${process.env.NEXT_PUBLIC_API_URL}${url}`
         }
 
         setAvatarUrl(url)
+        setName(name)
+        setEmail(email)
       } catch (error) {
         console.error("Failed to load student profile:", error)
       }
     }
+
     load()
   }, [])
 
   return (
     <div className="sticky top-0 z-40 w-full border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="mx-auto flex h-12 w-full max-w-6xl items-center gap-1 px-2 sm:h-14 sm:gap-3 sm:px-3">
-        {/* Left section */}
+      <div className="mx-auto flex h-12 w-full max-w-6xl items-center px-2 sm:h-14 sm:px-3">
+
+        {/* LEFT SIDE */}
         <div className="flex items-center gap-1 sm:gap-2">
           <SidebarTrigger className="h-8 w-8 sm:h-9 sm:w-9" />
           <span className="hidden text-sm font-medium text-gray-800 sm:inline lg:text-base">
@@ -72,7 +83,7 @@ export default function StudentTopNav() {
           </span>
         </div>
 
-        {/* Center section - Mobile search */}
+        {/* CENTER SEARCH (MOBILE) */}
         <div className="flex-1 mx-2 sm:hidden">
           <div className="flex items-center gap-2 rounded-md border bg-white px-2 py-1">
             <Search className="h-4 w-4 text-gray-500 flex-shrink-0" />
@@ -83,9 +94,10 @@ export default function StudentTopNav() {
           </div>
         </div>
 
-        {/* Right section */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {/* Desktop search box */}
+        {/* RIGHT SIDE — pushed to far right */}
+        <div className="ml-auto flex items-center gap-3">
+
+          {/* DESKTOP SEARCH */}
           <div className="hidden sm:flex min-w-[200px] lg:min-w-[240px] items-center gap-2 rounded-md border bg-white px-2">
             <Search className="h-4 w-4 text-gray-500 flex-shrink-0" />
             <Input
@@ -94,32 +106,55 @@ export default function StudentTopNav() {
             />
           </div>
 
-          {/* User dropdown */}
+          {/* USER DROPDOWN */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="inline-flex items-center rounded-full outline-none ring-0 focus-visible:ring-2 focus-visible:ring-blue-300 transition-all duration-200 hover:scale-105">
-                <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+              <button className="inline-flex items-center gap-3 rounded-full outline-none ring-0 focus-visible:ring-2 focus-visible:ring-blue-300 transition-all duration-200 hover:scale-105">
+
+                {/* Avatar */}
+                <Avatar className="h-8 w-8">
                   <AvatarImage src={avatarUrl || undefined} alt="Profile" />
-                  <AvatarFallback className="text-xs sm:text-sm">ST</AvatarFallback>
+                  <AvatarFallback className="text-xs">ST</AvatarFallback>
                 </Avatar>
+
+                {/* Name + Email */}
+                <div className="hidden sm:flex flex-col text-left leading-tight">
+                  <span className="text-[13px] font-semibold text-gray-800">
+                    {name}
+                  </span>
+                  <span className="text-[11px] text-gray-500">
+                    {email}
+                  </span>
+                </div>
+
               </button>
             </DropdownMenuTrigger>
+
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
+
               <DropdownMenuItem asChild>
                 <Link href="/student/account">Account</Link>
               </DropdownMenuItem>
+
               <DropdownMenuItem asChild>
                 <Link href="/student/calendar">Calendar</Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+
               <DropdownMenuItem asChild>
-                <Link href="/login">Sign out</Link>
+                <Link href="/">Back Home</Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem onClick={logout}>
+                Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
       </div>
     </div>
   )

@@ -1,21 +1,14 @@
-// Auth
-export * from './auth';
+// index.ts (or api/index.ts)
 
-// Student APIs
-export * from './student';
+// ANNOUNCEMENTS — alias conflicting exports
+export {
+  getCourseAnnouncements,
+  createAnnouncement,
+  updateAnnouncement,
+  deleteAnnouncementApi,
+  markAnnouncementRead
+} from './announcements';
 
-// Instructor APIs
-export * from './instructor';
-
-// Institution APIs
-export * from './institution';
-
-// Shared APIs
-export * from './shared';
-
-// Legacy APIs (to be migrated gradually)
-export * from './courses';
-export * from './announcements';
 export * from './resources';
 export * from './progress';
 export * from './public';
