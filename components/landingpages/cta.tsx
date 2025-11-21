@@ -15,7 +15,7 @@ export default function LandingCta() {
             <span className="text-white">Adventure Today</span>
           </h2>
           <p className="text-xl text-white/90 leading-relaxed">
-            Join millions of learners worldwide and unlock your potential with courses from the world's best institutions.
+            Join millions of learners worldwide and unlock your potential with courses from the world{"'"}s best institutions.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">

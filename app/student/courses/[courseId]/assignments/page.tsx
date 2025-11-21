@@ -3,8 +3,7 @@
 import { ClipboardList, Calendar, Clock, CheckCircle, Circle, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
-import axios from "axios"
+import { useAssignmentsByCourse } from "@/lib/hooks/assignments"
 
 interface AssignmentItem {
   priority: string
@@ -19,23 +18,7 @@ interface AssignmentItem {
 
 export default function CourseAssignmentsPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
-  const API_URL = process.env.NEXT_PUBLIC_API_URL
-  const [assignmentsData, setAssignmentsData] = useState<AssignmentItem[]>([])
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/assignments/course/${courseId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        })
-        const items = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.assignments) ? res.data.assignments : [])
-        setAssignmentsData(items)
-      } catch {
-        setAssignmentsData([])
-      }
-    }
-    load()
-  }, [API_URL, courseId])
+  const { data: assignmentsData = [], isLoading } = useAssignmentsByCourse(courseId)
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

@@ -167,7 +167,17 @@ export default function InstructorAssignmentDetailPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: assignment.description || '' }} />
+              <div className="prose max-w-none
+                prose-headings:text-gray-900 prose-headings:font-bold
+                prose-p:text-gray-700 prose-p:leading-relaxed
+                prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-gray-900 prose-strong:font-semibold
+                prose-ul:text-gray-700 prose-ol:text-gray-700
+                prose-blockquote:border-l-primary prose-blockquote:bg-purple-50/50 prose-blockquote:py-2
+                prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded
+              " 
+              dangerouslySetInnerHTML={{ __html: assignment.description || '' }} 
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>

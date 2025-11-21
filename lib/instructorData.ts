@@ -45,9 +45,18 @@ export interface Announcement extends AnnouncementInput {
 
 // In-memory stores (mock DB)
 export const users: User[] = [
-  { _id: "u1", email: "alice@example.com", name: "Alice Instructor", institution: { name: "Demo U", id: "i1" }, role: "instructor" },
-  { _id: "s1", email: "stud1@example.com", name: "Student One", institution: { name: "Demo U", id: "i1" }, role: "student" },
-  { _id: "s2", email: "stud2@example.com", name: "Student Two", institution: { name: "Demo U", id: "i1" }, role: "student" },
+  {
+    _id: "u1", email: "alice@example.com", name: "Alice Instructor", institution: { name: "Demo U", id: "i1" }, role: "instructor",
+    image: ""
+  },
+  {
+    _id: "s1", email: "stud1@example.com", name: "Student One", institution: { name: "Demo U", id: "i1" }, role: "student",
+    image: ""
+  },
+  {
+    _id: "s2", email: "stud2@example.com", name: "Student Two", institution: { name: "Demo U", id: "i1" }, role: "student",
+    image: ""
+  },
 ];
 
 export const courses: Course[] = [

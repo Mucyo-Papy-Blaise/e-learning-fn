@@ -20,10 +20,10 @@ export default function RegisterPage() {
           {/* Content overlay */}
           <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white h-full">
             <div className="space-y-4 max-w-md">
-              <h1 className="text-5xl font-bold leading-tight">
+              <h1 className="text-5xl font-bold leading-tight text-white">
                 Welcome E-Learning
                 <br />
-                <span className="text-4xl font-light">Start Your Journey</span>
+                <span className="text-4xl font-light text-white">Start Your Journey</span>
               </h1>
             </div>
           </div>

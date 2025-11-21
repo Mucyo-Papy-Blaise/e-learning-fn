@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Lock, Eye, EyeOff, Shield } from "lucide-react";
-import { updatePassword } from "@/lib/api/student"; 
+import { updateStudentPassword } from "@/lib/api/student"; 
 import {toast} from "react-toastify"
 
 type PasswordField = "oldPassword" | "newPassword" | "confirmPassword";
@@ -68,7 +68,7 @@ const Security: React.FC = () => {
 
     try {
       setLoading(true);
-      await updatePassword({
+      await updateStudentPassword({
         oldPassword: passwordData.oldPassword,
         newPassword: passwordData.newPassword,
       });

@@ -20,7 +20,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { useEffect } from "react"
-import { getMyInstructorProfile } from "@/lib/api/instructors"
+import { getMyInstructorProfile } from "@/lib/api/instructor/profile"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 

@@ -1,96 +1,34 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import TiptapEditor from "@/components/ui/TipTap.Editor"
-import { FileText, Upload, Send, ArrowLeft, Calendar, Clock, Award } from "lucide-react"
+import { TiptapEditor } from "@/components/ui/editor"
+import { FileText, Send, ArrowLeft, Calendar, Clock, Award } from "lucide-react"
 import { toast } from "react-toastify"
-import axios from "axios"
-
-interface Assignment {
-  _id: string
-  title: string
-  description: string
-  instructions: string
-  dueDate: string
-  availableAfter: string
-  points: number
-  submissionType: string
-  allowedAttempts: number
-  status: string
-  course_id: {
-    _id: string
-    title: string
-  }
-  module_id: {
-    _id: string
-    title: string
-  }
-}
-
-interface Submission {
-  _id: string
-  content: string
-  file_url?: string
-  status: string
-  submitted_at: string
-  grade?: number
-  feedback?: string
-}
+import { useAssignment, useMyAssignmentSubmission, useSubmitAssignment } from "@/lib/hooks/assignments"
 
 export default function SubmitAssignmentPage() {
   const router = useRouter()
   const params = useParams()
   const assignmentId = params.assignmentId as string
   
-  const [loading, setLoading] = useState(false)
-  const [assignment, setAssignment] = useState<Assignment | null>(null)
-  const [existingSubmission, setExistingSubmission] = useState<Submission | null>(null)
-  const [submissionContent, setSubmissionContent] = useState("")
+  // React Query hooks
+  const { data: assignment, isLoading: loadingAssignment, error: assignmentError } = useAssignment(assignmentId)
+  const { data: existingSubmission } = useMyAssignmentSubmission(assignmentId)
+  const submitMutation = useSubmitAssignment()
+  
+  const [submissionContent, setSubmissionContent] = useState(existingSubmission?.content || "")
   const [submissionFile, setSubmissionFile] = useState<File | null>(null)
-  const [attempts, setAttempts] = useState(0)
+  const attempts = existingSubmission ? 1 : 0
 
-  useEffect(() => {
-    const loadAssignment = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/assignments/${assignmentId}`,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-          }
-        )
-        setAssignment(response.data)
-      } catch (error) {
-        toast.error("Failed to load assignment")
-        router.push("/student/assignments")
-      }
-    }
-
-    const loadExistingSubmission = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/assignments/${assignmentId}/submissions/me`,
-          {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-          }
-        )
-        if (response.data) {
-          setExistingSubmission(response.data)
-          setSubmissionContent(response.data.content || "")
-          setAttempts(1) // Assuming one attempt if submission exists
-        }
-      } catch (error) {
-        // No existing submission, which is fine
-      }
-    }
-
-    loadAssignment()
-    loadExistingSubmission()
-  }, [assignmentId, router])
+  if (assignmentError) {
+    toast.error("Failed to load assignment")
+    router.push("/student/assignments")
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -105,7 +43,7 @@ export default function SubmitAssignmentPage() {
     if (!assignment) return
 
     // Check if assignment allows more attempts
-    if (existingSubmission && attempts >= assignment.allowedAttempts) {
+    if (existingSubmission && attempts >= (assignment.allowedAttempts || 1)) {
       toast.error("Maximum attempts reached for this assignment")
       return
     }
@@ -118,41 +56,37 @@ export default function SubmitAssignmentPage() {
       return
     }
 
-    setLoading(true)
-    try {
-      const formData = new FormData()
-      
-      // Add submission content
-      formData.append("content", submissionContent)
-      formData.append("courseId", assignment.course_id._id)
-      
-      // Add file if provided and assignment allows it
-      if (submissionFile && (assignment.submissionType === "file" || assignment.submissionType === "multiple")) {
-        formData.append("file", submissionFile)
-      }
-
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/assignments/${assignmentId}/submit`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        }
-      )
-
-      toast.success("Assignment submitted successfully!")
-      router.push("/student/assignments")
-    } catch (error) {
-      console.error("Error submitting assignment:", error)
-      toast.error("Failed to submit assignment")
-    } finally {
-      setLoading(false)
+    const formData = new FormData()
+    
+    // Add submission content
+    formData.append("content", submissionContent)
+    const courseId = typeof assignment.course_id === 'object' 
+      ? assignment.course_id._id 
+      : assignment.course_id
+    if (courseId) {
+      formData.append("courseId", courseId)
     }
+    
+    // Add file if provided and assignment allows it
+    if (submissionFile && (assignment.submissionType === "file" || assignment.submissionType === "multiple")) {
+      formData.append("file", submissionFile)
+    }
+
+    submitMutation.mutate(
+      { assignmentId, formData },
+      {
+        onSuccess: () => {
+          toast.success("Assignment submitted successfully!")
+          router.push("/student/assignments")
+        },
+        onError: (error: Error) => {
+          toast.error(error.message || "Failed to submit assignment")
+        },
+      }
+    )
   }
 
-  if (!assignment) {
+  if (loadingAssignment || !assignment) {
     return (
       <div className="container mx-auto py-6 max-w-4xl">
         <div className="text-center">Loading assignment...</div>
@@ -233,7 +167,7 @@ export default function SubmitAssignmentPage() {
               {!isAvailable && (
                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
                   <p className="text-sm text-yellow-800">
-                    Assignment not yet available. Available after: {new Date(assignment.availableAfter).toLocaleDateString()}
+                    Assignment not yet available. Available after: {assignment.availableAfter ? new Date(assignment.availableAfter).toLocaleDateString() : "N/A"}
                   </p>
                 </div>
               )}
@@ -336,7 +270,7 @@ export default function SubmitAssignmentPage() {
                       className="flex items-center gap-2"
                     >
                       <Send className="h-4 w-4" />
-                      {loading ? "Submitting..." : "Submit Assignment"}
+                      {submitMutation.isPending ? "Submitting..." : "Submit Assignment"}
                     </Button>
                   </div>
                 </form>

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useCourses } from "@/lib/hooks/use-courses";
 import { Button } from "@/components/ui/button";
-import TiptapEditor from "@/components/ui/TipTap.Editor";
+import { TiptapEditor } from "@/components/ui/editor";
 
 export function LessonForm({
   moduleId,

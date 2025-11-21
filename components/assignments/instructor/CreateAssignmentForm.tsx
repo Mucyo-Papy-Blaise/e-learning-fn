@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import TiptapEditor from "@/components/ui/TipTap.Editor";
+import { TiptapEditor } from "@/components/ui/editor";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface Course {
@@ -56,7 +56,6 @@ export default function AssignmentForm({
   initialData,
 }: AssignmentFormProps) {
   const router = useRouter();
-
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState<boolean>(!!(isEditing && !initialData));
   const [courses, setCourses] = useState<Course[]>([]);

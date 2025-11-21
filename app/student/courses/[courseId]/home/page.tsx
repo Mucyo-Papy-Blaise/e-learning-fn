@@ -1,10 +1,10 @@
 "use client";
-import { Bell, CalendarDays, CheckCircle, Circle, Clock, BookOpen, FileText, X, PlayCircle, Award, TrendingUp, AlertCircle } from "lucide-react"
+import { Bell, BookOpen, FileText, X, PlayCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useEffect, useMemo, useState } from "react"
 import { fetchCourseById } from "@/lib/api/courses"
-import { fetchCourseProgress, fetchCourseAnnouncements, fetchStudentCalendar } from "@/lib/api/student"
+import { getCourseProgress, getCourseAnnouncements, getStudentCalendar } from "@/lib/api/student"
 
 type Announcement = { id: string; title: string; content?: string; created_at?: string }
 
@@ -23,9 +23,9 @@ export default function CourseHomePage({ params }: { params: { courseId: string 
       try {
         const [course, progress, anns, calendar] = await Promise.all([
           fetchCourseById(courseId),
-          fetchCourseProgress(courseId).catch(() => null),
-          fetchCourseAnnouncements(courseId).catch(() => []),
-          fetchStudentCalendar().catch(() => []),
+          getCourseProgress(courseId).catch(() => null),
+          getCourseAnnouncements(courseId).catch(() => []),
+          getStudentCalendar().catch(() => []),
         ])
         setCourseTitle(course?.title || "")
         // Backend Course type exposes instructor_id; instructor name is not guaranteed in this response

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { fetchCourseAnnouncements } from "@/lib/api/student";
+import React, { useState, useMemo } from "react";
+import { useCourseAnnouncements } from "@/lib/hooks/announcements/useCourseAnnouncements";
 
 // Define types
 type AnnouncementType = 'general' | 'assignment' | 'grade' | 'reminder' | 'urgent';
@@ -96,36 +96,28 @@ const getTypeLabel = (type: AnnouncementType) => {
 };
 
 export default function CourseAnnouncements({ courseId }: { courseId?: string }) {
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const { data: announcementsData = [] } = useCourseAnnouncements(courseId);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [filter, setFilter] = useState<'all' | 'unread' | 'pinned'>('all');
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const load = async () => {
-      if (!courseId) return;
-      try {
-        const data = await fetchCourseAnnouncements(courseId);
-        const mapped: Announcement[] = (Array.isArray(data) ? data : []).map((a: any) => ({
-          id: a._id || a.id,
-          title: a.title,
-          content: a.content,
-          type: (a.type || 'general') as AnnouncementType,
-          date: a.created_at || a.date || new Date().toISOString(),
-          author: a.author?.name || 'Instructor',
-          isRead: false,
-          isPinned: !!a.is_pinned,
-          hasAttachment: Array.isArray(a.attachments) && a.attachments.length > 0,
-        }));
-        setAnnouncements(mapped);
-      } catch {}
-    };
-    load();
-  }, [courseId]);
+  // Transform API data to component format
+  const announcements = useMemo(() => {
+    return (Array.isArray(announcementsData) ? announcementsData : []).map((a: any) => ({
+      id: a._id || a.id,
+      title: a.title,
+      content: a.content,
+      type: (a.type || 'general') as AnnouncementType,
+      date: a.created_at || a.date || new Date().toISOString(),
+      author: a.author?.name || 'Instructor',
+      isRead: readIds.has(a._id || a.id),
+      isPinned: !!a.is_pinned,
+      hasAttachment: Array.isArray(a.attachments) && a.attachments.length > 0,
+    }));
+  }, [announcementsData, readIds]);
 
   const markAsRead = (id: string) => {
-    setAnnouncements(prev => 
-      prev.map(ann => ann.id === id ? { ...ann, isRead: true } : ann)
-    );
+    setReadIds(prev => new Set(prev).add(id));
   };
 
   const filteredAnnouncements = announcements.filter(ann => {
@@ -151,7 +143,7 @@ export default function CourseAnnouncements({ courseId }: { courseId?: string })
                   </span>
                 )}
                 <button 
-                  onClick={() => setAnnouncements(prev => prev.map(ann => ({ ...ann, isRead: true })))}
+                  onClick={() => setReadIds(new Set(announcements.map(a => a.id)))}
                   className="text-sm text-gray-600 hover:text-blue-600"
                 >
                   Mark all as read
