@@ -7,7 +7,7 @@ export const uploadApi = {
     data?: { url?: string };
     src?: string;
   }> => {
-    const response = await axiosInstance.post('/upload/file', formData, {
+    const response = await axiosInstance.post('/api/upload/single', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -26,7 +26,7 @@ export const uploadApi = {
         formData.append('files', file);
       });
 
-      const response = await axiosInstance.post('/upload/multiple-files', formData, {
+      const response = await axiosInstance.post('/api/upload/multiple', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

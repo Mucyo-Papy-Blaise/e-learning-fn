@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import { API_URL } from "./courses";
+import { API_URL } from "@/lib/axios"
 
 export type InstitutionStats = any;
 

@@ -54,17 +54,14 @@ export const resizeImage = (
 };
 
 // Upload image to backend
-export const uploadImageToBackend = async (file: File): Promise<string | undefined> => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    const { url, imageUrl, data, src } = await uploadApi.uploadFileOrImage(formData);
+export const uploadImageToBackend = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("file", file);
 
-    return url || imageUrl || data?.url || src;
-  } catch (error) {
-    console.error("Image upload error:", error);
-    throw error;
-  }
+  const res = await uploadApi.uploadFileOrImage(formData);
+  if (!res?.url) throw new Error("No image URL returned");
+
+  return res.url;
 };
 
 // Validate image file

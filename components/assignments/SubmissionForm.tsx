@@ -7,7 +7,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
-import { API_URL } from "@/lib/api/courses";
+import { API_URL } from "@/lib/axios"
 import { TiptapEditor } from "../ui/editor";
 
 const submissionSchema = z.object({

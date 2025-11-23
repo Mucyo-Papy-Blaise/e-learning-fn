@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GradeSubmissionForm } from "./GradeSubmissionForm";
 import { formatDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { API_URL } from "@/lib/api/courses";
+import { API_URL } from "@/lib/axios"
 
 interface Submission {
   _id: string;

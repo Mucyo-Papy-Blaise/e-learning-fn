@@ -20,7 +20,7 @@ import {
 import { useAuth } from "@/lib/hooks/use-auth"
 import { usePathname } from "next/navigation"
 import axios from "axios"
-import { API_URL } from "@/lib/api/courses"
+import { API_URL } from "@/lib/axios"
 import Link from "next/link"
 import { getMyInstitutionProfile } from "@/lib/api/institution"
 

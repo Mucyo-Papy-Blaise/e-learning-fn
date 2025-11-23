@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import Link from "next/link"
-import { API_URL } from "@/lib/api/courses"
+import { API_URL } from "@/lib/axios"
 
 interface InstructorItem {
 	name: string

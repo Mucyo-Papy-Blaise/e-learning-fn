@@ -1,8 +1,8 @@
-// app/layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
 import { Noto_Sans } from 'next/font/google';
 import { Providers } from '@/app/provider';
+import AuthRequiredModal from '@/components/AuthRequiredModal';
 
 const notoSans = Noto_Sans({
   subsets: ['latin'],
@@ -23,6 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={notoSans.className}>
         <Providers>
+          <AuthRequiredModal />
           {children}
         </Providers>
       </body>

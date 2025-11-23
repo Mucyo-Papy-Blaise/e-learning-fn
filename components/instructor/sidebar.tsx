@@ -287,7 +287,7 @@ export default function InstructorSidebar() {
           </button>
           {!isDesktopCollapsed && (
             <div className="flex items-center gap-2">
-              <span className="text-white font-semibold text-lg">{user?.institution?.name || 'Institution'}</span>
+              <span className="text-white font-semibold text-lg">{user?.institution?.name || 'Instructor'}</span>
             </div>
           )}
         </div>
