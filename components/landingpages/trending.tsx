@@ -8,12 +8,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ArrowRight, Clock, Users, Star } from "lucide-react"
 import { fetchCourses } from "@/lib/api/courses"
 import { getPublicInstitutions } from "@/lib/api/institution"
+import {  enrollInCourse } from "@/lib/api/public"
+import { useAuth } from "@/lib/hooks/use-auth"
 
 export default function LandingTrending() {
   const [courses, setCourses] = useState<any[]>([])
   const [institutions, setInstitutions] = useState<any[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [loadingInst, setLoadingInst] = useState<boolean>(true)
+  const {isAuthenticated, openAuthModal } = useAuth()
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -46,6 +49,20 @@ export default function LandingTrending() {
     loadCourses()
     loadInstitutions()
   }, [])
+
+  
+  const handleEnroll = async (courseId: string) => {
+  if (!isAuthenticated) {
+    openAuthModal()
+    return
+  }
+
+  try {
+    await enrollInCourse(courseId)
+  } catch (error) {
+    console.error("Error enrolling:", error)
+  }
+}
 
   return (
     <section id="courses" className="py-20 bg-gray-50">
@@ -103,8 +120,13 @@ export default function LandingTrending() {
                       <div className="flex items-center space-x-1"><Star className="h-4 w-4 fill-yellow-400 text-yellow-400" /><span className="font-medium">{(course as any)?.rating || '4.8'}</span></div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xl font-semibold text-gray-900">{typeof course?.price === 'number' ? `${course.price}` : (course?.price || 'Free')}</span>
-                      <Button size="sm" className="transform hover:scale-105 transition-all duration-200 rounded-md brand-btn-primary">Enroll Now</Button>
+                      <span className="text-lg font-semibold text-gray-900">{typeof course?.price === 'number' ? `${Number(course?.price).toLocaleString()} RWF` : (`${Number(course?.price).toLocaleString()} RWF` || 'Free')}</span>
+                      <Button 
+                        onClick={() => handleEnroll(course._id)}
+                      size="sm" 
+                      className="transform hover:scale-105 transition-all duration-200 rounded-md brand-btn-primary">
+                        Enroll Now
+                        </Button>
                     </div>
                   </CardContent>
                 </Card>

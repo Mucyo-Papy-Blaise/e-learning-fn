@@ -151,7 +151,7 @@ const {user,loading} = useAuth()
                         <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
                           <DollarSign className="h-4 w-4 text-white" />
                         </div>
-                        <span className="font-bold text-green-600 text-lg">${course.price}</span>
+                        <span className="font-bold text-green-600 text-lg">${course.price} RWF</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-6 text-center">
@@ -237,7 +237,7 @@ const {user,loading} = useAuth()
                       </div>
                       <span className="text-sm text-gray-600">Price</span>
                     </div>
-                    <span className="font-bold text-green-600">${course.price}</span>
+                    <span className="font-bold text-green-600">${course.price} RWF</span>
                   </div>
                 </div>
               )}

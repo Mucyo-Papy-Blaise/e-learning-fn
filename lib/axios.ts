@@ -1,10 +1,12 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { API_URL } from './api/courses';
 import { toast } from 'react-toastify';
 
 // Cache configuration
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 const cache = new Map<string, { data: any ; timestamp: number }>();
+
+export const API_URL = process.env.NEXT_PUBLIC_API_URL 
+
 
 // Retry configuration
 const MAX_RETRIES = {

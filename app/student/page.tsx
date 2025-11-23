@@ -58,7 +58,7 @@ function DashboardOverview() {
 
   useEffect(() => {
     fetchInstitution();
-  }, [fetchInstitution]);
+  }, []);
 
   const handleClickInstitution = async (insId: string) => {
     const selected = institution.find(i => i._id === insId) ?? null;

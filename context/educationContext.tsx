@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { IInstitution, ICourse, IEnrollment } from "@/types/education";
 import axios from "axios";
-import { API_URL } from "@/lib/api/courses";
+import { API_URL } from "@/lib/axios";
 
 interface EducationContextTypes {
   institution: IInstitution[];
@@ -25,11 +25,11 @@ export const EducationProvider = ({ children }: { children: React.ReactNode }) =
   const [enrollment, setEnrollment] = useState<IEnrollment[]>([]);
   const [loadingEducation, setLoadingEducation] = useState<boolean>(false);
 
-  const fetchInstitution = async () => {  // Fixed: was fetchedInstitution
+  const fetchInstitution = async () => {
     setLoadingEducation(true);
     try {
       const res = await axios.get(`${API_URL}/api/institutions`);
-      setInstitution(res.data);  // Fixed: was setIntitution
+      setInstitution(res.data);  
     } catch (error) {
       console.log("Failed to fetch institutions", error);
     } finally {

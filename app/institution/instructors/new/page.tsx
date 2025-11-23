@@ -12,7 +12,7 @@ import {
   User,
 } from "lucide-react"
 import axios from 'axios'
-import { API_URL } from "@/lib/api/courses"
+import { API_URL } from "@/lib/axios"
 
 interface InstructorFormData {
   name: string

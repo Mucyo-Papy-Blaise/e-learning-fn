@@ -2,10 +2,9 @@
 
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AuthState, User, LoginCredentials, RegisterData } from '@/lib/types/auth';
-import { toast } from 'react-toastify'; 
+import { toast } from 'react-toastify';
 
-
-export const API_URL = process.env.NEXT_PUBLIC_API_URL 
+export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -13,40 +12,43 @@ interface AuthContextType extends AuthState {
   logout: () => void;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, newPassword: string) => Promise<void>;
-} 
+
+  // 🔥 ADDED
+  openAuthModal: () => void;
+  closeAuthModal: () => void;
+}
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   loading: true,
+  showAuthModal: false, // already existed
 };
 
 type AuthAction =
   | { type: 'SET_USER'; payload: User }
   | { type: 'LOGOUT' }
-  | { type: 'SET_LOADING'; payload: boolean };
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'OPEN_AUTH_MODAL' }
+  | { type: 'CLOSE_AUTH_MODAL' };
 
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'SET_USER':
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: true,
-        loading: false,
-      };
+      return { ...state, user: action.payload, isAuthenticated: true, loading: false };
+
     case 'LOGOUT':
-      return {
-        ...state,
-        user: null,
-        isAuthenticated: false,
-        loading: false,
-      };
+      return { ...state, user: null, isAuthenticated: false, loading: false };
+
     case 'SET_LOADING':
-      return {
-        ...state,
-        loading: action.payload,
-      };
+      return { ...state, loading: action.payload };
+
+    case 'OPEN_AUTH_MODAL':
+      return { ...state, showAuthModal: true };
+
+    case 'CLOSE_AUTH_MODAL':
+      return { ...state, showAuthModal: false };
+
     default:
       return state;
   }
@@ -56,7 +58,6 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
- 
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -70,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuthStatus = async () => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      
+
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found');
 
@@ -91,7 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (credentials: LoginCredentials) => {
-    console.log('Login Payload sent:', credentials)
     try {
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
@@ -108,13 +108,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('token', data.token);
       dispatch({ type: 'SET_USER', payload: data.user });
       toast.success("Logged in successfully");
-      if (data.user.role === 'student') {
-        window.location.href='/student'; 
-      } else if (data.user.role === 'institution' ) {
-        window.location.href='/institution'; 
-      }else{
-        window.location.href = '/instructor'
-      }
+
+      if (data.user.role === 'student') window.location.href = '/student';
+      else if (data.user.role === 'institution') window.location.href = '/institution';
+      else window.location.href = '/instructor';
+
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Login failed');
     }
@@ -134,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       toast.success("Registration successful. Please verify your email.");
-      window.location.href = '/login'; 
+      window.location.href = '/login';
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Registration failed');
     }
@@ -148,14 +146,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const forgotPassword = async (email: string) => {
     try {
-      const response = await fetch(
-        `${API_URL}/api/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
       if (!response.ok) {
         const error = await response.json();
@@ -170,14 +165,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (token: string, newPassword: string) => {
     try {
-      const response = await fetch(
-        `${API_URL}/api/auth/reset-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token, newPassword }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, newPassword }),
+      });
 
       if (!response.ok) {
         const error = await response.json();
@@ -190,20 +182,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // 🔥 ADDED — Modal handlers
+  const openAuthModal = () => dispatch({ type: "OPEN_AUTH_MODAL" });
+  const closeAuthModal = () => dispatch({ type: "CLOSE_AUTH_MODAL" });
+
   return (
-    <>
-      <AuthContext.Provider
-        value={{
-          ...state,
-          login,
-          register,
-          logout,
-          forgotPassword,
-          resetPassword,
-        }}
-      >
-        {children}
-      </AuthContext.Provider>
-    </>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        login,
+        register,
+        logout,
+        forgotPassword,
+        resetPassword,
+
+        // ⬇️ 🔥 expose modal controls
+        openAuthModal,
+        closeAuthModal,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
+}
+
+// Hook stays same
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }

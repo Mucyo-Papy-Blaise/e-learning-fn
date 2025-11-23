@@ -1,27 +1,16 @@
+/* eslint-disable @next/next/no-img-element */
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import axios from "axios"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { User, ChevronDown } from "lucide-react"
+import { useAuth } from "@/lib/hooks/use-auth"
 import { getInstructorDashboard } from "@/lib/api/instructor"
-import {
-  BookOpen,
-  Users,
-  Clock,
-  Award,
-  TrendingUp,
-  GraduationCap,
-  Building2,
-  UserCheck,
-  ArrowUpRight,
-  MoreHorizontal,
-  Plus,
-  Calendar,
-  BarChart3,
-  Settings,
-  Download,
-} from "lucide-react"
+import { BookOpen, Users, Clock, Award } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { getMyInstructorProfile } from "@/lib/api/instructor/profile"
 
 interface IDashboard {
   courses: number
@@ -30,10 +19,12 @@ interface IDashboard {
 }
 
 export const DashboardOverview = () => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL
+  const router = useRouter()
   const [dashboard, setDashboard] = useState<IDashboard>()
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const { user,logout} = useAuth()
 
   const fetchDashboard = async () => {
     try {
@@ -51,6 +42,17 @@ export const DashboardOverview = () => {
     }
   }
 
+   useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await getMyInstructorProfile()
+        const url = res?.instructor?.profile_image || null
+        setAvatarUrl(url)
+      } catch {}
+    }
+    load()
+  }, [])
+
   useEffect(() => {
     fetchDashboard()
   }, [])
@@ -62,34 +64,51 @@ export const DashboardOverview = () => {
     { title: "Assignments Pending", value: 0, icon: Award },
   ]
 
-  // const recentActivities = [
-  //   { action: "New course published", course: "Advanced AI Ethics", time: "2 hours ago", type: "course" },
-  //   { action: "Student batch completed", course: "Data Science Fundamentals", time: "4 hours ago", type: "completion" },
-  //   { action: "Instructor added", course: "Machine Learning Basics", time: "1 day ago", type: "instructor" },
-  //   { action: "Course updated", course: "Cybersecurity Essentials", time: "2 days ago", type: "update" },
-  // ]
+  const handleLogout = () => {
+    localStorage.removeItem("token")
+    router.push("/login")
+  }
 
-  if (loading) {
-    return (
-      <div className="space-y-8 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-64"></div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-48 bg-gray-200 rounded-xl"></div>
-          ))}
-        </div>
-      </div>
-    )
+  const goHome = () => {
+    router.push("/")
   }
 
   return (
     <div className="space-y-8 p-4 md:p-8 bg-[color:var(--brand-light)] min-h-screen">
+      
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-[color:var(--brand-navy)]">Instructor Dashboard</h1>
           <p className="text-sm text-gray-600">A quick overview of your teaching activity</p>
         </div>
-        <Button className="bg-[color:var(--brand-blue)] hover:opacity-90">Create Course</Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 border rounded-md shadow-sm bg-white hover:bg-gray-100">
+            <div className="h-8 w-8 bg-gray-200 rounded-full overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="User Avatar" className="h-full w-full object-cover" />
+              ) : (
+                <User className="h-8 w-8 text-gray-400" />
+              )
+              }
+            </div>
+            <span className="text-gray-700 font-medium truncate">{user?.name || 'John Doe'}</span>
+            <ChevronDown className="h-4 w-4 text-gray-600" />
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent className="w-48">
+            <DropdownMenuLabel>Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+
+            <DropdownMenuItem onClick={goHome} className="cursor-pointer">
+             Return Home
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={logout} className="text-red-600 cursor-pointer">
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -127,19 +146,9 @@ export const DashboardOverview = () => {
           <CardHeader>
             <CardTitle className="text-lg">Recent Activity</CardTitle>
           </CardHeader>
-          {/* <CardContent className="space-y-3">
-            {recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className="p-2 bg-gray-100 rounded-md">
-                  <BookOpen className="h-4 w-4 text-gray-700" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{activity.action}</p>
-                  <p className="text-xs text-gray-500">{activity.course} • {activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </CardContent> */}
+          <CardContent>
+            <p className="text-gray-500 text-sm">No recent activity.</p>
+          </CardContent>
         </Card>
       </div>
     </div>

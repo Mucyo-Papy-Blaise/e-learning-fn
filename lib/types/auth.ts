@@ -11,6 +11,7 @@ export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   loading: boolean;
+  showAuthModal: boolean;
 }
 
 export interface LoginCredentials {

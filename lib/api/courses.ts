@@ -2,9 +2,7 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Course, Module, Lesson, Resource } from '../types/course';
-
-export const API_URL = process.env.NEXT_PUBLIC_API_URL 
-var token
+import { API_URL } from '../axios';
 
 // Show toast notifications for success or error
 const showToast = (message: string, type: "success" | "error") => {

@@ -60,7 +60,7 @@ export default function LandingCategories() {
             {categories.map((category) => (
               <Card
                 key={category.name}
-                className="bg-white border-0 rounded-lg shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+                className="bg-white border-0 rounded-lg shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5  border-b border-t border-gray-400 "
               >
                 <CardContent className="p-4 space-y-2">
 
@@ -88,7 +88,7 @@ export default function LandingCategories() {
           </div>
         )}
 
-        <div className="text-center mt-12">
+        {/* <div className="text-center mt-12">
           <Button
             variant="outline"
             className="bg-transparent hover:bg-blue-50 border-blue-200 text-blue-700 px-8 py-3 text-lg font-medium"
@@ -96,7 +96,7 @@ export default function LandingCategories() {
             Explore All Subjects
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
-        </div>
+        </div> */}
       </div>
     </section>
   )

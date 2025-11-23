@@ -16,6 +16,8 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { fetchCoursesByCategory, enrollInCourse, Course } from "@/lib/api/public"
 import { useParams } from "next/navigation"
+import LandingHeader from "@/components/landingpages/header"
+import { useAuth } from "@/lib/hooks/use-auth"
 
 export default function CategoryPage() {
   const params = useParams()
@@ -27,7 +29,7 @@ export default function CategoryPage() {
   const [hasNext, setHasNext] = useState(false)
   const [hasPrev, setHasPrev] = useState(false)
   const [totalCourses, setTotalCourses] = useState(0)
-
+  const {isAuthenticated, openAuthModal } = useAuth()
   useEffect(() => {
     loadCourses()
   }, [categoryName, sortBy, page])
@@ -59,23 +61,22 @@ export default function CategoryPage() {
   }
 
   const handleEnroll = async (courseId: string) => {
-    try {
-      // Check if user is logged in
-      const token = localStorage.getItem('token')
-      if (!token) {
-        alert('Please log in to enroll in courses')
-        return
-      }
-      
-      // Call the enrollment API
-      await enrollInCourse(courseId)
-    } catch (error) {
-      console.error('Error enrolling:', error)
-    }
+  if (!isAuthenticated) {
+    openAuthModal()
+    return
   }
 
+  try {
+    await enrollInCourse(courseId)
+  } catch (error) {
+    console.error("Error enrolling:", error)
+  }
+}
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
+      <LandingHeader />
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
@@ -227,7 +228,7 @@ export default function CategoryPage() {
 
                     <div className="flex items-center justify-between">
                       <span className="text-xl font-semibold text-gray-900">
-                        {course.price === 0 ? 'Free' : `$${course.price}`}
+                        {course.price === 0 ? 'Free' : `$${course.price} RWF`}
                       </span>
                       <div className="flex space-x-2">
                         <Link href={`/course/${course._id}`}>
@@ -274,6 +275,7 @@ export default function CategoryPage() {
           </>
         )}
       </main>
+    </div>
     </div>
   )
 }

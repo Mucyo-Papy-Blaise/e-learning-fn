@@ -10,6 +10,8 @@ import LandingCta from "@/components/landingpages/cta"
 import Link from "next/link"
 import { GraduationCap } from "lucide-react"
 import { Category, fetchTrendingCourses, fetchCategories,Course } from "@/lib/api/public"
+import HelpNotification from "@/components/help-notification";
+
 
 export default function ELearningLanding() {
   const [isVisible, setIsVisible] = useState(false)
@@ -117,6 +119,7 @@ export default function ELearningLanding() {
           </div>
         </div>
       </footer>
+      <HelpNotification />
     </div>
   )
 }

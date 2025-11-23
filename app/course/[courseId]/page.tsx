@@ -261,11 +261,11 @@ export default function CourseDetailPage() {
               <CardContent className="p-6">
                 <div className="text-center mb-6">
                   <div className="text-3xl font-bold text-gray-900 mb-2">
-                    {course.price === 0 ? 'Free' : `$${course.price}`}
+                    {course.price === 0 ? 'Free' : `$${course.price} RWF`}
                   </div>
                   {course.price > 0 && (
                     <div className="text-sm text-gray-600 line-through">
-                      ${Math.round(course.price * 1.2)}
+                      ${Math.round(course.price * 1.2)} RWF
                     </div>
                   )}
                 </div>
