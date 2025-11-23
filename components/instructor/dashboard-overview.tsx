@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import axios from "axios"
-import { fetchInstructorDashboard } from "@/lib/api/instructors"
+import { getInstructorDashboard } from "@/lib/api/instructor"
 import {
   BookOpen,
   Users,
@@ -37,7 +37,7 @@ export const DashboardOverview = () => {
 
   const fetchDashboard = async () => {
     try {
-      const data = await fetchInstructorDashboard()
+      const data = await getInstructorDashboard()
       if (data) {
         setDashboard(data)
       } else {

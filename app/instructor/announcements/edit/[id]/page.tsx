@@ -81,8 +81,6 @@ const AnnouncementForm = () => {
     async function loadAnnouncement() {
       if (!isEdit || !id) return
       try {
-        // Attempt to find the announcement by scanning courses if needed
-        // If backend had GET /api/announcements/:id we'd use that, but not provided
         const list = await fetchInstructorCourses()
         const courseIds = Array.isArray(list) ? list.map((c: any) => c._id || c.id) : []
         for (const courseId of courseIds) {

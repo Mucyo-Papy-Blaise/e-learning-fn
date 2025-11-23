@@ -2,7 +2,7 @@
 
 import React, { useState, ChangeEvent, KeyboardEvent, useEffect } from 'react';
 import { Camera, Plus, X, User, Mail, Phone, Lock, Briefcase, FileText, ExternalLink, Shield } from 'lucide-react';
-import { getMyInstructorProfile, updateInstructorAccount, updateMyInstructorProfile } from "@/lib/api/instructors";
+import { getMyInstructorProfile, updateInstructorAccount, updateMyInstructorProfile } from "@/lib/api/instructor/profile";
 import { toast } from 'react-toastify';
 import { SocialLinks, PersonalData, SecurityData, TabType } from '@/types/profile.types';
 

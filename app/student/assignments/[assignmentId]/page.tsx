@@ -1,108 +1,20 @@
 'use client'
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import axios from "axios"; 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, AlertCircle } from 'lucide-react';
-import { toast } from "react-toastify"; // react-toastify
 import { SubmissionForm } from "@/components/assignments/SubmissionForm";
+import { useAssignment, useMyAssignmentSubmission } from "@/lib/hooks/assignments";
 
-interface Assignment {
-  _id: string;
-  course_id: { _id: string; title: string };
-  module_id: { _id: string; title: string };
-  title: string;
-  description: string;
-  dueDate: string;              
-  availableAfter: string;
-  points: number;
-  submissionType: string;
-  allowedAttempts: number;
-  status: string;
-  isAnonymous: boolean;
-  peerReviewEnabled: boolean;
-  plagiarismCheckEnabled: boolean;
-  instructions: string;
-  attachments: string[];
-  rubric: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Submission {
-  _id: string;
-  content: string;
-  file_url?: string;
-  score?: number;
-  feedback?: string;
-  status: 'pending' | 'graded' | 'late';
-  submitted_at: string;
-}
 
 export default function AssignmentPage() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL 
   const { assignmentId } = useParams() as { assignmentId: string };
-  const [assignment, setAssignment] = useState<Assignment | null>(null);
-  const [submission, setSubmission] = useState<Submission | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: assignment, isLoading, error } = useAssignment(assignmentId);
+  const { data: submission } = useMyAssignmentSubmission(assignment?._id);
 
-  const fetchData = async () => {
-    try {
-      const token = localStorage.getItem("token");
+  if (isLoading) return <div>Loading...</div>;
+  if (error || !assignment) return <div>Assignment not found</div>;
 
-      const assignmentRes = await axios.get(`${API_URL}/api/assignments/${assignmentId}`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      setAssignment(assignmentRes.data);
-
-      const submissionRes = await axios.get(`${API_URL}/api/assignments/${assignmentRes.data._id}/submissions/me`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-
-      const subs = Array.isArray(submissionRes.data)
-        ? submissionRes.data
-        : Array.isArray(submissionRes.data?.submissions)
-          ? submissionRes.data.submissions
-          : [];
-
-      if (subs && subs.length > 0) {
-        setSubmission(subs[0]);
-      }
-    } catch (error) {
-      toast.error("Failed to load assignment or submission");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assignmentId]);
-
-  const handleSubmissionSuccess = async (assignment_id: string) => {
-    try {
-      const token = localStorage.getItem("token");
-      const submissionRes = await axios.get(`${API_URL}/api/assignments/${assignment_id}/submissions/me`, {
-        headers: { "Authorization": `Bearer ${token}` },
-      });
-      const subs = Array.isArray(submissionRes.data)
-        ? submissionRes.data
-        : Array.isArray(submissionRes.data?.submissions)
-          ? submissionRes.data.submissions
-          : [];
-      if (subs && subs.length > 0) {
-        setSubmission(subs[0]);
-      }
-    } catch {
-      // silent
-    }
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (!assignment) return <div>Assignment not found</div>;
-
-  const dueDate = new Date(assignment.dueDate); // ✅ corrected key
+  const dueDate = new Date(assignment.dueDate); 
   const isOverdue = dueDate < new Date();
 
   return (
@@ -127,7 +39,17 @@ export default function AssignmentPage() {
               <div className="prose max-w-none dark:prose-invert">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">Assignment Description</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: assignment.description || '' }} />
+                  <div className="prose max-w-none
+                    prose-headings:text-gray-900 prose-headings:font-bold
+                    prose-p:text-gray-700 prose-p:leading-relaxed
+                    prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-gray-900 prose-strong:font-semibold
+                    prose-ul:text-gray-700 prose-ol:text-gray-700
+                    prose-blockquote:border-l-primary prose-blockquote:bg-purple-50/50 prose-blockquote:py-2
+                    prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded
+                  " 
+                  dangerouslySetInnerHTML={{ __html: assignment.description || '' }} 
+                  />
                 </div>
               </div>
 
@@ -144,8 +66,18 @@ export default function AssignmentPage() {
                     <CardTitle>Your Submission</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="prose max-w-none dark:prose-invert">
-                      <div dangerouslySetInnerHTML={{ __html: submission.content }} />
+                    <div className="prose max-w-none dark:prose-invert
+                      prose-headings:text-gray-900 prose-headings:font-bold
+                      prose-p:text-gray-700 prose-p:leading-relaxed
+                      prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                      prose-strong:text-gray-900 prose-strong:font-semibold
+                      prose-ul:text-gray-700 prose-ol:text-gray-700
+                      prose-blockquote:border-l-primary prose-blockquote:bg-purple-50/50 prose-blockquote:py-2
+                      prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded
+                    ">
+                      <div dangerouslySetInnerHTML={{ __html: submission.content }} 
+                      
+                      />
                     </div>
                     {submission.file_url && (
                       <a
@@ -176,7 +108,7 @@ export default function AssignmentPage() {
                   requiresFile={assignment.submissionType === "file"}
                   allowsText={assignment.submissionType === "text" || assignment.submissionType === "multiple"}
                   allowsFile={assignment.submissionType === "file" || assignment.submissionType === "multiple"}
-                  onSubmit={() => handleSubmissionSuccess(assignment._id)}
+                  onSubmit={() => {}}
                 />
               )}
             </CardContent>
@@ -189,7 +121,7 @@ export default function AssignmentPage() {
               <CardTitle className="text-blue-700">Rubric</CardTitle>
             </CardHeader>
             <CardContent>
-              {assignment.rubric.split("\n").map((line, index) => (
+              {assignment.rubric.split("\n").map((line: any, index: any) => (
                 <p key={index}>{line}</p>
               ))}
             </CardContent>

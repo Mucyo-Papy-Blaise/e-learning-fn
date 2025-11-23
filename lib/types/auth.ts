@@ -1,6 +1,7 @@
 export interface User {
   _id: string;
   email: string;
+  image: string;
   name: string;
   institution:{name:string,id:string}
   role: 'student' | 'instructor' | 'admin'|'institution';

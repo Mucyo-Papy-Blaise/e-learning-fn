@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { User, Settings, Shield } from "lucide-react";
 import AccountOverview from "@/components/student/accountOverview";
 import ProfileSettings from "@/components/student/profileSettings";
 import Security from "@/components/student/securitySettings";
-import { getMyStudentProfile } from "@/lib/api/student";
+import { useStudentProfile } from "@/lib/hooks/student";
 
 function formatStudentData(student: any) {
   return {
@@ -22,30 +22,18 @@ function formatStudentData(student: any) {
     isActive: student.is_active,
     createdAt: student.createdAt,
     updatedAt: student.updatedAt,
-    profileImage: student.profile_image, // ✅ profile image comes from backend
+    profileImage: student.profile_image,
   };
 }
 
 const StudentAccountSettings = () => {
   const [activeTab, setActiveTab] = useState("overview");
-  const [studentProfile, setStudentProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const res = await getMyStudentProfile();
-        const formatted = formatStudentData(res.student);
-        setStudentProfile(formatted);
-      } catch (err) {
-        console.error("Failed to load student profile", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, []);
+  const { data: profileData, isLoading } = useStudentProfile();
+  
+  const studentProfile = useMemo(() => {
+    if (!profileData?.student) return null;
+    return formatStudentData(profileData.student);
+  }, [profileData]);
 
   const tabs = [
     { id: "overview", label: "Account Overview", icon: User },
@@ -63,7 +51,7 @@ const StudentAccountSettings = () => {
           <ProfileSettings
         // @ts-expect-error error
             studentData={studentProfile}
-            setStudentData={setStudentProfile}
+            setStudentData={studentProfile}
           />
         );
       case "security":
@@ -74,7 +62,7 @@ const StudentAccountSettings = () => {
     }
   };
 
-  if (loading && !studentProfile) {
+  if (isLoading && !studentProfile) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

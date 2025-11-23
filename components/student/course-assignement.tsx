@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { API_URL } from "@/lib/api/student";
+import { API_URL } from "@/lib/api";
 import {
   Bell,
   Calendar,

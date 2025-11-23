@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ArrowRight, Clock, Users, Star } from "lucide-react"
 import { fetchCourses } from "@/lib/api/courses"
-import { fetchPublicInstitutions } from "@/lib/api/institution"
+import { getPublicInstitutions } from "@/lib/api/institution"
 
 export default function LandingTrending() {
   const [courses, setCourses] = useState<any[]>([])
@@ -32,7 +32,7 @@ export default function LandingTrending() {
     }
     const loadInstitutions = async () => {
       try {
-        const list = await fetchPublicInstitutions()
+        const list = await getPublicInstitutions()
         const normalized = Array.isArray(list) ? list.map((i: any) => ({
           _id: i?._id || i?.id,
           name: i?.name,

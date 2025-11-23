@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { API_URL } from "@/lib/api/courses";
-import TiptapEditor from "@/components/ui/TipTap.Editor";
+import { TiptapEditor } from "../ui/editor";
 
 const submissionSchema = z.object({
   content: z.string().min(1, "Submission content is required"),

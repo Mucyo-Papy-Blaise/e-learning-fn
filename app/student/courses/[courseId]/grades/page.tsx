@@ -3,9 +3,7 @@
 import { GraduationCap, Eye, Download } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { useEffect, useState } from "react"
-import { getQuizAttempts, listExams, getOwnExamSubmission, getQuizById, getQuizQuestions } from "@/app/lib/api"
-import { fetchStudentGrades } from "@/lib/api/student"
+import { useStudentGrades } from "@/lib/hooks/student"
 
 interface GradeRow {
   _id: string
@@ -21,117 +19,15 @@ interface GradeRow {
 
 export default function CourseGradesPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
-  const [gradesData, setGradesData] = useState<GradeRow[]>([])
-
-  useEffect(() => {
-    let mounted = true
-    async function load() {
-      try {
-        // Try the new API first
-        try {
-          const gradesData = await fetchStudentGrades(courseId)
-          if (mounted) {
-            setGradesData(gradesData)
-            return
-          }
-        } catch (error) {
-          console.log('New grades API not available, falling back to legacy method')
-        }
-
-        // Fallback to legacy method
-        const [quizAttemptsRes, examsRes] = await Promise.all([
-          getQuizAttempts(),
-          listExams(),
-        ])
-
-        const out: GradeRow[] = []
-
-        if (quizAttemptsRes.ok) {
-          const enriched = await Promise.all(
-            quizAttemptsRes.data.map(async (a: any) => {
-              const quizId = typeof a.quiz_id === 'object'
-                ? String(a.quiz_id._id ?? a.quiz_id)
-                : a.quiz_id
-              const [q, qs] = await Promise.all([
-                getQuizById(quizId as any),
-                getQuizQuestions(quizId as any),
-              ])
-
-              let title: string
-              if (q.ok && (q.data as any)?.title) {
-                title = (q.data as any).title
-              } else if (typeof a.quiz_id === 'object') {
-                title = a.quiz_id.title ?? String(a.quiz_id._id ?? a.quiz_id)
-              } else {
-                title = String(a.quiz_id)
-              }
-
-              const max = qs.ok
-                ? qs.data.reduce((acc: number, q: any) => acc + (q.points || 0), 0)
-                : 100
-              const score = typeof a.score === 'number' ? a.score : 0
-
-              return {
-                _id: a._id,
-                type: 'quiz',
-                title,
-                score,
-                max_points: max,
-                status: 'Graded',
-                due_date: undefined,
-                submitted_at: a.completed_at || a.started_at,
-                passed: max
-                  ? (score / max) * 100 >= (q.ok ? (q.data as any).pass_percentage : 50)
-                  : score >= 50,
-              } as GradeRow
-            })
-          )
-          out.push(...(enriched.filter(Boolean) as GradeRow[]))
-        }
-
-        if (examsRes.ok) {
-          const exams = examsRes.data.exams
-          await Promise.all(
-            exams.map(async (e: any) => {
-              const s = await getOwnExamSubmission(e._id)
-              if (s.ok && (s.data as any)?.submission && (s.data as any)?.resultSummary) {
-                const summary = (s.data as any).resultSummary
-                const total = Number(summary.score)
-                const max = Number(summary.maxScore ?? e.totalPoints ?? 100)
-                out.push({
-                  _id: (s.data as any).submission._id,
-                  type: 'exam',
-                  title: e.title,
-                  score: total,
-                  max_points: max,
-                  status: 'Graded',
-                  due_date: undefined,
-                  submitted_at: undefined,
-                  passed: Boolean(summary.passed),
-                })
-              }
-            })
-          )
-        }
-
-        if (mounted) {
-          setGradesData(out)
-        }
-      } catch {
-        if (mounted) setGradesData([])
-      }
-    }
-    load()
-    return () => { mounted = false }
-  }, [courseId])
+  const { data: gradesData = [], isLoading } = useStudentGrades(courseId)
 
   const calculateOverallGrade = () => {
-    const gradedAssignments = gradesData.filter(grade => grade.status === "Graded" && typeof grade.score === 'number' && typeof grade.max_points === 'number')
+    const gradedAssignments = gradesData.filter((grade: any) => grade.status === "Graded" && typeof grade.score === 'number' && typeof grade.max_points === 'number')
     if (gradedAssignments.length === 0) return "N/A"
-    const totalPoints = gradedAssignments.reduce((sum, grade) => {
+    const totalPoints = gradedAssignments.reduce((sum: any, grade: any) => {
       return sum + (grade.score as number)
     }, 0)
-    const maxPoints = gradedAssignments.reduce((sum, grade) => {
+    const maxPoints = gradedAssignments.reduce((sum: any, grade: any) => {
       return sum + (grade.max_points as number)
     }, 0)
     return `${totalPoints}/${maxPoints} (${Math.round((totalPoints / maxPoints) * 100)}%)`
@@ -173,13 +69,13 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
             <div className="text-center p-4 bg-green-50 rounded-lg">
               <p className="text-sm text-gray-600">Completed</p>
               <p className="text-2xl font-bold text-green-600">
-                {gradesData.filter(g => g.status === "Graded").length}/{gradesData.length}
+                {gradesData.filter((g: any )=> g.status === "Graded").length}/{gradesData.length}
               </p>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <p className="text-sm text-gray-600">Pending</p>
               <p className="text-2xl font-bold text-yellow-600">
-                {gradesData.filter(g => g.status === "Submitted" || g.status === "Not Submitted").length}
+                {gradesData.filter((g: any) => g.status === "Submitted" || g.status === "Not Submitted").length}
               </p>
             </div>
           </div>
@@ -219,7 +115,7 @@ export default function CourseGradesPage({ params }: { params: { courseId: strin
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {gradesData.map((grade) => (
+                {gradesData.map((grade: any) => (
                   <tr key={grade._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">{grade.title || ''}</div>

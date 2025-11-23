@@ -4,79 +4,61 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Clock, Award, BookMarked, X, Search, Bell, Calendar, CheckCircle, AlertCircle, MessageSquare, Megaphone, Target, PlayCircle, FileText, Users, TrendingUp, Star } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { IEnrollment } from "@/types/education";
 import { useEducation } from "@/context/educationContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
-import { fetchStudentDashboard, fetchStudentNotifications, fetchStudentCalendar } from "@/lib/api/student";
+import { useStudentDashboard, useStudentNotifications, useStudentCalendar } from "@/lib/hooks/student";
 
 function DashboardOverview() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  const [dashboard, setDashboard] = useState<IEnrollment[]>([]);
-  const [stats, setStats] = useState<{ totalCourses?: number; averageProgress?: number; upcomingDeadlines?: number; totalAssignments?: number } | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
   const { institution, fetchInstitution, setSelectedInstitution, fetchCourseByInstitution } =
     useEducation();
   const router = useRouter();
 
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [calendarItems, setCalendarItems] = useState<any[]>([]);
+  // React Query hooks
+  const { data: dashboardData, isLoading, error } = useStudentDashboard();
+  const { data: notificationsData } = useStudentNotifications();
+  const { data: calendarData } = useStudentCalendar();
+  const [modalOpen ,setModalOpen] = useState(false);
 
-  const fetchDashboard = async () => {
-    try {
-      const data = await fetchStudentDashboard();
-      if (data && Array.isArray(data)) {
-        setDashboard(data);
-        // @ts-expect-error error
-        if (data?.stats) setStats(data.stats);
-      } else if (data?.enrollments && Array.isArray(data.enrollments)) {
-        setDashboard(data.enrollments);
-        if (data?.stats) setStats(data.stats);
-      } else {
-        throw new Error("Invalid response data");
-      }
-    } catch (error) {
-      setError("Error fetching dashboard data");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Normalize dashboard data
+  const dashboard = useMemo(() => {
+    if (!dashboardData) return [];
+    if (Array.isArray(dashboardData)) return dashboardData as IEnrollment[];
+    if (Array.isArray(dashboardData?.enrollments)) return dashboardData.enrollments as IEnrollment[];
+    return [];
+  }, [dashboardData]);
 
-  const fetchAuxiliaryData = async () => {
-    try {
-      const [notif, cal] = await Promise.all([
-        fetchStudentNotifications().catch(() => []),
-        fetchStudentCalendar().catch(() => []),
-      ]);
-      setNotifications(Array.isArray(notif) ? notif : []);
-      const normalizedCal = Array.isArray(cal)
-        ? cal.map((item: any) => ({
-            ...item,
-            // Ensure 'course' is a displayable string
-            course:
-              typeof item.course === 'object'
-                ? (item.course?.title || item.course?.name || '')
-                : (item.course || ''),
-            // Normalize date field used in UI
-            dueDate: item.dueDate || item.date || item.due_date,
-          }))
-        : [];
-      setCalendarItems(normalizedCal);
-    } catch {}
-  };
+  const stats = useMemo(() => {
+    if (!dashboardData) return null;
+    return (dashboardData as any)?.stats || null;
+  }, [dashboardData]);
 
-  useEffect(() => {
-    fetchDashboard();
-    fetchAuxiliaryData();
-  }, []);
+  // Normalize notifications
+  const notifications = useMemo(() => {
+    if (!notificationsData) return [];
+    return Array.isArray(notificationsData) ? notificationsData : [];
+  }, [notificationsData]);
+
+  // Normalize calendar items
+  const calendarItems = useMemo(() => {
+    if (!calendarData) return [];
+    return Array.isArray(calendarData)
+      ? calendarData.map((item: any) => ({
+          ...item,
+          course:
+            typeof item.course === 'object'
+              ? (item.course?.title || item.course?.name || '')
+              : (item.course || ''),
+          dueDate: item.dueDate || item.date || item.due_date,
+        }))
+      : [];
+  }, [calendarData]);
 
   useEffect(() => {
     fetchInstitution();
-  }, []);
+  }, [fetchInstitution]);
 
   const handleClickInstitution = async (insId: string) => {
     const selected = institution.find(i => i._id === insId) ?? null;
@@ -112,7 +94,7 @@ function DashboardOverview() {
   };
 
   // Loading state handling
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -137,9 +119,9 @@ function DashboardOverview() {
           <h3 className="text-xl font-bold text-gray-900 mb-3">
             Oops! Something went wrong
           </h3>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className="text-gray-600 mb-6">{error instanceof Error ? error.message : String(error)}</p>
           <button
-            onClick={fetchDashboard}
+            onClick={() => window.location.reload()}
             className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg transition-colors duration-200 font-medium"
           >
             Try Again

@@ -82,7 +82,15 @@ export const CourseDetails = ({ courseId }: { courseId: string }) => {
               {currentCourse.title}
             </h1>
             <div
-              className="text-sm text-gray-600 leading-relaxed"
+              className="text-sm text-gray-600 leading-relaxed
+                prose-headings:text-gray-900 prose-headings:font-bold
+                prose-p:text-gray-700 prose-p:leading-relaxed
+                prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                prose-strong:text-gray-900 prose-strong:font-semibold
+                prose-ul:text-gray-700 prose-ol:text-gray-700
+                prose-blockquote:border-l-primary prose-blockquote:bg-purple-50/50 prose-blockquote:py-2
+                prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded
+              "
               dangerouslySetInnerHTML={{
                 __html: currentCourse.description || "",
               }}

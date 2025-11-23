@@ -9,7 +9,7 @@ import { useEducation } from "@/context/educationContext";
 import { InstitutionCoursesModal } from "../institutionCourseModal";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { fetchStudentDashboard, fetchStudentNotifications, fetchStudentCalendar } from "@/lib/api/student";
+import { getStudentDashboard, getStudentNotifications, getStudentCalendar } from "@/lib/api/student";
 
 export function DashboardOverview() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -26,7 +26,7 @@ export function DashboardOverview() {
 
   const fetchDashboard = async () => {
     try {
-      const data = await fetchStudentDashboard();
+      const data = await getStudentDashboard();
       if (data && Array.isArray(data)) {
         setDashboard(data);
       } else if (data?.enrollments && Array.isArray(data.enrollments)) {
@@ -44,8 +44,8 @@ export function DashboardOverview() {
   const fetchAuxiliaryData = async () => {
     try {
       const [notif, cal] = await Promise.all([
-        fetchStudentNotifications().catch(() => []),
-        fetchStudentCalendar().catch(() => []),
+        getStudentNotifications().catch(() => []),
+        getStudentCalendar().catch(() => []),
       ]);
       setNotifications(Array.isArray(notif) ? notif : []);
       setCalendarItems(Array.isArray(cal) ? cal : []);
