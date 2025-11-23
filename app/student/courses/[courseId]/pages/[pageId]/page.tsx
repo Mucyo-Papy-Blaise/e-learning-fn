@@ -6,6 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
 import { fetchModulesByCourseId } from "@/lib/api/courses"
+import { formatContent } from "@/lib/formContent"
 
 export default function CoursePageContent({
   params,
@@ -100,14 +101,29 @@ export default function CoursePageContent({
           <h2 className="mb-6 text-3xl font-bold text-gray-800">{page.title}</h2>
           
           {/* Page Content */}
-          <div className="prose max-w-none text-gray-700 leading-relaxed text-[15px] whitespace-pre-wrap">
-            {(page.content || "")
-              .replace(/<[^>]*>/g, "")
-              .replace(/&nbsp;/g, " ")
-              .replace(/&amp;/g, "&")
-              .replace(/&lt;/g, "<")
-              .replace(/&gt;/g, ">")}
-          </div>
+          <div
+            className="
+              prose prose-sm max-w-none text-gray-700 leading-relaxed
+
+              /* Paragraph spacing */
+              prose-p:my-4
+
+              /* Heading spacing + smaller sizes */
+              prose-h1:text-3xl prose-h1:mt-10 prose-h1:mb-4
+              prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-3
+              prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-2
+
+              /* Optional styling improvements */
+              prose-strong:text-gray-900
+              prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+
+              /* Images spacing */
+              prose-img:my-6 prose-img:rounded-lg
+            "
+            dangerouslySetInnerHTML={{
+              __html: page.content || "",
+            }}
+          />
         </div>
 
         {/* Navigation Buttons */}
