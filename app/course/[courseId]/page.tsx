@@ -1,9 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
   Users,
   Star,
@@ -48,21 +44,32 @@ export default function CourseDetailPage() {
     try {
       setEnrolling(true)
       
-      // Check if user is logged in
       const token = localStorage.getItem('token')
       if (!token) {
         alert('Please log in to enroll in courses')
         return
       }
       
-      // Call the enrollment API
       await enrollInCourse(courseId)
       setEnrolled(true)
+      alert('Successfully enrolled in the course!')
     } catch (error) {
       console.error('Error enrolling:', error)
+      alert('Failed to enroll. Please try again.')
     } finally {
       setEnrolling(false)
     }
+  }
+
+  const formatPrice = (price: number) => {
+    if (price === 0) return 'Free'
+    return `${price.toLocaleString()} RWF`
+  }
+
+  const getInstitutionName = () => {
+    if (!course?.institution) return 'Institution'
+    if (typeof course.institution === 'string') return 'Institution'
+    return course.institution.name || 'Institution'
   }
 
   if (loading) {
@@ -97,7 +104,9 @@ export default function CourseDetailPage() {
           <h3 className="text-xl font-semibold text-gray-900 mb-2">Course not found</h3>
           <p className="text-gray-600 mb-4">The course you{"'"}re looking for doesn{"'"}t exist.</p>
           <Link href="/">
-            <Button>Back to Home</Button>
+            <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+              Back to Home
+            </button>
           </Link>
         </div>
       </div>
@@ -110,32 +119,21 @@ export default function CourseDetailPage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <Button variant="ghost" size="sm">
+            <div className="flex justify-between items-center space-x-96">
+              <Link  href={`/category`}>
+                <button className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Home
-                </Button>
+                  Back
+                </button>
               </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   {course.title}
                 </h1>
-                <p className="text-gray-600">
-                  by {course.instructor_id?.user_id?.name || 'Instructor'} • {course.institution?.name}
-                </p>
+                {/* <p className="text-gray-600 text-sm mt-1">
+                  {getInstitutionName()}
+                </p> */}
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
-              <Button variant="outline" size="sm">
-                <Heart className="h-4 w-4 mr-2" />
-                Save
-              </Button>
             </div>
           </div>
         </div>
@@ -158,120 +156,62 @@ export default function CourseDetailPage() {
                   <BookOpen className="h-24 w-24 text-white" />
                 </div>
               )}
-              <div className="absolute top-4 left-4">
-                <Badge className="bg-white/90 text-gray-800 backdrop-blur-sm">
-                  {course.category}
-                </Badge>
-              </div>
-              <div className="absolute top-4 right-4">
-                <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
-                  {course.difficulty_level}
-                </Badge>
-              </div>
+              {course.category && (
+                <div className="absolute top-4 left-4">
+                  <span className="inline-block px-3 py-1 bg-white/90 text-gray-800 backdrop-blur-sm rounded text-sm font-medium capitalize">
+                    {course.category}
+                  </span>
+                </div>
+              )}
+              {course.difficulty_level && (
+                <div className="absolute top-4 right-4">
+                  <span className="inline-block px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded text-sm font-medium capitalize">
+                    {course.difficulty_level}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Course Description */}
-            <Card className="mb-6">
-              <CardContent className="p-6">
+            <div className="bg-white shadow-sm rounded-lg mb-6">
+              <div className="p-6">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">About this course</h2>
-                <div
-                  className="prose prose-xl max-w-none 
-                    prose-headings:text-gray-900 prose-headings:font-bold
-                    prose-p:text-gray-700 prose-p:leading-relaxed
-                    prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                    prose-strong:text-gray-900 prose-strong:font-semibold
-                    prose-ul:text-gray-700 prose-ol:text-gray-700
-                    prose-blockquote:border-l-primary prose-blockquote:bg-purple-50/50 prose-blockquote:py-2
-                    prose-code:bg-gray-100 prose-code:px-2 prose-code:py-1 prose-code:rounded"
-                  dangerouslySetInnerHTML={{
-                    __html: course.description || '<p class="text-gray-500 italic text-center py-8">No content available</p>',
-                  }}
-                />
-              </CardContent>
-            </Card>
+                <div className="text-gray-700 leading-relaxed">
+                  {course.description || 'No description available for this course.'}
+                </div>
+              </div>
+            </div>
 
-            {/* Course Details */}
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">What you{"'"}ll learn</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  {course.prerequisites && course.prerequisites.length > 0 ? (
-                    course.prerequisites.map((prereq, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
+            {/* Prerequisites */}
+            {course.prerequisites && course.prerequisites.length > 0 && (
+              <div className="bg-white shadow-sm rounded-lg mb-6">
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Prerequisites</h3>
+                  <div className="space-y-2">
+                    {course.prerequisites.map((prereq, index) => (
+                      <div key={index} className="flex items-start space-x-2">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                         <span className="text-gray-700">{prereq}</span>
                       </div>
-                    ))
-                  ) : (
-                    <div className="col-span-2 text-gray-600">
-                      No specific prerequisites required for this course.
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Instructor Info */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Instructor</h3>
-                <div className="flex items-start space-x-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarFallback className="text-lg">
-                      {course.instructor_id?.user_id?.name?.charAt(0) || 'I'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <h4 className="text-lg font-semibold text-gray-900">
-                      {course.instructor_id?.user_id?.name || 'Instructor'}
-                    </h4>
-                    <p className="text-gray-600 mb-2">
-                      {course.instructor_id?.profession_name || 'Course Instructor'}
-                    </p>
-                    <div className="flex items-center space-x-4 text-sm text-gray-600">
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span>{course.instructor_id?.rating || 4.5}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Users className="h-4 w-4" />
-                        <span>{course.totalStudent}+ students</span>
-                      </div>
-                    </div>
-                    {course.instructor_id?.expertise && course.instructor_id.expertise.length > 0 && (
-                      <div className="mt-3">
-                        <div className="flex flex-wrap gap-2">
-                          {course.instructor_id.expertise.map((skill, index) => (
-                            <Badge key={index} variant="secondary">
-                              {skill}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    ))}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            )}
           </div>
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <Card className="sticky top-24">
-              <CardContent className="p-6">
+            <div className="bg-white shadow-sm rounded-lg sticky top-24">
+              <div className="p-6">
                 <div className="text-center mb-6">
                   <div className="text-3xl font-bold text-gray-900 mb-2">
-                    {course.price === 0 ? 'Free' : `$${course.price} RWF`}
+                    {formatPrice(course.price || 0)}
                   </div>
-                  {course.price > 0 && (
-                    <div className="text-sm text-gray-600 line-through">
-                      ${Math.round(course.price * 1.2)} RWF
-                    </div>
-                  )}
                 </div>
 
-                <Button 
-                  className="w-full mb-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                <button 
+                  className="w-full mb-4 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   onClick={handleEnroll}
                   disabled={enrolled || enrolling}
                 >
@@ -288,39 +228,44 @@ export default function CourseDetailPage() {
                       Enroll Now
                     </>
                   )}
-                </Button>
+                </button>
 
                 <div className="space-y-4 text-sm text-gray-600">
-                  <div className="flex items-center justify-between">
-                    <span>Duration</span>
-                    <span className="font-medium">
-                      {course.duration_weeks ? `${course.duration_weeks} weeks` : 'Self-paced'}
-                    </span>
-                  </div>
+                  {course.duration_weeks && (
+                    <div className="flex items-center justify-between">
+                      <span>Duration</span>
+                      <span className="font-medium text-gray-900">
+                        {course.duration_weeks} weeks
+                      </span>
+                    </div>
+                  )}
                   
-                  <div className="flex items-center justify-between">
-                    <span>Level</span>
-                    <span className="font-medium capitalize">{course.difficulty_level}</span>
-                  </div>
+                  {course.difficulty_level && (
+                    <div className="flex items-center justify-between">
+                      <span>Level</span>
+                      <span className="font-medium text-gray-900 capitalize">{course.difficulty_level}</span>
+                    </div>
+                  )}
                   
                   <div className="flex items-center justify-between">
                     <span>Students</span>
-                    <span className="font-medium">{course.totalStudent}+</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span>Rating</span>
-                    <div className="flex items-center space-x-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{course.instructor_id?.rating || 4.5}</span>
-                    </div>
+                    <span className="font-medium text-gray-900">{course.totalStudent || 0}</span>
                   </div>
 
                   {course.start_date && (
                     <div className="flex items-center justify-between">
                       <span>Start Date</span>
-                      <span className="font-medium">
+                      <span className="font-medium text-gray-900">
                         {new Date(course.start_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+
+                  {course.end_date && (
+                    <div className="flex items-center justify-between">
+                      <span>End Date</span>
+                      <span className="font-medium text-gray-900">
+                        {new Date(course.end_date).toLocaleDateString()}
                       </span>
                     </div>
                   )}
@@ -336,31 +281,8 @@ export default function CourseDetailPage() {
                   )}
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-3">What{"'"}s included</h4>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span>Lifetime access</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span>Mobile and desktop</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span>Exercises and quizzes</span>
-                    </div>
-                    {course.is_certified && (
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span>Certificate of completion</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
       </main>

@@ -48,3 +48,31 @@ export interface Resource {
   download_count: number;
   file_size: number;
 }
+
+export interface InstitutionRef {
+  _id?: string | null;
+  name?: string;
+}
+
+export interface InstructorRef {
+  _id?: string | null;
+  rating?: number;
+  user_id?: { name?: string } | null;
+}
+
+
+
+export interface Pagination {
+  currentPage: number;
+  totalPages: number;
+  totalCourses: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface FetchResponse {
+  success: boolean;
+  data: Course[];
+  category?: string;
+  pagination: Pagination;
+}
