@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 const cache = new Map<string, { data: any ; timestamp: number }>();
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL 
+export const API_URL = process.env.NEXT_PUBLIC_API_URL! 
 
 
 // Retry configuration

@@ -20,11 +20,25 @@ export interface Module {
   _id: string;
   course_id: string;
   title: string;
-  lessons:Lesson[]
+  lessons: Lesson[];
   description: string;
   order_index: number;
   is_published: boolean;
   duration_hours: number;
+  isLocked?: boolean; // Add this
+  requiresPayment?: boolean; // Add this
+  lessonCount?: number; // Add this
+}
+
+// Add this new interface
+export interface CourseModulesResponse {
+  modules: Module[];
+  userAccess: {
+    isFullyUnlocked: boolean;
+    moduleAccessLimit: number;
+    totalModules: number;
+    unlockedModules: number;
+  };
 }
 
 export interface Lesson {

@@ -12,37 +12,51 @@ import {
   ChevronRight,
   FileText,
   ClipboardList,
+  Lock,
+  X,
 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
-import { fetchModulesByCourseId } from "@/lib/api/courses"
+import { fetchStundentModulesByCourseId } from "@/lib/api/courses"
 
 export default function CourseModulesPage({ params }: { params: { courseId: string } }) {
   const { courseId } = params
   const [openModules, setOpenModules] = useState<Record<string, boolean>>({})
   const [courseModules, setCourseModules] = useState<any[]>([])
+  const [userAccess, setUserAccess] = useState<any>(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
 
   useEffect(() => {
     const load = async () => {
       try {
-        const mods = await fetchModulesByCourseId(courseId)
-        setCourseModules(mods || [])
-      } catch {
+        const data = await fetchStundentModulesByCourseId(courseId)
+        setCourseModules(data.modules || [])
+        setUserAccess(data.userAccess)
+      } catch (error: any) {
+        if (error.isRestricted) {
+          setShowPaymentModal(true)
+        }
         setCourseModules([])
       }
     }
     load()
   }, [courseId])
 
-  const toggleModule = (moduleId: string) => {
+  const toggleModule = (moduleId: string, isLocked: boolean) => {
+    if (isLocked) {
+      setShowPaymentModal(true)
+      return
+    }
     setOpenModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }))
   }
 
   const expandAll = () => {
     const allOpen: Record<string, boolean> = {}
     for (const m of courseModules) {
-      allOpen[m.id] = true
+      if (!m.isLocked) {
+        allOpen[m.id] = true
+      }
     }
     setOpenModules(allOpen)
   }
@@ -53,6 +67,47 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
 
   return (
     <div className="flex flex-1 flex-col">
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Lock className="h-5 w-5 text-orange-500" />
+                <h2 className="text-lg font-semibold text-gray-900">Payment Required</h2>
+              </div>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="text-gray-600 mb-6">
+              You need to complete the payment to access this module. Only the first module is available for free. Please make a payment to unlock all course content.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowPaymentModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  // Add your payment logic here
+                  window.location.href = `/student/courses/${courseId}/payment`
+                }}
+                className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Proceed to Payment
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-white px-4 md:px-6">
         <h1 className="text-sm font-semibold text-gray-900">
           <Link href={`/student/courses/${courseId}/home`} className="text-blue-600 hover:underline">
@@ -89,17 +144,27 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
         <div className="flex flex-1 flex-col gap-6">
           {courseModules.map((module, index) => {
             const moduleKey = `${module.id}-${index}`;
+            const isLocked = module.isLocked || false;
             return (
               <div key={moduleKey} className="rounded-md border border-gray-200 bg-white shadow-sm">
                 <div
                   className="flex w-full items-center p-4 text-left font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
-                  onClick={() => toggleModule(moduleKey)}
+                  onClick={() => toggleModule(moduleKey, isLocked)}
                 >
-                  {openModules[moduleKey] ? <ChevronDown /> : <ChevronRight />}
-                  <span>{module.title}</span>
+                  {isLocked ? (
+                    <Lock className="h-4 w-4 mr-2 text-orange-500" />
+                  ) : (
+                    openModules[moduleKey] ? <ChevronDown /> : <ChevronRight />
+                  )}
+                  <span className={isLocked ? "text-gray-500" : ""}>{module.title}</span>
+                  {isLocked && (
+                    <span className="ml-auto text-xs text-orange-600 font-normal">
+                      Payment Required
+                    </span>
+                  )}
                 </div>
             
-                {openModules[moduleKey] && (
+                {openModules[moduleKey] && !isLocked && (
                   <div className="border-t border-gray-200 bg-gray-50 p-4">
                   <div className="space-y-2">
                     {(module.items || module.lessons || []).map((item: any, itemIndex: number) => (
@@ -112,6 +177,13 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
                         <Link
                           href={`/student/courses/${courseId}/pages/${item.url || item._id}`}
                           className="text-sm text-blue-600 hover:underline flex-1"
+                          onClick={(e) => {
+                            // Double-check if module is locked (in case state changed)
+                            if (isLocked) {
+                              e.preventDefault()
+                              setShowPaymentModal(true)
+                            }
+                          }}
                         >
                           {item.title}
                         </Link>
