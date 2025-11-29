@@ -7,16 +7,11 @@ import {
   Menu,
   X,
   Users,
-  BarChart3,
-  Settings,
   UserCheck,
-  Award,
-  Calendar,
   Bell,
   ChevronDown,
-  Building2,
-  LogOut,
   ChevronRight,
+  LucideMessagesSquare
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/use-auth"
 import { useEffect } from "react"

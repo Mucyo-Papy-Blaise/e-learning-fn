@@ -1,5 +1,5 @@
 import axiosInstance from "../../axios";
-import { API_URL } from '../config';
+import { API_URL } from "../../axios";
 
 export async function getInstitutionById(id: string) {
   const res = await axiosInstance.get(`${API_URL}/api/institutions/${id}`);
@@ -9,5 +9,20 @@ export async function getInstitutionById(id: string) {
 export async function getCoursesByInstitution(id: string) {
   const res = await axiosInstance.get(`${API_URL}/api/institutions/${id}/courses`);
   return res.data;
+}
+
+/**
+ * Confirm payment for an enrollment
+ * @param enrollmentId - The enrollment ID to confirm payment for
+ * @returns Updated enrollment object
+ */
+export async function confirmPayment(enrollmentId: string) {
+  try {
+    const res = await axiosInstance.patch(`${API_URL}/api/payment/${enrollmentId}`);
+    return res.data;
+  } catch (error: any) {
+    console.error('Confirm payment error:', error);
+    throw error.response?.data || error;
+  }
 }
 

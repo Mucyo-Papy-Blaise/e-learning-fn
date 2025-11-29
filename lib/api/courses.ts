@@ -1,7 +1,7 @@
 'use client'
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { Course, Module, Lesson, Resource } from '../types/course';
+import { Course, Module, Lesson, Resource, CourseModulesResponse } from '../types/course';
 import { API_URL } from '../axios';
 
 // Show toast notifications for success or error
@@ -97,12 +97,73 @@ export async function fetchCourseById(courseId: string): Promise<Course> {
 
 export async function fetchModulesByCourseId(courseId: string): Promise<Module[]> {
   try {
-    const response = await axios.get(`${API_URL}/api/courses/${courseId}/modules`);
-    return response.data;
+    const response = await axios.get(`${API_URL}/api/courses/${courseId}/modules`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    
+    // Handle the new response structure
+    const data = response.data;
+    
+    if (data.modules && Array.isArray(data.modules)) {
+      return data.modules;
+    }
+    
+    // Fallback for old structure (direct array)
+    if (Array.isArray(data)) {
+      return data;
+    }
+    
+    return [];
   } catch (error) {
     showToast('Failed to fetch modules', 'error');
     throw error;
+  }
+}
 
+export async function fetchStundentModulesByCourseId(courseId: string): Promise<CourseModulesResponse> {
+  try {
+    const response = await axios.get(`${API_URL}/api/courses/student/${courseId}/modules`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+    
+    const data = response.data;
+    
+    if (data.modules && data.userAccess) {
+      return data as CourseModulesResponse;
+    }
+    
+    if (Array.isArray(data)) {
+      return {
+        modules: data,
+        userAccess: {
+          isFullyUnlocked: true,
+          moduleAccessLimit: 999,
+          totalModules: data.length,
+          unlockedModules: data.length
+        }
+      };
+    }
+    
+    return {
+      modules: [],
+      userAccess: {
+        isFullyUnlocked: false,
+        moduleAccessLimit: 0,
+        totalModules: 0,
+        unlockedModules: 0
+      }
+    };
+  } catch (error: any) {
+    // Check if it's a restriction error
+    if (error.response?.status === 402 || error.response?.data?.restricted) {
+      throw { ...error, isRestricted: true, restrictedData: error.response?.data };
+    }
+    showToast('Failed to fetch modules', 'error');
+    throw error;
   }
 }
 
@@ -114,10 +175,12 @@ export async function fetchLessonsByModuleId(moduleId: string): Promise<Lesson[]
       },
     });
     return response.data;
-  } catch (error) {
-    showToast('Failed to fetch lessons', 'error');
+  } catch (error: any) {
+    // Check if it's a restriction error
+    if (error.response?.status === 402 || error.response?.data?.restricted) {
+      throw { ...error, isRestricted: true, restrictedData: error.response?.data };
+    }
     throw error;
-
   }
 }
 
@@ -267,7 +330,6 @@ export async function fetchEnrolledCourses() {
 export async function enrollInCourse(courseId: string) {
   try {
     const formData = new FormData();
-    // Backend may not require any fields; send an empty FormData to satisfy multipart requirement
     const response = await axios.post(`${API_URL}/api/courses/${courseId}/enroll`, formData, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -275,8 +337,8 @@ export async function enrollInCourse(courseId: string) {
     });
     showToast('Enrolled successfully', 'success');
     return response.data;
-  } catch (error) {
-    showToast('Failed to enroll', 'error');
+  } catch (error: any) {
+    showToast('Failed to enroll', error.message);
     throw error;
   }
 }
