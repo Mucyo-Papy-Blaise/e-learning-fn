@@ -58,7 +58,7 @@ export const InstitutionNotificationItem: React.FC<Props> = ({
           {notification.notification_type}
         </span>
 
-        {isEnrollmentNotification && hasEnrollmentId && paymentStatus === "pending" && (
+        {isEnrollmentNotification && hasEnrollmentId && paymentStatus === "pending"  || paymentStatus === 'mode' && (
           <button
             onClick={handleConfirmPayment}
             className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors"
