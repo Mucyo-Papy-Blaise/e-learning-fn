@@ -159,7 +159,7 @@ export const CourseDetails = ({ courseId }: { courseId: string }) => {
 
       {/* Add Module Dialog */}
       <Dialog open={isAddModuleOpen} onOpenChange={setIsAddModuleOpen}>
-        <DialogContent className="sm:max-w-[500px] p-6">
+        <DialogContent className="p-6 max-h-[95vh] overflow-y-auto">
           <ModuleForm
             courseId={courseId}
             onSuccess={() => setIsAddModuleOpen(false)}
@@ -169,7 +169,7 @@ export const CourseDetails = ({ courseId }: { courseId: string }) => {
 
       {/* Edit Course Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="sm:max-w-[600px] p-6">
+        <DialogContent className="sm:max-w-[600px] p-6 max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Course</DialogTitle>
           </DialogHeader>

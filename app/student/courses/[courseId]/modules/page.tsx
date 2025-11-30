@@ -86,6 +86,7 @@ export default function CourseModulesPage({ params }: { params: { courseId: stri
             <p className="text-gray-600 mb-6">
               You need to complete the payment to access this module. Only the first module is available for free. Please make a payment to unlock all course content.
             </p>
+            <p>tel: +250 790 147 808</p>
             <div className="flex gap-3">
               <Button
                 onClick={() => setShowPaymentModal(false)}

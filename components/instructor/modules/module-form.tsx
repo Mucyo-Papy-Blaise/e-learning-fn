@@ -73,7 +73,7 @@ export function ModuleForm({
           content={description}
           onChange={setDescription}
           placeholder="Enter module description"
-          className="bg-white border border-gray-300 rounded-lg"
+          className="bg-white border max-h-[300px] border-gray-300 rounded-lg"
         />
         {errors.description && <p className="text-red-600 text-sm">{errors.description}</p>}
       </div>
